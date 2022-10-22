@@ -173,7 +173,16 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2022-10-22 14:52:57 / Modified: 15:16:53" itemprop="dateCreated datePublished" datetime="2022-10-22T14:52:57+08:00">2022-10-22</time>
+              <time title="Created: 2022-10-22 14:52:57 / Modified: 16:44:22" itemprop="dateCreated datePublished" datetime="2022-10-22T14:52:57+08:00">2022-10-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Ceph/" itemprop="url" rel="index"><span itemprop="name">Ceph</span></a>
+                </span>
             </span>
 
           
@@ -187,7 +196,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="《Ceph源码分析》摘要"><a href="#《Ceph源码分析》摘要" class="headerlink" title="《Ceph源码分析》摘要"></a>《Ceph源码分析》摘要</h1><h2 id="Ceph整体结构"><a href="#Ceph整体结构" class="headerlink" title="Ceph整体结构"></a>Ceph整体结构</h2><h3 id="Ceph设计目标"><a href="#Ceph设计目标" class="headerlink" title="Ceph设计目标"></a>Ceph设计目标</h3><ol>
+          <p>[toc]</p>
+<h1 id="《Ceph源码分析》摘要"><a href="#《Ceph源码分析》摘要" class="headerlink" title="《Ceph源码分析》摘要"></a>《Ceph源码分析》摘要</h1><h2 id="Ceph整体结构"><a href="#Ceph整体结构" class="headerlink" title="Ceph整体结构"></a>Ceph整体结构</h2><h3 id="Ceph设计目标"><a href="#Ceph设计目标" class="headerlink" title="Ceph设计目标"></a>Ceph设计目标</h3><ol>
 <li>高可用性：Ceph使用数据多副本、纠删码提供数据冗余。</li>
 <li>高可扩展性<ul>
 <li>集群容量可以伸缩，可以任意添加和删除存储节点、存储设备。</li>
@@ -196,9 +206,51 @@
 </li>
 <li>大规模：Ceph存储系统的规模可以扩展到成千上万节点。</li>
 </ol>
-<h3 id="Ceph基本架构图"><a href="#Ceph基本架构图" class="headerlink" title="Ceph基本架构图"></a>Ceph基本架构图</h3><p><img src="C:\Users\zzltaki\hexo-blog\source_posts\Ceph源码分析\Ceph基本架构图.png" alt="image-20221022150654641"></p>
+<h3 id="Ceph基本架构图"><a href="#Ceph基本架构图" class="headerlink" title="Ceph基本架构图"></a>Ceph基本架构图</h3><p>Ceph整体架构有三层</p>
+<ol>
+<li>最底层最核心的RADOS对象存储系统：RADOS（reliable, autonomous, distributed object store）是一个可靠的、自组织的、可自动修复、自我管理的分布式对象存储系统。其内部包括 ceph-osd 后台服务进程和 ceph-mon 监控进程。  </li>
+<li>中间层librados库：用于本地或远程通过网络访问RADOS对象存储系统。支持多种语言，如C&#x2F;C++、Java、Python等。</li>
+<li>最上层Ceph不同形式的存储接口实现<ul>
+<li>块存储结构。</li>
+<li>对象存储接口。</li>
+<li>文件系统接口。</li>
+</ul>
+</li>
+</ol>
 <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ceph%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E5%9B%BE.png" class="" title="Ceph基本架构图">
 
+<h3 id="Ceph客户端接口"><a href="#Ceph客户端接口" class="headerlink" title="Ceph客户端接口"></a>Ceph客户端接口</h3><h4 id="RBD"><a href="#RBD" class="headerlink" title="RBD"></a>RBD</h4><p>RBD（rados block device）通过 librbd 库对应用提供块存储，主要面向云平台的虚拟机提供虚拟磁盘。传统 SAN 就是块存储，通过 SCSI 或者 FC 接口给应用提供一个独立的 LUN 或者卷。RBD 类似于传统的 SAN 存储，都提供数据块级别的访问。  </p>
+<h4 id="CephFS"><a href="#CephFS" class="headerlink" title="CephFS"></a>CephFS</h4><p>CephFS 通过在 RADOS 基础之上增加了 MDS ( Metadata Server) 来提供文件存储。它提供了 libcephfs 库和标准的 P0SIX 文件接口。 CephFS 类似于传统的 NAS 存储，通过 NFS 或者 CIFS 协议提供文件系统或者文件目录服务。</p>
+<h4 id="RadosGW"><a href="#RadosGW" class="headerlink" title="RadosGW"></a>RadosGW</h4><p>（看不太明白</p>
+<h3 id="RADOS"><a href="#RADOS" class="headerlink" title="RADOS"></a>RADOS</h3><p>RADOS完成了一个存储系统的核心功能，包括以下部分：</p>
+<h4 id="Monitor"><a href="#Monitor" class="headerlink" title="Monitor"></a>Monitor</h4><p>Monitor模块为整个存储集群提供全局的配置和系统信息。</p>
+<ol>
+<li>它是一个独立部署的daemon进程，通过组成Monitor集群来保证自己的高可用性。</li>
+<li>通过Paxos算法实现自己数据的一致性。</li>
+<li>提供整个存储系统的节点信息等全局配置信息。</li>
+</ol>
+<p>Cluster Map保存了系统的全局信息，主要包括：</p>
+<ol>
+<li>Monitor Map<ul>
+<li>包括集群的fsid；</li>
+<li>所有Monitor的地址和端口；</li>
+<li>current epoch。</li>
+</ul>
+</li>
+<li>OSD Map：所有OSD的列表和OSD的状态等。</li>
+<li>MDS Map：所有的MDS的列表和状态。</li>
+</ol>
+<h4 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h4><p>这里所说的对象是指 RADOS 对象，要和 RadosGW 的 S3 或者 Swift 接口的对象存储区分开来。对象是数据存储的基本单元，一般默认 4MB 大小。下图是一个对象的示意图。</p>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%AF%B9%E8%B1%A1%E7%A4%BA%E6%84%8F%E5%9B%BE.png" class="" title="对象示意图">
+
+<p>一个对象由三个部分组成：</p>
+<ol>
+<li>对象标志ID；</li>
+<li>对象的数据，其在本地文件系统中对应一个文件，对象的数据就保存在文件中；</li>
+<li>对象的元数据，以key-value形式保存。</li>
+</ol>
+<h4 id="pool和PG的概念"><a href="#pool和PG的概念" class="headerlink" title="pool和PG的概念"></a>pool和PG的概念</h4><p>pool是一个抽象的存储池。它规定了数据冗余的类型以及对应的副本分布策略（副本类型和纠删码类型等）。一个pool由多个PG构成。</p>
+<p>PG（placement group）是一个对象的集合，该集合中的所有对象有相同的放置策略：对象的副本都分布在相同的OSD列表上。一个对象只能属于一个PG，一个PG对应于放置在其上的OSD列表。一个OSD上可以分布多个PG。</p>
 
       
     </div>
@@ -429,7 +481,7 @@
         </a>
       </div>
       <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-count">2</span>
         <span class="site-state-item-name">categories</span>
       </div>
       <div class="site-state-item site-state-tags">
