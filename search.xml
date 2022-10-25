@@ -1,6 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Hello World</title>
+    <url>/2022/10/20/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>测试文章</title>
+    <url>/2022/10/20/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是一篇测试文章。</p>
+<ul>
+<li>测试在hexo-blog文件夹下运行hexo clean &amp;&amp; hexo deploy是否可以执行成功。√</li>
+<li>测试在hexo-blog文件夹下运行hexo generate &amp;&amp; hexo deploy是否可以执行成功。√</li>
+<li>推荐：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</li>
+</ul>
+<img src="/2022/10/20/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/%E6%98%9F%E5%A4%9C.jpg" class="" title="图片引用方法一">
+
+]]></content>
+      <categories>
+        <category>测试</category>
+      </categories>
+      <tags>
+        <tag>测试</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Ceph源码分析</title>
     <url>/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h1 id="《Ceph源码分析》摘要"><a href="#《Ceph源码分析》摘要" class="headerlink" title="《Ceph源码分析》摘要"></a>《Ceph源码分析》摘要</h1><h2 id="Ceph整体结构"><a href="#Ceph整体结构" class="headerlink" title="Ceph整体结构"></a>Ceph整体结构</h2><h3 id="Ceph设计目标"><a href="#Ceph设计目标" class="headerlink" title="Ceph设计目标"></a>Ceph设计目标</h3><ol>
@@ -150,7 +187,20 @@
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ThreadPool</span>::TPHandle : <span class="keyword">public</span> HBHandle &#123;</span><br><span class="line">        <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">ThreadPool</span>;</span><br><span class="line">        CephContext *cct;				</span><br><span class="line">        ceph::heartbeat_handle_d *hb;	<span class="comment">// 心跳</span></span><br><span class="line">        ceph::timespan grace;			<span class="comment">// 超时</span></span><br><span class="line">        ceph::timespan suicide_grace;	<span class="comment">// 自杀的超时时间</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">TPHandle</span>(CephContext *cct, ceph::heartbeat_handle_d *hb,</span><br><span class="line">                 ceph::timespan grace, ceph::timespan suicide_grace)</span><br><span class="line">            : <span class="built_in">cct</span>(cct), <span class="built_in">hb</span>(hb), <span class="built_in">grace</span>(grace), <span class="built_in">suicide_grace</span>(suicide_grace) &#123;&#125;</span><br><span class="line">        <span class="function"><span class="type">void</span> <span class="title">reset_tp_timeout</span><span class="params">()</span> <span class="keyword">override</span> <span class="keyword">final</span></span>;</span><br><span class="line">        <span class="function"><span class="type">void</span> <span class="title">suspend_tp_timeout</span><span class="params">()</span> <span class="keyword">override</span> <span class="keyword">final</span></span>;</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
 
 <h4 id="ShardedThreadPool"><a href="#ShardedThreadPool" class="headerlink" title="ShardedThreadPool"></a>ShardedThreadPool</h4><p>ThreadPool 实现的线程池，其每个线程都有机会处理工作队列的任意一个任务。这就会导致一个问题：如果任务之间有互斥性，那么正在处理该任务的两个线程有一个必须等待另一个处理完成后才能处理，从而导致线程的阻塞，性能下降。</p>
-<p>具体如何实现 Shard 方式，还需要使用者自己去实现。其基本的思想就是：每个线程对应一个任务队列，所有需要顺序执行的任务都放在同一个线程的任务队列里，全部由该线程执行。  </p>
+<p>具体如何实现 Shard 方式，还需要使用者自己去实现。其基本的思想就是：每个线程对应一个任务队列，所有需要顺序执行的任务都放在同一个线程的任务队列里，全部由该线程执行。 定义于<code>src/common/WorkerQueue.h</code>中 </p>
+<h3 id="Finisher"><a href="#Finisher" class="headerlink" title="Finisher"></a>Finisher</h3><p>类Finisher用来完成回调函数Context的执行，其内部有一个FinisherThread线程来用于执行Context回调函数。定义于<code>src/common/Finisher.h</code>中。</p>
+<h3 id="Throttle"><a href="#Throttle" class="headerlink" title="Throttle"></a>Throttle</h3><p>类Throttle用来限制消费的资源数量（也常称为槽位 “slot”），当请求的 slot 数量达到max值时，请求就会被阻塞，直到有新的槽位释放出来，定义于<code>src/common/Throttle.h</code>中，代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Throttle</span> <span class="keyword">final</span> : <span class="keyword">public</span> ThrottleInterface &#123;</span><br><span class="line">  	CephContext *cct;</span><br><span class="line">  	<span class="type">const</span> std::string name;</span><br><span class="line">  	PerfCountersRef logger;</span><br><span class="line">  	std::atomic&lt;<span class="type">int64_t</span>&gt; count = &#123; <span class="number">0</span> &#125;, max = &#123; <span class="number">0</span> &#125;;  	<span class="comment">// 当前占用的slot数量和slot数量的最大值</span></span><br><span class="line">  	std::mutex lock;									<span class="comment">// 等待的锁</span></span><br><span class="line">  	std::list&lt;std::condition_variable&gt; conds;			<span class="comment">// 等待的条件变量</span></span><br><span class="line">    ......</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>, <span class="type">int64_t</span> m = <span class="number">0</span>)</span></span>;				<span class="comment">// 获取c个slot，如果m不为0值，则将max设置为m的值；成功获取c个slot后，就返回true，否则阻塞等待</span></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get_or_fail</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>)</span></span>;					<span class="comment">// 当获取不到c个slot时，直接返回false，不阻塞等待</span></span><br><span class="line">    <span class="function"><span class="type">int64_t</span> <span class="title">put</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>)</span> <span class="keyword">override</span></span>;				<span class="comment">// 释放c个slot资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SafeTimer"><a href="#SafeTimer" class="headerlink" title="SafeTimer"></a>SafeTimer</h3><p>类SafeTimer实现了定时器的功能，定义于<code>src/common/Timer.h</code>中，代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Mutex</span>&gt; <span class="keyword">class</span> <span class="title class_">CommonSafeTimer</span> &#123;</span><br><span class="line">    CephContext *cct;</span><br><span class="line">    Mutex &amp;lock;</span><br><span class="line">    std::condition_variable_any cond;</span><br><span class="line">    <span class="type">bool</span> safe_callbacks;							<span class="comment">// 是否是safe_callbacks</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">CommonSafeTimerThread</span>&lt;Mutex&gt;;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">CommonSafeTimerThread</span>&lt;Mutex&gt; *thread;		<span class="comment">// 定时器执行线程</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">using</span> <span class="type">clock_t</span> = ceph::mono_clock;</span><br><span class="line">    <span class="keyword">using</span> <span class="type">scheduled_map_t</span> = std::multimap&lt;<span class="type">clock_t</span>::time_point, Context *&gt;;</span><br><span class="line">    <span class="type">scheduled_map_t</span> schedule;	<span class="comment">// 目标时间和定时任务执行函数Context</span></span><br><span class="line">    <span class="keyword">using</span> <span class="type">event_lookup_map_t</span> = std::map&lt;Context *, <span class="type">scheduled_map_t</span>::iterator&gt;;</span><br><span class="line">    <span class="type">event_lookup_map_t</span> events;	<span class="comment">// 定时任务&lt;--&gt;定时任务在schedule中的位置映射</span></span><br><span class="line">    <span class="type">bool</span> stopping;				<span class="comment">// 是否停止</span></span><br><span class="line">    ......</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 添加定时任务</span></span><br><span class="line">    <span class="function">Context *<span class="title">add_event_after</span><span class="params">(ceph::timespan duration, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_after</span><span class="params">(<span class="type">double</span> seconds, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_at</span><span class="params">(<span class="type">clock_t</span>::time_point when, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_at</span><span class="params">(ceph::real_clock::time_point when, Context *callback)</span></span>;</span><br><span class="line">    <span class="comment">// 取消定时任务</span></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">cancel_event</span><span class="params">(Context *callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">cancel_all_events</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 定时任务执行</span></span><br><span class="line">    <span class="comment">/* 循环检查schedule中的任务是否到期，由于schedule中是按照时间升序排列的，因此第一任务没有到期就终止循环；</span></span><br><span class="line"><span class="comment">    如果第一任务到期，则调用callback执行，需要注意如果是非safe_callbacks，则需要先获取lock再执行callback函数。*/</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">timer_thread</span><span class="params">()</span></span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
 <p><a href="https://item.jd.com/12072602.html">Ceph源码分析</a></p>
 ]]></content>
       <categories>
@@ -158,43 +208,6 @@
       </categories>
       <tags>
         <tag>Ceph</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2022/10/20/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>测试文章</title>
-    <url>/2022/10/20/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是一篇测试文章。</p>
-<ul>
-<li>测试在hexo-blog文件夹下运行hexo clean &amp;&amp; hexo deploy是否可以执行成功。√</li>
-<li>测试在hexo-blog文件夹下运行hexo generate &amp;&amp; hexo deploy是否可以执行成功。√</li>
-<li>推荐：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</li>
-</ul>
-<img src="/2022/10/20/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/%E6%98%9F%E5%A4%9C.jpg" class="" title="图片引用方法一">
-
-]]></content>
-      <categories>
-        <category>测试</category>
-      </categories>
-      <tags>
-        <tag>测试</tag>
       </tags>
   </entry>
 </search>
