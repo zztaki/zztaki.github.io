@@ -30,7 +30,7 @@
 <meta property="og:description" content="牛客网——算法入门（栈）">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-11-15T12:54:46.000Z">
-<meta property="article:modified_time" content="2022-11-15T13:31:33.362Z">
+<meta property="article:modified_time" content="2022-11-15T13:38:21.671Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="算法">
 <meta property="article:tag" content="数据结构">
@@ -219,7 +219,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2022-11-15 20:54:46 / Modified: 21:31:33" itemprop="dateCreated datePublished" datetime="2022-11-15T20:54:46+08:00">2022-11-15</time>
+              <time title="Created: 2022-11-15 20:54:46 / Modified: 21:38:21" itemprop="dateCreated datePublished" datetime="2022-11-15T20:54:46+08:00">2022-11-15</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -279,8 +279,8 @@
 
 <h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>模拟栈操作。</p>
 <ol>
-<li>记popV的第一个元素为p<del>1</del>，那么pushV中p<del>1</del>之前元素全部顺序入栈，p<del>1</del>入栈再出栈；popV的后续元素如果依次等于栈顶元素，持续进行出栈操作，直至不相等或栈为空，记popV此时元素为p<del>i</del>。</li>
-<li>pushV中p<del>1</del>之后，p<del>i</del>之前的元素继续顺序入栈，而p<del>i</del>入栈再出栈；popV的后续元素如果依次等于栈顶元素，持续进行出栈操作，直至不相等或栈为空。</li>
+<li>记popV的第一个元素为p<sub>1</sub>，那么pushV中p<sub>1</sub>之前元素全部顺序入栈，p<sub>1</sub>入栈再出栈；popV的后续元素如果依次等于栈顶元素，持续进行出栈操作，直至不相等或栈为空，记popV此时元素为p<sub>i</sub>。</li>
+<li>pushV中p<sub>1</sub>之后，p<sub>i</sub>之前的元素继续顺序入栈，而p<sub>i</sub>入栈再出栈；popV的后续元素如果依次等于栈顶元素，持续进行出栈操作，直至不相等或栈为空。</li>
 <li>……</li>
 <li>直到pushV中元素全部入栈，此时后续只有一种出栈方式，即栈中元素依次出栈与popV后续元素一一比较。如果某次不相等，则无法以pushV顺序压入，popV顺序弹出。</li>
 </ol>
