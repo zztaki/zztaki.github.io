@@ -189,6 +189,117 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/03/05/C++%20primer%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/05/C++%20primer%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Untitled</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2023-03-05 21:11:42 / Modified: 21:20:26" itemprop="dateCreated datePublished" datetime="2023-03-05T21:11:42+08:00">2023-03-05</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>432</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>[TOC]</p>
+<h1 id="C-primer笔记"><a href="#C-primer笔记" class="headerlink" title="C++ primer笔记"></a>C++ primer笔记</h1><h2 id="1-开始"><a href="#1-开始" class="headerlink" title="1 开始"></a>1 开始</h2><h3 id="1-2-初识输入输出"><a href="#1-2-初识输入输出" class="headerlink" title="1.2 初识输入输出"></a>1.2 初识输入输出</h3><ol>
+<li>cout输出语句时，尽量要以 endl 结束，从而刷新缓存区，否则如果出现程序崩溃，输出可能还留在缓冲区中。</li>
+</ol>
+<h2 id="2-变量和基本类型"><a href="#2-变量和基本类型" class="headerlink" title="2 变量和基本类型"></a>2 变量和基本类型</h2><h3 id="2-2-变量"><a href="#2-2-变量" class="headerlink" title="2.2 变量"></a>2.2 变量</h3><ol>
+<li>extern：<ul>
+<li>只能作用在函数体外。</li>
+<li>extern声明一个变量，如果赋予变量初值，则表示定义。</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-5-处理类型"><a href="#2-5-处理类型" class="headerlink" title="2.5 处理类型"></a>2.5 处理类型</h3><ol>
+<li><p>类型别名：</p>
+<ul>
+<li>typedef double wages;</li>
+<li>using my_double &#x3D; double;</li>
+<li>在使用包含指针的类型别名的时候，不能简单地将类型别名替换成原类型。</li>
+</ul>
+ <img src="/2023/03/05/C++%20primer%E7%AC%94%E8%AE%B0/typedef%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%E4%B8%8Econst%E5%90%8C%E6%97%B6%E4%BD%BF%E7%94%A8.jpg" class="" title="typedef指针类型别名与const同时使用">
+</li>
+<li><p>auto</p>
+</li>
+<li><p>decltype</p>
+</li>
+</ol>
+<h2 id="3字符串、向量和数组"><a href="#3字符串、向量和数组" class="headerlink" title="3字符串、向量和数组"></a>3字符串、向量和数组</h2><h2 id="4-表达式"><a href="#4-表达式" class="headerlink" title="4 表达式"></a>4 表达式</h2><h3 id="4-11-类型转换"><a href="#4-11-类型转换" class="headerlink" title="4.11 类型转换"></a>4.11 类型转换</h3><ol>
+<li>隐式转换</li>
+<li>显示转换<ul>
+<li>强制类型转换：(double)</li>
+<li>命名的强制类型转换：cast-name&lt;type&gt;(expression)<ul>
+<li>static_cast：</li>
+<li>dynamic_cast：支持运行时类型识别。</li>
+<li>const_cast：将const对象转换为非const对象，常常用于有函数重载的上下文。</li>
+<li>reinterpret_cast：</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="5-语句"><a href="#5-语句" class="headerlink" title="5 语句"></a>5 语句</h2><h2 id="6-函数"><a href="#6-函数" class="headerlink" title="6 函数"></a>6 函数</h2>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/11/15/%E7%89%9B%E5%AE%A2%E7%BD%91%E2%80%94%E2%80%94%E7%AE%97%E6%B3%95%E5%85%A5%E9%97%A8%EF%BC%88%E6%A0%88%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -614,7 +725,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -654,7 +765,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -664,13 +775,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">22k</span>
+    <span title="Symbols count total">23k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">37 mins.</span>
+    <span title="Reading time total">38 mins.</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
