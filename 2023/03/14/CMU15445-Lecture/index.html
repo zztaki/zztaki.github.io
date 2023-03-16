@@ -29,13 +29,18 @@
 <meta property="og:site_name" content="zztaki">
 <meta property="og:description" content="CMU15445-Lecture">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/page_layout.jpg">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/Strawman.jpg">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/slot_page.jpg">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/tuple_data.jpg">
 <meta property="article:published_time" content="2023-03-14T12:13:46.000Z">
-<meta property="article:modified_time" content="2023-03-15T11:42:02.153Z">
+<meta property="article:modified_time" content="2023-03-16T07:28:56.365Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="CMU15445">
 <meta property="article:tag" content="公开课">
 <meta property="article:tag" content="数据库">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/03/14/CMU15445-Lecture/page_layout.jpg">
 
 <link rel="canonical" href="http://example.com/2023/03/14/CMU15445-Lecture/">
 
@@ -225,7 +230,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-03-15 19:42:02" itemprop="dateModified" datetime="2023-03-15T19:42:02+08:00">2023-03-15</time>
+                <time title="Modified: 2023-03-16 15:28:56" itemprop="dateModified" datetime="2023-03-16T15:28:56+08:00">2023-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -250,14 +255,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>976</span>
+              <span>3k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>2 mins.</span>
+              <span>5 mins.</span>
             </span>
             <div class="post-description">CMU15445-Lecture</div>
 
@@ -315,7 +320,68 @@
 <li>Window Functions：<code>ROW_NUMBER() OVER(&lt;PARTITION BY ...&gt;)</code></li>
 <li>Date&#x2F;Time Operations</li>
 </ol>
-<h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/notes/">官方笔记</a></p>
+<h2 id="Lec3-Database-Storage-1"><a href="#Lec3-Database-Storage-1" class="headerlink" title="Lec3 Database Storage 1"></a>Lec3 Database Storage 1</h2><h3 id="Disk-Manager"><a href="#Disk-Manager" class="headerlink" title="Disk Manager"></a>Disk Manager</h3><ol>
+<li>为什么不适用 OS 磁盘管理的轮子？主要原因在于，OS 的磁盘管理模块并没有、也不可能会有 DBMS 中的领域知识，因此 DBMS 比 OS 拥有更多、更充分的知识来决定数据移动的时机和数量（OS 只是提供一种普适化的接口，但现在既然具体化到了数据库的场景，那么我们在拥有这种特定场景下的负载特征，自然就可以特制化一些更优秀的策略），具体包括：<ul>
+<li>Flushing dirty pages to disk in the correct order</li>
+<li>Specialized prefetching</li>
+<li>Buffer replacement policy</li>
+<li>Thread&#x2F;process scheduling</li>
+</ul>
+</li>
+<li>DBMS 的磁盘模块主要解决两个问题：<ul>
+<li>How the DBMS represents the database in files on disk（如何使用磁盘文件来表示数据库的数据，比如元数据、索引、数据表等）</li>
+<li>How the DBMS manages its memory and moves data back-and-forth from disk（如何管理数据在内存与磁盘之间的移动）</li>
+</ul>
+</li>
+</ol>
+<h3 id="在磁盘文件中表示数据库"><a href="#在磁盘文件中表示数据库" class="headerlink" title="在磁盘文件中表示数据库"></a>在磁盘文件中表示数据库</h3><h4 id="File-Storage"><a href="#File-Storage" class="headerlink" title="File Storage"></a>File Storage</h4><p>DBMS 通常将自己的所有数据作为一个或多个文件存储在磁盘中，而 OS 只当它们是普通文件，并不知道如何解读这些文件。</p>
+<ol>
+<li>Storage Manager：存储管理器负责维护数据库文件，为读写操作安排合适的调度，从而改善页面的时间和空间局部性</li>
+<li>Database Pages：一个页是固定大小的数据块，每个 page 内部可能存储着 tuples、meta-data、indexes 以及 logs 等等，大多数 DBMS 不会把不同类型数据存储在同一个 page 上。每个 page 带着一个唯一的 id，DBMS 使用一个 indirection layer 将 page id 与数据实际存储的物理位置关联起来。</li>
+<li>Database Heap：有几种方法可以找到 DBMS 想要的页面在磁盘和堆文件中的位置，heap 就是其中一种方式。堆文件是页面的无序集合，以随机顺序存储元组，也就是说我们保存的数据无须按照我们插入时的顺序进行保存。（Linked List 和 Page Directory）。</li>
+</ol>
+<h4 id="Page-Layout"><a href="#Page-Layout" class="headerlink" title="Page Layout"></a>Page Layout</h4><img src="/2023/03/14/CMU15445-Lecture/page_layout.jpg" class="" title="page_layout">
+
+<p>每个 page 被分为两个部分：header 和 data。</p>
+<p>header 中通常包含以下信息：</p>
+<ul>
+<li>Page Size</li>
+<li>Checksum</li>
+<li>DBMS Version</li>
+<li>Transaction Visibility</li>
+<li>Compression Information</li>
+</ul>
+<p>data 中存储真正的数据，包含数据本身和数据的操作日志：Tuple-oriented 和 Log-structured</p>
+<ol>
+<li><p>Tuple-oriented：</p>
+<ul>
+<li><p>Strawman Idea：在 header 中记录 tuple 的个数，然后不断的往下 append 即可。这种方法有两种明显问题，（1）一旦出现删除操作，每次插入就需要遍历一遍，寻找空位，否则就会出现碎片；（2）无法处理变长的数据记录（tuple）</p>
+  <img src="/2023/03/14/CMU15445-Lecture/Strawman.jpg" class="" title="Strawman">
+</li>
+<li><p>Slotted Pages</p>
+  <img src="/2023/03/14/CMU15445-Lecture/slot_page.jpg" class="" title="slot_page"></li>
+</ul>
+</li>
+<li><p>Log-structured：KV 数据库中好用，因为 KV 数据库中每个键只有一个值，因此只需从日志栈顶往下找第一个 update 就行了，而关系数据库有多个字段，只找到一个 update 可能是不够的。</p>
+</li>
+</ol>
+<h4 id="Tuple-Layout"><a href="#Tuple-Layout" class="headerlink" title="Tuple Layout"></a>Tuple Layout</h4><p>tuple-oriented 中的数据本身也有别的元信息，比如：</p>
+<ul>
+<li>Visibility information for the DBMS’s concurrency control protocol (i.e., information about which transaction created&#x2F;modified that tuple).</li>
+<li>Bit Map for NULL values. </li>
+<li>Note that the DBMS does not need to store meta-data about the schema of the database here.</li>
+</ul>
+<p>tuple data 中的属性通常按照创建表时指定的顺序存储。</p>
+<img src="/2023/03/14/CMU15445-Lecture/tuple_data.jpg" class="" title="tuple_data">
+
+<p>数据库中的每个元组都分配有一个唯一标识符，最常见的是 <code>page id + (offset or slot)</code>，DBMS 可以创建一个 map，将不同的 tuple 映射到 <code>page id + (offset or slot)</code>。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ol>
+<li>database is organized in pages;</li>
+<li>different ways to track pages：Heap File Organization…;</li>
+<li>different ways to store pages：Linked List 和 Page Directory;</li>
+<li>different ways to store tuples：Strawman 和 slotted;</li>
+</ol>
+<h2 id="Lec4-Database-Storage-2"><a href="#Lec4-Database-Storage-2" class="headerlink" title="Lec4 Database Storage 2"></a>Lec4 Database Storage 2</h2><h3 id="How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><a href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk" class="headerlink" title="How the DBMS manages its memory and moves data back-and-forth from disk."></a>How the DBMS manages its memory and moves data back-and-forth from disk.</h3><h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/notes/">官方笔记</a></p>
 <p><a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/relational-data-model">公开课笔记</a></p>
 
     </div>
@@ -402,7 +468,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.3.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec3-Database-Storage-1"><span class="nav-number">1.3.</span> <span class="nav-text">Lec3 Database Storage 1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Disk-Manager"><span class="nav-number">1.3.1.</span> <span class="nav-text">Disk Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%AD%E8%A1%A8%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.3.2.</span> <span class="nav-text">在磁盘文件中表示数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#File-Storage"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">File Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Page-Layout"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Page Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Layout"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Tuple Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec4-Database-Storage-2"><span class="nav-number">1.4.</span> <span class="nav-text">Lec4 Database Storage 2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><span class="nav-number">1.4.1.</span> <span class="nav-text">How the DBMS manages its memory and moves data back-and-forth from disk.</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.5.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -466,13 +532,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">24k</span>
+    <span title="Symbols count total">26k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">41 mins.</span>
+    <span title="Reading time total">44 mins.</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
