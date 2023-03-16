@@ -34,7 +34,7 @@
 <meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/slot_page.jpg">
 <meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/tuple_data.jpg">
 <meta property="article:published_time" content="2023-03-14T12:13:46.000Z">
-<meta property="article:modified_time" content="2023-03-16T09:24:22.311Z">
+<meta property="article:modified_time" content="2023-03-16T12:07:59.446Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="CMU15445">
 <meta property="article:tag" content="公开课">
@@ -230,7 +230,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-03-16 17:24:22" itemprop="dateModified" datetime="2023-03-16T17:24:22+08:00">2023-03-16</time>
+                <time title="Modified: 2023-03-16 20:07:59" itemprop="dateModified" datetime="2023-03-16T20:07:59+08:00">2023-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -255,14 +255,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>3.6k</span>
+              <span>5k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>6 mins.</span>
+              <span>8 mins.</span>
             </span>
             <div class="post-description">CMU15445-Lecture</div>
 
@@ -391,10 +391,58 @@
 <li>database is organized in pages;</li>
 <li>different ways to track pages：Heap File Organization…;</li>
 <li>different ways to store pages：Linked List 和 Page Directory;</li>
-<li>different ways to store tuples：Strawman 和 slotted;</li>
-<li>chose right storage model for the ：SLAP（column store） 和 SLTP（row store）；</li>
+<li>different ways to store tuples：Strawman，slotted 和 Log-structured;</li>
 </ol>
-<h2 id="Lec5-Database-Storage-2"><a href="#Lec5-Database-Storage-2" class="headerlink" title="Lec5 Database Storage 2"></a>Lec5 Database Storage 2</h2><h3 id="How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><a href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk" class="headerlink" title="How the DBMS manages its memory and moves data back-and-forth from disk."></a>How the DBMS manages its memory and moves data back-and-forth from disk.</h3><h3 id=""><a href="#" class="headerlink" title=""></a></h3><h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/notes/">官方笔记</a></p>
+<h2 id="Lec5-Storage-Models-amp-Compression"><a href="#Lec5-Storage-Models-amp-Compression" class="headerlink" title="Lec5 Storage Models &amp; Compression"></a>Lec5 Storage Models &amp; Compression</h2><h3 id="Database-Workload"><a href="#Database-Workload" class="headerlink" title="Database Workload"></a>Database Workload</h3><ol>
+<li>OLTP：Online Transaction Processing，运行速度快、运行时间短、对单个实体进行简单查询。OLTP 工作负载通常会处理更多的写入操作。</li>
+<li>OLAP：Online Analytical Processing，长时间运行、复杂查询、读取数据库中的大部分数据。在 OLAP 工作负载中，数据库系统通过分析大量现有数据，并期望从中获得结论。</li>
+<li>HTAP：Hybrid Transaction + Analytical Processing，尝试在同一个数据库上同时执行 OLTP 和 OLAP 的组合。</li>
+</ol>
+
+
+<h3 id="Storage-Models"><a href="#Storage-Models" class="headerlink" title="Storage Models"></a>Storage Models</h3><h4 id="N-Ary-Storage-Model-NSM"><a href="#N-Ary-Storage-Model-NSM" class="headerlink" title="N-Ary Storage Model (NSM)"></a>N-Ary Storage Model (NSM)</h4><p>将单个元组的所有属性连续存储在单个页中，这种方法非常适合 OLTP 工作负载，其中请求插入量大且事务倾向于操作单个实体。这是理想的，因为只需要一次读取就可以获取单个元组的所有属性。</p>
+<ol>
+<li>优点<ul>
+<li>快速插入、更新和删除。</li>
+<li>适用于需要整个元组的查询。</li>
+</ul>
+</li>
+<li>缺点：不适合检索表的大部分元组，或者只需要查找小部分的属性。</li>
+</ol>
+<h4 id="Decomposition-Storage-Model-DSM"><a href="#Decomposition-Storage-Model-DSM" class="headerlink" title="Decomposition Storage Model (DSM)"></a>Decomposition Storage Model (DSM)</h4><p>将所有元组的单个属性连续地存储在一个 page 中，这种存储方式特别适用于 OLAP 场景。</p>
+<ol>
+<li>优点<ul>
+<li>减少了浪费的 I&#x2F;O 量，因为 DBMS 只读取该查询所需的数据。</li>
+<li>更好的查询处理和数据压缩支持。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>由于元组拆分&#x2F;拼接，点查询、插入、更新和删除速度较慢。</li>
+<li>引入新问题：如何跟踪每个元组的不同属性？（1）Fixed-length Offsets：每个属性都是定长的，直接靠 offset 来跟踪（常用），但是不灵活；（2）Embedded Tuple Ids：在每个属性前面都加上 tupleID，但是需要额外的存储开销。</li>
+</ul>
+</li>
+</ol>
+<h3 id="Database-Compression"><a href="#Database-Compression" class="headerlink" title="Database Compression"></a>Database Compression</h3><p>压缩对于基于磁盘的 DBMS 来说非常重要，因为磁盘 I&#x2F;O 几乎总是主要的瓶颈；DBMS 可以通过压缩页面以提高每个 I&#x2F;O 操作能够移动的数据有效量，尤其是在只读分析工作负载中。</p>
+<p>如果数据集是完全随机的，那么将没有办法进行压缩。但是，真实世界中的数据集往往存在 key insight，比如：</p>
+<ol>
+<li>数据集往往具有高度偏斜的属性值分布（例如，齐夫分布）</li>
+<li>同一元组的属性之间具有高度相关性（例如，邮政编码和城市，订购日期和发货日期）。</li>
+</ol>
+<p>基于此，我们希望数据库压缩方案具有如下性质：</p>
+<ol>
+<li>必须产生固定长度的值。唯一的例外是存储在单独池中的变长数据，这是因为 DBMS 应该遵循字对齐并能够使用偏移量访问数据。</li>
+<li>允许 DBMS 在查询执行期间尽可能长时间地推迟解压缩（延迟实现）。</li>
+<li>必须是无损方案，因为人们不喜欢丢失数据。任何一种有损压缩都必须在应用程序层级执行。</li>
+</ol>
+<p>在向 DBMS 添加压缩功能之前，我们需要确定要压缩的数据类型，这决定了压缩方案是否可用。压缩粒度有四个级别：</p>
+<ol>
+<li>块级：压缩一个块，这个块中的所有元组隶属于同一张表。</li>
+<li>元组级别：压缩整个元组的内容（仅限 NSM）。</li>
+<li>属性级别：在一个元组中压缩单个属性值。可以针对同一个元组的多个属性。</li>
+<li>列级：为多个元组压缩一个或多个属性值（仅限 DSM）。这允许更复杂的压缩方案。</li>
+</ol>
+<h3 id="Naive-Compression"><a href="#Naive-Compression" class="headerlink" title="Naive Compression"></a>Naive Compression</h3><h3 id="Columnar-Compression"><a href="#Columnar-Compression" class="headerlink" title="Columnar Compression"></a>Columnar Compression</h3><h2 id="Lec6"><a href="#Lec6" class="headerlink" title="Lec6"></a>Lec6</h2><h3 id="How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><a href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk" class="headerlink" title="How the DBMS manages its memory and moves data back-and-forth from disk."></a>How the DBMS manages its memory and moves data back-and-forth from disk.</h3><h3 id=""><a href="#" class="headerlink" title=""></a></h3><p>chose right storage model for the ：SLAP（column store） 和 SLTP（row store）；</p>
+<h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/notes/">官方笔记</a></p>
 <p><a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/relational-data-model">公开课笔记</a></p>
 
     </div>
@@ -481,7 +529,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec3-amp-4-Database-Storage"><span class="nav-number">1.3.</span> <span class="nav-text">Lec3&amp;4 Database Storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Disk-Manager"><span class="nav-number">1.3.1.</span> <span class="nav-text">Disk Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%AD%E8%A1%A8%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.3.2.</span> <span class="nav-text">在磁盘文件中表示数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#File-Storage"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">File Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Page-Layout"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Page Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Layout"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Tuple Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Storage"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">Tuple Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec5-Database-Storage-2"><span class="nav-number">1.4.</span> <span class="nav-text">Lec5 Database Storage 2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><span class="nav-number">1.4.1.</span> <span class="nav-text">How the DBMS manages its memory and moves data back-and-forth from disk.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-number">1.4.2.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.5.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec3-amp-4-Database-Storage"><span class="nav-number">1.3.</span> <span class="nav-text">Lec3&amp;4 Database Storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Disk-Manager"><span class="nav-number">1.3.1.</span> <span class="nav-text">Disk Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%AD%E8%A1%A8%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.3.2.</span> <span class="nav-text">在磁盘文件中表示数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#File-Storage"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">File Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Page-Layout"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Page Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Layout"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Tuple Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Storage"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">Tuple Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec5-Storage-Models-amp-Compression"><span class="nav-number">1.4.</span> <span class="nav-text">Lec5 Storage Models &amp; Compression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Workload"><span class="nav-number">1.4.1.</span> <span class="nav-text">Database Workload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Storage-Models"><span class="nav-number">1.4.2.</span> <span class="nav-text">Storage Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#N-Ary-Storage-Model-NSM"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">N-Ary Storage Model (NSM)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Decomposition-Storage-Model-DSM"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">Decomposition Storage Model (DSM)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Compression"><span class="nav-number">1.4.3.</span> <span class="nav-text">Database Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Naive-Compression"><span class="nav-number">1.4.4.</span> <span class="nav-text">Naive Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Columnar-Compression"><span class="nav-number">1.4.5.</span> <span class="nav-text">Columnar Compression</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec6"><span class="nav-number">1.5.</span> <span class="nav-text">Lec6</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><span class="nav-number">1.5.1.</span> <span class="nav-text">How the DBMS manages its memory and moves data back-and-forth from disk.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-number">1.5.2.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.6.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -545,13 +593,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">27k</span>
+    <span title="Symbols count total">28k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">45 mins.</span>
+    <span title="Reading time total">47 mins.</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
