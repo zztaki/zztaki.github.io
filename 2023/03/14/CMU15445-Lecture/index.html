@@ -33,8 +33,10 @@
 <meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/Strawman.jpg">
 <meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/slot_page.jpg">
 <meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/tuple_data.jpg">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/data_move.jpg">
+<meta property="og:image" content="http://example.com/2023/03/14/CMU15445-Lecture/lock_latch.png">
 <meta property="article:published_time" content="2023-03-14T12:13:46.000Z">
-<meta property="article:modified_time" content="2023-03-16T12:07:59.446Z">
+<meta property="article:modified_time" content="2023-03-18T13:46:25.033Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="CMU15445">
 <meta property="article:tag" content="公开课">
@@ -230,7 +232,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-03-16 20:07:59" itemprop="dateModified" datetime="2023-03-16T20:07:59+08:00">2023-03-16</time>
+                <time title="Modified: 2023-03-18 21:46:25" itemprop="dateModified" datetime="2023-03-18T21:46:25+08:00">2023-03-18</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -255,14 +257,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>5k</span>
+              <span>9.6k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>8 mins.</span>
+              <span>16 mins.</span>
             </span>
             <div class="post-description">CMU15445-Lecture</div>
 
@@ -422,6 +424,7 @@
 </ul>
 </li>
 </ol>
+<p><strong>chose right storage model for the ：OLAP（column store） 和 OLTP（row store）。</strong></p>
 <h3 id="Database-Compression"><a href="#Database-Compression" class="headerlink" title="Database Compression"></a>Database Compression</h3><p>压缩对于基于磁盘的 DBMS 来说非常重要，因为磁盘 I&#x2F;O 几乎总是主要的瓶颈；DBMS 可以通过压缩页面以提高每个 I&#x2F;O 操作能够移动的数据有效量，尤其是在只读分析工作负载中。</p>
 <p>如果数据集是完全随机的，那么将没有办法进行压缩。但是，真实世界中的数据集往往存在 key insight，比如：</p>
 <ol>
@@ -441,7 +444,92 @@
 <li>属性级别：在一个元组中压缩单个属性值。可以针对同一个元组的多个属性。</li>
 <li>列级：为多个元组压缩一个或多个属性值（仅限 DSM）。这允许更复杂的压缩方案。</li>
 </ol>
-<h3 id="Naive-Compression"><a href="#Naive-Compression" class="headerlink" title="Naive Compression"></a>Naive Compression</h3><h3 id="Columnar-Compression"><a href="#Columnar-Compression" class="headerlink" title="Columnar Compression"></a>Columnar Compression</h3><h2 id="Lec6"><a href="#Lec6" class="headerlink" title="Lec6"></a>Lec6</h2><h3 id="How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><a href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk" class="headerlink" title="How the DBMS manages its memory and moves data back-and-forth from disk."></a>How the DBMS manages its memory and moves data back-and-forth from disk.</h3><h3 id=""><a href="#" class="headerlink" title=""></a></h3><p>chose right storage model for the ：SLAP（column store） 和 SLTP（row store）；</p>
+<h3 id="Naive-Compression"><a href="#Naive-Compression" class="headerlink" title="Naive Compression"></a>Naive Compression</h3><p>DBMS 使用通用算法（例如 gzip、LZO、LZ4、Snappy、Brotli、Oracle OZIP，Zstd）。尽管 DBMS 可以使用多种压缩算法，但工程师经常选择具有较低压缩率的压缩算法以换取更快的压缩&#x2F;解压缩速度。</p>
+<p>MySQL InnoDB 中有一个使用简单压缩的示例。DBMS 压缩磁盘页、往里面填充 2 的幂次方 KB 并将它们存储到缓冲池中。然而，每次 DBMS 尝试读取数据时，缓冲池中的压缩数据需要解压。</p>
+<p>由于访问数据需要对压缩数据进行解压，这就限制了压缩机制的范围。如果目标是将整个表压缩成一个巨大的块，使用简单的压缩方案<br>这是不可能的，因为每次访问都需要压缩&#x2F;解压缩整个表。因此，对于 MySQL，由于压缩范围有限，它将表分成更小的块。</p>
+<p>另一个问题是这些简单的方案也没有考虑数据的高级特征或语义。这些算法既不关心数据的结构，也不关心查询计划如何访问数据。因此，这放弃了利用 <code>late materialization</code> 的机会，因为这样的话 DBMS 无法知道什么时候可以延迟数据的解压缩。</p>
+<h3 id="Columnar-Compression"><a href="#Columnar-Compression" class="headerlink" title="Columnar Compression"></a>Columnar Compression</h3><h4 id="Run-length-Encoding"><a href="#Run-length-Encoding" class="headerlink" title="Run-length Encoding"></a>Run-length Encoding</h4><h4 id="Bit-Packing-Encoding"><a href="#Bit-Packing-Encoding" class="headerlink" title="Bit-Packing Encoding"></a>Bit-Packing Encoding</h4><h4 id="Bitmap-Encoding"><a href="#Bitmap-Encoding" class="headerlink" title="Bitmap Encoding"></a>Bitmap Encoding</h4><h4 id="Delta-Encoding"><a href="#Delta-Encoding" class="headerlink" title="Delta Encoding"></a>Delta Encoding</h4><h4 id="Incremental-Encoding"><a href="#Incremental-Encoding" class="headerlink" title="Incremental Encoding"></a>Incremental Encoding</h4><h4 id="Dictionary-Encoding"><a href="#Dictionary-Encoding" class="headerlink" title="Dictionary Encoding"></a>Dictionary Encoding</h4><h2 id="Lec6-Memory-Management：Buffer-Pools"><a href="#Lec6-Memory-Management：Buffer-Pools" class="headerlink" title="Lec6 Memory Management：Buffer Pools"></a>Lec6 Memory Management：Buffer Pools</h2><p>DBMS 的磁盘管理模块主要解决两个问题，一个是在 Lec3 &amp; Lec4 中提到的<strong>如何使用磁盘文件来表示数据库的数据（元数据、索引、数据表等）</strong>，另一个就是本节将介绍的<strong>如何管理数据在内存与磁盘之间的移动</strong>。</p>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>DBMS 负责管理其内存并从磁盘来回移动数据。因为，对于大多数情况，数据不能直接在磁盘上操作，任何数据库都必须能够高效地移动以文件形式表示在磁盘上的数据，将它们装入内存，以便可以使用。</p>
+<p>DBMS 面临的问题是将移动数据的延迟降到最低。理想情况下，延迟应该是0，也就是用户使用数据之前，数据已经在内存中了（预取）。而执行引擎不必考虑数据是如何被预取到内存的（内存管理器考虑）。</p>
+<img src="/2023/03/14/CMU15445-Lecture/data_move.jpg" class="" title="data_move">
+
+<p>考虑这个问题的另一种方法是划分为空间和时间控制。</p>
+<ol>
+<li>空间控制策略通过决定将 pages 写到磁盘的哪个位置，使得常常一起使用的 pages 在磁盘的物理距离更近，从而提高 I&#x2F;O 效率。</li>
+<li>时间控制策略通过决定何时将 pages 读入内存，写回磁盘，使得磁盘读写的次数最少，从而提高 I&#x2F;O 效率。</li>
+</ol>
+<h3 id="Locks-vs-Latches"><a href="#Locks-vs-Latches" class="headerlink" title="Locks vs. Latches"></a>Locks vs. Latches</h3><p>在讨论 DBMS 如何保护其内部元素时，我们需要分清 <code>lock</code> 和 <code>latch</code>。</p>
+<p><strong>lock</strong>：lock 是一种更高层级别的逻辑原语，用于保护一个事务中数据库的内容（例如，元组、表、数据库）。事务将在其整个持续时间内持有锁。数据库系统可以向用户公开运行查询时持有哪些 lock。此外，lock 需要能够支持回滚修改。</p>
+<p><strong>latch</strong>：latch 是一种低层级的保护原语，DBMS 在其内部数据结构（例如哈希表、内存区域）中使用以保护临界区。latch 仅在执行操作期间保持。latch 不需要支持回滚修改。</p>
+<img src="/2023/03/14/CMU15445-Lecture/lock_latch.png" class="" title="lock_latch">
+
+<h3 id="Buffer-Pool"><a href="#Buffer-Pool" class="headerlink" title="Buffer Pool"></a>Buffer Pool</h3><p>缓冲池本质上是数据库内部分配的一个大内存区域，用于存储从磁盘获取的页面。</p>
+<p>DBMS 启动时会从 OS 申请一片内存区域，即 Buffer Pool，并将这块区域划分成大小相同的 pages，为了与 disk pages 区别，通常称为 frames。当用户请求一个页面时，DBMS 会先查询缓冲池，如果没有找到页面，则 DBMS 会进一步请求原始的 disk page ，并将该 disk page 复制到 Buffer Pool 的一个 frame 中。</p>
+<h4 id="Buffer-Pool-元数据"><a href="#Buffer-Pool-元数据" class="headerlink" title="Buffer Pool 元数据"></a>Buffer Pool 元数据</h4><p>缓冲池必须维护一定的元数据才能被高效且正确地使用。</p>
+<p>首先，<strong>page table</strong> 是一个内存中的哈希表，用于跟踪当前内存中的页面。它将 page id 映射到缓冲池中的帧位置。</p>
+<p>注意：不要将 page table 和 page directory 混淆，page directory 是将 page id 映射到该页在数据库文件中的位置。对页面目录的所有更改都必须记录在磁盘上，以便 DBMS 可以在重启后找到。</p>
+<p>page table 还维护每个页面的附加元数据、dirty flag 和引用计数器。</p>
+<ol>
+<li>dirty flag 由线程在修改页面时设置。这向存储管理器表明该页面已被修改，必须写回磁盘以持久化。</li>
+<li>引用计数器跟踪当前访问该页面（读取或修改它）的线程数。线程必须在访问页面之前递增计数器，如果页面的计数大于零，则<br> 不允许存储管理器从内存中逐出该页面。</li>
+</ol>
+<h4 id="Memory-Allocation-Policies"><a href="#Memory-Allocation-Policies" class="headerlink" title="Memory Allocation Policies"></a>Memory Allocation Policies</h4><p>缓冲池中的缓存有两种分配策略。</p>
+<p>全局策略：考虑所有活动事务以找到分配内存的最佳决策，以使正在执行的整个工作负载受益（比如最小化全局的磁盘读写次数，类似缓存分配&#x2F;分区策略中的 UCP，相对于动态地为缓冲池分区了）。</p>
+<p>局部策略：它做出的决策将使单个查询或事务运行得更快，即使这对整个工作负载不利。局部策略将帧分配给特定事务而不考虑正在并发进行的其它事务行为（first-in-first-out，对每个事务 ”屡求屡给“，也就相当于没有对缓冲池分区）。</p>
+<p>大多数系统结合使用全局视图和局部视图。</p>
+<h3 id="Buffer-Pool-优化"><a href="#Buffer-Pool-优化" class="headerlink" title="Buffer Pool 优化"></a>Buffer Pool 优化</h3><h4 id="Multiple-Buffer-Pools"><a href="#Multiple-Buffer-Pools" class="headerlink" title="Multiple Buffer Pools"></a>Multiple Buffer Pools</h4><p>DBMS 可以拥有多个缓冲池，比如为每个数据库设置一个缓冲池，为每种页面类型（data page、directory page…）设置一个缓冲池，从而每个缓冲池可以为特定的数据库、页面类型设置局部的缓存策略。与此同时，在处理并发事务时，也可以减少 latch 的争用。</p>
+<h4 id="Prefetching"><a href="#Prefetching" class="headerlink" title="Prefetching"></a>Prefetching</h4><p>缓存预取策略。比如在全局扫描查询中，可以预先将该表接下来将扫描的 page 预取到缓冲池中；将 B+ 树的根节点预取到缓冲池中。</p>
+<h4 id="Scan-Sharing-Synchronized-Scans"><a href="#Scan-Sharing-Synchronized-Scans" class="headerlink" title="Scan Sharing (Synchronized Scans)"></a>Scan Sharing (Synchronized Scans)</h4><p>Scan Sharing 技术主要用在多个查询存在数据共用的情况。当两个查询 A, B 先后发生，B 发现自己有一部分数据与 A 共用，于是先共用 A 的 cursor，等 A 扫完后，再扫描自己还需要的其它数据。</p>
+<h4 id="Buffer-Pool-Bypass"><a href="#Buffer-Pool-Bypass" class="headerlink" title="Buffer Pool Bypass"></a>Buffer Pool Bypass</h4><p>缓存准入策略。全表扫描的 page 可能无需加入缓冲池中，因为它们的时间局部性较差，加入缓存可能会驱逐缓冲池中其它一些局部性较好的页面。因此，DBMS 可能单独分配一块局部内存（Bypass，旁路），在该内存中的写入和处理不影响缓冲池中的其它数据。</p>
+<h3 id="OS-Page-Cache"><a href="#OS-Page-Cache" class="headerlink" title="OS Page Cache"></a>OS Page Cache</h3><p>大部分 disk operations 都是通过系统调用完成，通常系统会维护自身的数据缓存，这会导致一份数据分别在操作系统和 DMBS 中被缓存两次。大多数 DBMS 都会使用 (O_DIRECT) 来告诉 OS 不要缓存这些数据，除了 Postgres。</p>
+<h3 id="Buffer-Replacement-Policies"><a href="#Buffer-Replacement-Policies" class="headerlink" title="Buffer Replacement Policies"></a>Buffer Replacement Policies</h3><p>缓存替换策略。</p>
+<h4 id="localization"><a href="#localization" class="headerlink" title="localization"></a>localization</h4><p>每次事务查询只能驱逐有限的缓冲池页面，或者是拥有一份自己独享的缓冲池区域（缓存分区）。</p>
+<h4 id="priority-hints"><a href="#priority-hints" class="headerlink" title="priority hints"></a>priority hints</h4><p>允许事务告知缓冲池哪些页面非常重要，比如根据页面的具体内容，或者是类似于 B+ 树的根节点。</p>
+<h4 id="Dirty-Pages"><a href="#Dirty-Pages" class="headerlink" title="Dirty Pages"></a>Dirty Pages</h4><p>驱逐一个 dirty page 的成本要高于驱逐一般 page，因为前者需要写 disk，后者可以直接 drop，因此 DBMS 在驱逐缓冲池中的 page 时，需要权衡页面局部性和写回的开销。</p>
+<p>除了直接在 Replacement Policies 中考虑，有的 DBMS 使用 Background Writing 的方式来处理。它们定期扫描 page table，发现 dirty page 就写入 disk，在 Replacement 发生时就无需考虑脏数据带来的问题。</p>
+<h3 id="Other-Memory-Pools"><a href="#Other-Memory-Pools" class="headerlink" title="Other Memory Pools"></a>Other Memory Pools</h3><p>除了存储 tuples 和 indexes，DBMS 还需要 Memory Pools 来存储其它数据，如：</p>
+<ul>
+<li>Sorting + Join Buffers</li>
+<li>Query Caches</li>
+<li>Maintenance Buffers </li>
+<li>Log Buffers</li>
+<li>Dictionary Caches</li>
+</ul>
+<h2 id="Lec7-Hash-Tabels"><a href="#Lec7-Hash-Tabels" class="headerlink" title="Lec7 Hash Tabels"></a>Lec7 Hash Tabels</h2><h3 id="Data-Structures"><a href="#Data-Structures" class="headerlink" title="Data Structures"></a>Data Structures</h3><p>DBMS 为系统内部得不同部分设置了相应的数据结构，比如：</p>
+<ol>
+<li><strong>Internal Meta-Data</strong>：用于跟踪数据库和系统状态的数据，比如 page tables，page directories；</li>
+<li><strong>Core Data Storage</strong>：数据库中元组的基本数据结构；</li>
+<li><strong>Temporary Data Structures</strong>：DBMS 可以在处理查询的过程中临时构建数据结构从而加快执行速度（例如，用于连接的哈希表）；</li>
+<li><strong>Table Indices</strong>：辅助数据结构，可以用来更容易地找到特定的元组。</li>
+</ol>
+<p>在为 DBMS 实现数据结构时，需要考虑两个主要的设计问题：</p>
+<ol>
+<li>数据组织：我们需要弄清楚内存如何布局，以及支持高效访问，里面存放什么信息。</li>
+<li>并发性：我们还需要考虑如何让多个线程访问数据结构，而不会引起问题。</li>
+</ol>
+<h3 id="Hash-Table"><a href="#Hash-Table" class="headerlink" title="Hash Table"></a>Hash Table</h3><p>哈希表实现了 associative array ADT（Abstract Data Type），将键映射到值。</p>
+<p>Hash Table 主要分为两部分：</p>
+<ol>
+<li><p>Hash Function：</p>
+<ul>
+<li>How to map a large key space into a smaller domain</li>
+<li>Trade-off between <strong>being fast</strong> vs <strong>collision rate</strong></li>
+</ul>
+</li>
+<li><p>Hashing Scheme：</p>
+<ul>
+<li>How to handle key collisions after hashing</li>
+<li>Trade-off between <strong>allocating a large hash table</strong> vs <strong>additional instructions to find&#x2F;insert keys</strong></li>
+</ul>
+</li>
+</ol>
+<h3 id="Hash-Functions"><a href="#Hash-Functions" class="headerlink" title="Hash Functions"></a>Hash Functions</h3><p>由于 DBMS 内使用的 Hash Function  并不会暴露在外，因此没必要使用加密哈希函数（例如，SHA-256），我们希望它速度越快，碰撞率越低越好。</p>
+<p>当前最先进的哈希函数是 Facebook XXHash3。</p>
+<h3 id="Static-Hashing-Schemes"><a href="#Static-Hashing-Schemes" class="headerlink" title="Static Hashing Schemes"></a>Static Hashing Schemes</h3><p>静态哈希方案中的哈希表大小固定，这意味着如果哈希表的存储空间用完，就得重建一个更大的哈希表，这样的代价非常昂贵。通常，新哈希表的大小是原始哈希表大小的 2 倍。同时，为了减少发生碰撞时比较的次数，哈希表的槽数会设置成预期元素书的 2 倍，但可惜的是，（1）元素的数量很难提前知道；（2）不同数据通过哈希函数计算得到的键可能会相等；（3）没有一个完美的哈希函数。</p>
+<h4 id="Linear-Probe-Hashing"><a href="#Linear-Probe-Hashing" class="headerlink" title="Linear Probe Hashing"></a>Linear Probe Hashing</h4><h4 id="Robin-Hood-Hashing"><a href="#Robin-Hood-Hashing" class="headerlink" title="Robin Hood Hashing"></a>Robin Hood Hashing</h4><h4 id="Cuckoo-Hashing"><a href="#Cuckoo-Hashing" class="headerlink" title="Cuckoo Hashing"></a>Cuckoo Hashing</h4><h3 id="Dynamic-Hashing-Schemes"><a href="#Dynamic-Hashing-Schemes" class="headerlink" title="Dynamic Hashing Schemes"></a>Dynamic Hashing Schemes</h3><p>动态哈希方案可以按需扩容缩容。</p>
+<h4 id="Chained-Hashing"><a href="#Chained-Hashing" class="headerlink" title="Chained Hashing"></a>Chained Hashing</h4><p>和 Linear Probe Hashing 有点像，只不过 Linear Probe Hashing 中的哈希槽大小是固定的，而 Chained Hashing 的哈希槽大小是可变的，当新插入数据时，创建一个指针指向新数据，并将指针加入到哈希槽的末尾。</p>
+<h4 id="Extendible-Hashing"><a href="#Extendible-Hashing" class="headerlink" title="Extendible Hashing"></a>Extendible Hashing</h4><p>是 project 1 将要实现的一部分，它的基本思想是哈希值的位数慢慢用，一开始数据少时，只是用哈希值的末尾几位，当数据逐渐增多时，哈希冲突越来越剧烈，就逐渐开放使用更多的哈希值位数，同时分配更多的哈希桶来存储数据，进行 rehash 操作，达到扩容的目的。</p>
+<h4 id="Linear-Hashing"><a href="#Linear-Hashing" class="headerlink" title="Linear Hashing"></a>Linear Hashing</h4><h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>哈希表提供了 O(1) 的访问效率，因此被大量地应用于 DBMS 的内部实现中。即便如此，她并不适合作为 table index 的数据结构，而 table index 的首选时下节将介绍的 B+ Tree（aka “The Greatest Data Structure of All Time”）。</p>
 <h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/notes/">官方笔记</a></p>
 <p><a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/relational-data-model">公开课笔记</a></p>
 
@@ -529,7 +617,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec3-amp-4-Database-Storage"><span class="nav-number">1.3.</span> <span class="nav-text">Lec3&amp;4 Database Storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Disk-Manager"><span class="nav-number">1.3.1.</span> <span class="nav-text">Disk Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%AD%E8%A1%A8%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.3.2.</span> <span class="nav-text">在磁盘文件中表示数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#File-Storage"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">File Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Page-Layout"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Page Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Layout"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Tuple Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Storage"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">Tuple Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec5-Storage-Models-amp-Compression"><span class="nav-number">1.4.</span> <span class="nav-text">Lec5 Storage Models &amp; Compression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Workload"><span class="nav-number">1.4.1.</span> <span class="nav-text">Database Workload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Storage-Models"><span class="nav-number">1.4.2.</span> <span class="nav-text">Storage Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#N-Ary-Storage-Model-NSM"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">N-Ary Storage Model (NSM)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Decomposition-Storage-Model-DSM"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">Decomposition Storage Model (DSM)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Compression"><span class="nav-number">1.4.3.</span> <span class="nav-text">Database Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Naive-Compression"><span class="nav-number">1.4.4.</span> <span class="nav-text">Naive Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Columnar-Compression"><span class="nav-number">1.4.5.</span> <span class="nav-text">Columnar Compression</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec6"><span class="nav-number">1.5.</span> <span class="nav-text">Lec6</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#How-the-DBMS-manages-its-memory-and-moves-data-back-and-forth-from-disk"><span class="nav-number">1.5.1.</span> <span class="nav-text">How the DBMS manages its memory and moves data back-and-forth from disk.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-number">1.5.2.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.6.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CMU15445"><span class="nav-number">1.</span> <span class="nav-text">CMU15445</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec1-%E5%85%B3%E7%B3%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Lec1 关系模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec2-SQL-%E8%BF%9B%E9%98%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Lec2 SQL 进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.1.</span> <span class="nav-text">SQL 历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E7%89%B9%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">SQL 特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec3-amp-4-Database-Storage"><span class="nav-number">1.3.</span> <span class="nav-text">Lec3&amp;4 Database Storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Disk-Manager"><span class="nav-number">1.3.1.</span> <span class="nav-text">Disk Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%AD%E8%A1%A8%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.3.2.</span> <span class="nav-text">在磁盘文件中表示数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#File-Storage"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">File Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Page-Layout"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Page Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Layout"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Tuple Layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tuple-Storage"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">Tuple Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec5-Storage-Models-amp-Compression"><span class="nav-number">1.4.</span> <span class="nav-text">Lec5 Storage Models &amp; Compression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Workload"><span class="nav-number">1.4.1.</span> <span class="nav-text">Database Workload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Storage-Models"><span class="nav-number">1.4.2.</span> <span class="nav-text">Storage Models</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#N-Ary-Storage-Model-NSM"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">N-Ary Storage Model (NSM)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Decomposition-Storage-Model-DSM"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">Decomposition Storage Model (DSM)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Compression"><span class="nav-number">1.4.3.</span> <span class="nav-text">Database Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Naive-Compression"><span class="nav-number">1.4.4.</span> <span class="nav-text">Naive Compression</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Columnar-Compression"><span class="nav-number">1.4.5.</span> <span class="nav-text">Columnar Compression</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Run-length-Encoding"><span class="nav-number">1.4.5.1.</span> <span class="nav-text">Run-length Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bit-Packing-Encoding"><span class="nav-number">1.4.5.2.</span> <span class="nav-text">Bit-Packing Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bitmap-Encoding"><span class="nav-number">1.4.5.3.</span> <span class="nav-text">Bitmap Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Delta-Encoding"><span class="nav-number">1.4.5.4.</span> <span class="nav-text">Delta Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Incremental-Encoding"><span class="nav-number">1.4.5.5.</span> <span class="nav-text">Incremental Encoding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Dictionary-Encoding"><span class="nav-number">1.4.5.6.</span> <span class="nav-text">Dictionary Encoding</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec6-Memory-Management%EF%BC%9ABuffer-Pools"><span class="nav-number">1.5.</span> <span class="nav-text">Lec6 Memory Management：Buffer Pools</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.5.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Locks-vs-Latches"><span class="nav-number">1.5.2.</span> <span class="nav-text">Locks vs. Latches</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Buffer-Pool"><span class="nav-number">1.5.3.</span> <span class="nav-text">Buffer Pool</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Buffer-Pool-%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">1.5.3.1.</span> <span class="nav-text">Buffer Pool 元数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Memory-Allocation-Policies"><span class="nav-number">1.5.3.2.</span> <span class="nav-text">Memory Allocation Policies</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Buffer-Pool-%E4%BC%98%E5%8C%96"><span class="nav-number">1.5.4.</span> <span class="nav-text">Buffer Pool 优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Multiple-Buffer-Pools"><span class="nav-number">1.5.4.1.</span> <span class="nav-text">Multiple Buffer Pools</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Prefetching"><span class="nav-number">1.5.4.2.</span> <span class="nav-text">Prefetching</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Scan-Sharing-Synchronized-Scans"><span class="nav-number">1.5.4.3.</span> <span class="nav-text">Scan Sharing (Synchronized Scans)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Buffer-Pool-Bypass"><span class="nav-number">1.5.4.4.</span> <span class="nav-text">Buffer Pool Bypass</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OS-Page-Cache"><span class="nav-number">1.5.5.</span> <span class="nav-text">OS Page Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Buffer-Replacement-Policies"><span class="nav-number">1.5.6.</span> <span class="nav-text">Buffer Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#localization"><span class="nav-number">1.5.6.1.</span> <span class="nav-text">localization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#priority-hints"><span class="nav-number">1.5.6.2.</span> <span class="nav-text">priority hints</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Dirty-Pages"><span class="nav-number">1.5.6.3.</span> <span class="nav-text">Dirty Pages</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Other-Memory-Pools"><span class="nav-number">1.5.7.</span> <span class="nav-text">Other Memory Pools</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lec7-Hash-Tabels"><span class="nav-number">1.6.</span> <span class="nav-text">Lec7 Hash Tabels</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-Structures"><span class="nav-number">1.6.1.</span> <span class="nav-text">Data Structures</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash-Table"><span class="nav-number">1.6.2.</span> <span class="nav-text">Hash Table</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash-Functions"><span class="nav-number">1.6.3.</span> <span class="nav-text">Hash Functions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Static-Hashing-Schemes"><span class="nav-number">1.6.4.</span> <span class="nav-text">Static Hashing Schemes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Linear-Probe-Hashing"><span class="nav-number">1.6.4.1.</span> <span class="nav-text">Linear Probe Hashing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Robin-Hood-Hashing"><span class="nav-number">1.6.4.2.</span> <span class="nav-text">Robin Hood Hashing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cuckoo-Hashing"><span class="nav-number">1.6.4.3.</span> <span class="nav-text">Cuckoo Hashing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dynamic-Hashing-Schemes"><span class="nav-number">1.6.5.</span> <span class="nav-text">Dynamic Hashing Schemes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Chained-Hashing"><span class="nav-number">1.6.5.1.</span> <span class="nav-text">Chained Hashing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Extendible-Hashing"><span class="nav-number">1.6.5.2.</span> <span class="nav-text">Extendible Hashing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Linear-Hashing"><span class="nav-number">1.6.5.3.</span> <span class="nav-text">Linear Hashing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">1.6.6.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-number">1.7.</span> <span class="nav-text">推荐阅读</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -593,13 +681,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">31k</span>
+    <span title="Symbols count total">36k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">51 mins.</span>
+    <span title="Reading time total">59 mins.</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
