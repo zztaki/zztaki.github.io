@@ -31,7 +31,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2023/04/01/cache_replace_policies/%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.jpg">
 <meta property="article:published_time" content="2023-04-01T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-04-01T09:07:11.759Z">
+<meta property="article:modified_time" content="2023-04-02T06:19:21.317Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta name="twitter:card" content="summary">
@@ -217,10 +217,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-04-01 12:52:57 / Modified: 17:07:11" itemprop="dateCreated datePublished" datetime="2023-04-01T12:52:57+08:00">2023-04-01</time>
+              <time title="Created: 2023-04-01 12:52:57" itemprop="dateCreated datePublished" datetime="2023-04-01T12:52:57+08:00">2023-04-01</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-04-02 14:19:21" itemprop="dateModified" datetime="2023-04-02T14:19:21+08:00">2023-04-02</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -244,14 +250,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.5k</span>
+              <span>2.4k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>2 mins.</span>
+              <span>4 mins.</span>
             </span>
             <div class="post-description">《cache replacement policies》笔记</div>
 
@@ -264,7 +270,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><ol>
+        <h2 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h2><ol>
 <li>本书总结了 CPU 数据缓存的缓存替换策略概况；</li>
 <li>重点讨论算法，因此作者及那个以前的策略分为两大类——粗粒度和细粒度，每类又分为三个子类，以描述解决缓存替换问题的不同方法和每个类别中重要工作的总结；</li>
 <li>探索更多的评价指标，包括不单单局限于缓存缺失率指标、针对多喝设置定制的解决方案、考虑和预取之间的影响、考虑新型内存；</li>
@@ -311,6 +317,38 @@
 <li>允许细粒度策略的每个缓存组动态适应工作负载的变化。</li>
 </ol>
 <img src="/2023/04/01/cache_replace_policies/%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.jpg" class="" title="替换算法分类">
+
+
+
+<h1 id="Coarse-Grained-Replacement-Policies"><a href="#Coarse-Grained-Replacement-Policies" class="headerlink" title="Coarse-Grained Replacement Policies"></a>Coarse-Grained Replacement Policies</h1><p> 每个对象仅和少量替换状态相关，所有新插入对象被统一初始化，然后在缓存命中时进行简单的提升操作。</p>
+<h2 id="Recency-Based-Policies"><a href="#Recency-Based-Policies" class="headerlink" title="Recency-Based Policies"></a>Recency-Based Policies</h2><ol>
+<li>LRU：无法适应搅拌和扫描工作负载；</li>
+<li>LRU变种：<ul>
+<li>MRU：仅能适应搅拌工作负载；难以适应工作负载模式的变化，因为新来的工作集很难被持续缓存；</li>
+<li>EELRU：主要思想是检测工作集大小是否超过缓存大小，当工作集小于缓存容量时，会驱逐 LRU 端对象，当工作集大于缓存容量时，则驱逐距离 MRU 位置长度为 e 的对象；</li>
+<li>Seg-LRU</li>
+<li>LIP：和 MRU 其实一个道理，但它通过改变插入策略而使得 LIP 的驱逐策略和 LRU 一致，这启发我们在设计 LRU 变体算法时，只需要修改插入和提升操作，驱逐操作保持不变即可；</li>
+<li>BIP：以较大概率插入 LRU 端，较低概率插入 MRU 端；</li>
+<li>SRRIP、BRRIP、PDP、GIPPR</li>
+</ul>
+</li>
+</ol>
+<p>可以看到 LRU 家族很多都在考虑适应搅拌工作负载，因为 CPU 缓存容量小于工作集是较易发生的，但这在内存缓存或者 CDN 缓存中似乎很难出现。</p>
+<h2 id="Frequency-Based-Policies"><a href="#Frequency-Based-Policies" class="headerlink" title="Frequency-Based Policies"></a>Frequency-Based Policies</h2><p>基于频率的策略可以一定程度上抵抗扫描工作负载。</p>
+<ol>
+<li>LFU：容易造成缓存污染；</li>
+<li>Frequency-Based Replacement（FBR）：靠近 MRU 端的对象访问频数不会增加，以避免短时间的高频访问拔高对象优先级；</li>
+<li>Least Recently&#x2F;Frequently Used（LRFU）</li>
+</ol>
+<h2 id="Hybrid-Policies"><a href="#Hybrid-Policies" class="headerlink" title="Hybrid Policies"></a>Hybrid Policies</h2><p>混合策略能够适应工作负载的变化。它面临两个挑战：（1）如何准确确定哪个策略是最有利的；（2）以较低的硬件成本管理多个策略。</p>
+<ol>
+<li>ARC</li>
+<li>DIP</li>
+<li>DRRIP</li>
+</ol>
+<h1 id="Fine-Grained-Replacement-Policies"><a href="#Fine-Grained-Replacement-Policies" class="headerlink" title="Fine-Grained Replacement Policies"></a>Fine-Grained Replacement Policies</h1><p>细粒度策略在插入时就会根据不同对象的历史信息进行区分，以决定它们的插入位置。例如，如果对象上一次加入缓存后没有被重用就被驱逐了，当再次请求该对象时，就可以把它插入到较低的位置。</p>
+<p>细粒度策略基于预测插入优先级的指标分为三类：预测重用距离、预测是否被重用、引入的新预测指标。</p>
+<h2 id="Reuse-Distance-Prediction-Policies"><a href="#Reuse-Distance-Prediction-Policies" class="headerlink" title="Reuse Distance Prediction Policies"></a>Reuse Distance Prediction Policies</h2>
     </div>
 
     
@@ -390,7 +428,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">2.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Taxonomy-of-Cache-Replacement-Policies"><span class="nav-number">3.</span> <span class="nav-text">A Taxonomy of Cache Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Coarse-Grained-Policies"><span class="nav-number">3.1.</span> <span class="nav-text">Coarse-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-Grained-Policies"><span class="nav-number">3.2.</span> <span class="nav-text">Fine-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Considerations"><span class="nav-number">3.3.</span> <span class="nav-text">Design Considerations</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number"></span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Taxonomy-of-Cache-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">A Taxonomy of Cache Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Coarse-Grained-Policies"><span class="nav-number">1.</span> <span class="nav-text">Coarse-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-Grained-Policies"><span class="nav-number">2.</span> <span class="nav-text">Fine-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Considerations"><span class="nav-number">3.</span> <span class="nav-text">Design Considerations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Coarse-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Coarse-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Recency-Based-Policies"><span class="nav-number">1.</span> <span class="nav-text">Recency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Frequency-Based-Policies"><span class="nav-number">2.</span> <span class="nav-text">Frequency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hybrid-Policies"><span class="nav-number">3.</span> <span class="nav-text">Hybrid Policies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fine-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Fine-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Reuse-Distance-Prediction-Policies"><span class="nav-number">1.</span> <span class="nav-text">Reuse Distance Prediction Policies</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -454,13 +492,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">45k</span>
+    <span title="Symbols count total">46k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:14</span>
+    <span title="Reading time total">1:16</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
