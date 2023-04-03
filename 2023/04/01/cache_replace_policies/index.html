@@ -30,8 +30,9 @@
 <meta property="og:description" content="《cache replacement policies》笔记">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2023/04/01/cache_replace_policies/%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.jpg">
+<meta property="og:image" content="http://example.com/2023/04/01/cache_replace_policies/hawkeye%E6%97%B6%E9%97%B4%E7%AA%97%E5%8F%A3.jpg">
 <meta property="article:published_time" content="2023-04-01T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-04-02T06:19:21.317Z">
+<meta property="article:modified_time" content="2023-04-03T05:06:52.897Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta name="twitter:card" content="summary">
@@ -225,7 +226,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-04-02 14:19:21" itemprop="dateModified" datetime="2023-04-02T14:19:21+08:00">2023-04-02</time>
+                <time title="Modified: 2023-04-03 13:06:52" itemprop="dateModified" datetime="2023-04-03T13:06:52+08:00">2023-04-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -250,14 +251,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>2.4k</span>
+              <span>5.2k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>4 mins.</span>
+              <span>9 mins.</span>
             </span>
             <div class="post-description">《cache replacement policies》笔记</div>
 
@@ -348,7 +349,60 @@
 </ol>
 <h1 id="Fine-Grained-Replacement-Policies"><a href="#Fine-Grained-Replacement-Policies" class="headerlink" title="Fine-Grained Replacement Policies"></a>Fine-Grained Replacement Policies</h1><p>细粒度策略在插入时就会根据不同对象的历史信息进行区分，以决定它们的插入位置。例如，如果对象上一次加入缓存后没有被重用就被驱逐了，当再次请求该对象时，就可以把它插入到较低的位置。</p>
 <p>细粒度策略基于预测插入优先级的指标分为三类：预测重用距离、预测是否被重用、引入的新预测指标。</p>
-<h2 id="Reuse-Distance-Prediction-Policies"><a href="#Reuse-Distance-Prediction-Policies" class="headerlink" title="Reuse Distance Prediction Policies"></a>Reuse Distance Prediction Policies</h2>
+<h2 id="Reuse-Distance-Prediction-Policies"><a href="#Reuse-Distance-Prediction-Policies" class="headerlink" title="Reuse Distance Prediction Policies"></a>Reuse Distance Prediction Policies</h2><p>重用距离的具体值很难被准确预测，因此，更现实的解决方案是估计重用距离分布或其它聚合重用距离统计。</p>
+<h3 id="Expiration-Based-Dead-Block-Predictors"><a href="#Expiration-Based-Dead-Block-Predictors" class="headerlink" title="Expiration-Based Dead Block Predictors"></a>Expiration-Based Dead Block Predictors</h3><p>许多死块预测器使用过去的实际后向重用距离来估计未来的前向重用距离，并驱逐没有在预期重用距离内被重用的对象；</p>
+<p>还有一些使用过去的实际生命周期预测未来的生命周期，当在预测的两倍生命周期时间内没有被重用，该块就从缓存中淘汰。</p>
+<h3 id="Reuse-Distance-Ordering"><a href="#Reuse-Distance-Ordering" class="headerlink" title="Reuse Distance Ordering"></a>Reuse Distance Ordering</h3><h2 id="Classification-Based-Policies"><a href="#Classification-Based-Policies" class="headerlink" title="Classification-Based Policies"></a>Classification-Based Policies</h2><p>基于分类的策略相比重用距离预测简单一下，接下来会考虑一下设计问题：</p>
+<ol>
+<li>Which caching solution is the policy learning?</li>
+<li>What is the prediction mechanism, and at what granularity are the predictions being made?</li>
+<li>What is the aging mechanism for ensuring that inaccurate predictions are eventually evicted?</li>
+</ol>
+<h3 id="Sampling-Based-Dead-Block-Prediction（SDBP）"><a href="#Sampling-Based-Dead-Block-Prediction（SDBP）" class="headerlink" title="Sampling Based Dead Block Prediction（SDBP）"></a>Sampling Based Dead Block Prediction（SDBP）</h3><p>为降低对所有告诉缓存块维护指令跟踪的成本，引入了基于采样的死块预测器。预测结果为死块的不会被插入缓存（缓存准入）。对于上面的三个问题的回答：</p>
+<ol>
+<li>SDBP 从 LRU 采样器中学习缓存决策；</li>
+<li>在 PC 的粒度上使用 skewed 预测器预测死块；</li>
+<li>预测为缓存友好的一次性访问按照基本的替换策略衰减，预测为缓存不友好的可以重用的对象永远无法得到重用（不太好）。</li>
+</ol>
+<h3 id="Signature-Based-Hit-Prediction（SHIP）"><a href="#Signature-Based-Hit-Prediction（SHIP）" class="headerlink" title="Signature Based Hit Prediction（SHIP）"></a>Signature Based Hit Prediction（SHIP）</h3><p>idea 是重用行为与将对象插入缓存的 PC 值相关，在 memory cache 和 CDN cache 中似乎没有类似相关的参照。</p>
+<h3 id="Hawkeye"><a href="#Hawkeye" class="headerlink" title="Hawkeye"></a>Hawkeye</h3><p><strong>个人感觉参考价值比较高，也带有一点 learning 的想法。</strong></p>
+<ol>
+<li><p>主要目标：避免基于启发式的解决方案（例如LRU）的病态；</p>
+</li>
+<li><p>idea：建立在 Belady 方法之上，因为 Belady 方法作为理论最优方法，它是适应所有工作负载的，但它又必须依靠未来的信息，无法使用在实际生产环境中；</p>
+</li>
+<li><p>关键见解：虽然无法知道未来的信息，但可以应用 Belady 于过去的内存引用。如果过去的行为和未来的行为相关性很高，那么效果应该也是很好的；</p>
+</li>
+<li><p><strong>该使用多少历史信息？</strong> 为了精准地找到后向重用距离，应该使用所有的历史信息，但这无疑开销很大而且是越来越大的那种，在这里作者使用实验来指导时间窗口的大小，最终使用 8 倍缓存容量的时间窗口。</p>
+ <img src="/2023/04/01/cache_replace_policies/hawkeye%E6%97%B6%E9%97%B4%E7%AA%97%E5%8F%A3.jpg" class="" title="hawkeye时间窗口">
+</li>
+<li><p>8 倍缓存空间的历史信息似乎仍然太大了，于是 Hawkeye 只计算几个抽样集的最优解。</p>
+</li>
+</ol>
+<p>通过使用过去的访问记录来模拟 OPT 算法的行为产生输入来训练 Hawkeye Predictor，再基于 Predictor 做决策。</p>
+<h3 id="Perceptron-Based-Prediction"><a href="#Perceptron-Based-Prediction" class="headerlink" title="Perceptron-Based Prediction"></a>Perceptron-Based Prediction</h3><p><strong>这样从发展脉络来看，AI4Cache 是可以走的</strong>。</p>
+<p>SDBP、SHIP 和 Hawkeye 全都使用基于 PC 的预测器实现了接近 70%-80% 的准确率。后面有研究者使用更好的特征和更好的预测器模型提高了预测准确率。</p>
+<p>比如使用感知机（简单的人工神经元）为 PC 增加更多的特征（PC 的历史、来自内存地址的位、数据的压缩表示、块被访问的次数），每个特征都被用来索引一个不同的饱和计数器表，然后将其相加并与阈值进行比较以生成二进制预测结果。小部分访问被采样以便按照感知机规则去更新模型：如果预测不正确，或者如果总和未能超过某个数量级，则计数器在访问时递减并在驱逐时递增。</p>
+<h2 id="Other-Prediction-Metrics"><a href="#Other-Prediction-Metrics" class="headerlink" title="Other Prediction Metrics"></a>Other Prediction Metrics</h2><h3 id="Economic-Value-Added（EVA）"><a href="#Economic-Value-Added（EVA）" class="headerlink" title="Economic Value Added（EVA）"></a>Economic Value Added（EVA）</h3><p>一方面，对象在缓存中得到重用而创造出价值，另一方面，一个对象在缓存中待得越久它就牺牲了部分缓存空间。</p>
+<p>$EVA &#x3D; 预期命中数 - (缓存命中率&#x2F;缓存大小) * 预期在缓存驻留时间$</p>
+<h1 id="Richer-Considerations"><a href="#Richer-Considerations" class="headerlink" title="Richer Considerations"></a>Richer Considerations</h1><p>（前面都是谈 CPU 缓存替换的具体算法，这一节是讨论缓存替换策略中的具体主义事项，值得借鉴的地方会更多。）</p>
+<p>前面都是狭隘地关注缓存替换问题，无论是从指标方面——缓存命中率，还是在和计算机其它组件的配合方面。</p>
+<h2 id="Cost-Aware-Cache-Replacement"><a href="#Cost-Aware-Cache-Replacement" class="headerlink" title="Cost-Aware Cache Replacement"></a>Cost-Aware Cache Replacement</h2><p>如果所有的缓存未命中代价相同，那么设计最小化全局缺失率的缓存替换算法就可以了，但实际上，不同的缓存未命中对性能产生不同的影响，比如孤立的未命中（低内存级并行性）往往比集群未命中（高内存并行性）代价更高，因为<strong>并行性越高，多个缓存缺失同时发生可能只会造成一次停顿</strong>，再比如在程序关键路径上的未命中对程序性能的影响比不在程序关键路径上的更大。考虑到这些成本的智能替换策略可以优先缓存高成本的未命中（以较低的命中率为代价）以获得更好的程序性能。</p>
+<ol>
+<li>最优成本感知替换策略（The optimal cost-aware replacement policy, CSOPT）目的就是将所有未命中的总成本降至最低，而不是将未命中的数量降至最低。其基本思想是遵循 MIN 策略，同样也是离线算法。</li>
+<li>MLP（memory-level parallelism）考虑并行性缺失和独立性缺失的影响（第一个例子）；</li>
+</ol>
+<h2 id="Criticality-Driven-Cache-Optimizations"><a href="#Criticality-Driven-Cache-Optimizations" class="headerlink" title="Criticality-Driven Cache Optimizations"></a>Criticality-Driven Cache Optimizations</h2><p>关键性是比 MLP 更通用的成本函数，将关键负载定义为需要提前完成以防止处理器停顿的任何负载，而非关键负载是可以容忍长时间延迟的负载。而关键驱动的缓存优化优先考虑关键负载而不是非关键负载。</p>
+<p>将关键负载从低级别缓存预取到高级别缓存。</p>
+<h2 id="Mutil-Core-Aware-Cache-Management"><a href="#Mutil-Core-Aware-Cache-Management" class="headerlink" title="Mutil-Core-Aware Cache Management"></a>Mutil-Core-Aware Cache Management</h2><p>多核竞争访问共享缓存容量可能会发生流式应用程序驱逐其它缓存友好应用程序的有用数据。</p>
+<p>为处理这种共享缓存干扰，可以（1）在内核之间进行对缓存进行分区以避免竞争；（2）修改替换策略以避免病态的访问行为。</p>
+<p>缓存分区保证了强隔离和公平性保证。在实现时它有两个主要考虑因素：（1）如何在缓存中强制执行分区？（2）分区大小如何确定？</p>
+<p>执行缓存分区最常用的机制是为每个应用程序分配专用通道，这样每个应用程序只能从自己的分区中插入和驱逐数据。更高级的做法是避免硬分区，取而代之的是通过修改替换策略来实现隐式分区。</p>
+<p>分区大小可以由用户、操作系统或硬件决定。</p>
+<p>显示分区如 UCP、ASM-Cache，隐式分区如 TADIP、PIPP 等。</p>
+<h2 id="Prefetch-Aware-Cache-Replacement"><a href="#Prefetch-Aware-Cache-Replacement" class="headerlink" title="Prefetch-Aware Cache Replacement"></a>Prefetch-Aware Cache Replacement</h2><p>有效的预取隐藏 DRAM 访问的长延时，因此，将预取器和缓存替换策略结合起来是一个很好的想法。</p>
+<p>设计预取感知的缓存替换策略有两个主要目标：（1）替换策略应该避免不准确的预取导致的<strong>缓存污染</strong>；（2）替换策略应该优先丢弃可以预取的对象而不是难以预取的对象。</p>
+<h3 id="Cache-Pollution"><a href="#Cache-Pollution" class="headerlink" title="Cache Pollution"></a>Cache Pollution</h3>
     </div>
 
     
@@ -428,7 +482,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number"></span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Taxonomy-of-Cache-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">A Taxonomy of Cache Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Coarse-Grained-Policies"><span class="nav-number">1.</span> <span class="nav-text">Coarse-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-Grained-Policies"><span class="nav-number">2.</span> <span class="nav-text">Fine-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Considerations"><span class="nav-number">3.</span> <span class="nav-text">Design Considerations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Coarse-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Coarse-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Recency-Based-Policies"><span class="nav-number">1.</span> <span class="nav-text">Recency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Frequency-Based-Policies"><span class="nav-number">2.</span> <span class="nav-text">Frequency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hybrid-Policies"><span class="nav-number">3.</span> <span class="nav-text">Hybrid Policies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fine-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Fine-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Reuse-Distance-Prediction-Policies"><span class="nav-number">1.</span> <span class="nav-text">Reuse Distance Prediction Policies</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number"></span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Taxonomy-of-Cache-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">A Taxonomy of Cache Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Coarse-Grained-Policies"><span class="nav-number">1.</span> <span class="nav-text">Coarse-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-Grained-Policies"><span class="nav-number">2.</span> <span class="nav-text">Fine-Grained Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Considerations"><span class="nav-number">3.</span> <span class="nav-text">Design Considerations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Coarse-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Coarse-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Recency-Based-Policies"><span class="nav-number">1.</span> <span class="nav-text">Recency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Frequency-Based-Policies"><span class="nav-number">2.</span> <span class="nav-text">Frequency-Based Policies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hybrid-Policies"><span class="nav-number">3.</span> <span class="nav-text">Hybrid Policies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fine-Grained-Replacement-Policies"><span class="nav-number"></span> <span class="nav-text">Fine-Grained Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Reuse-Distance-Prediction-Policies"><span class="nav-number">1.</span> <span class="nav-text">Reuse Distance Prediction Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Expiration-Based-Dead-Block-Predictors"><span class="nav-number">1.1.</span> <span class="nav-text">Expiration-Based Dead Block Predictors</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reuse-Distance-Ordering"><span class="nav-number">1.2.</span> <span class="nav-text">Reuse Distance Ordering</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Classification-Based-Policies"><span class="nav-number">2.</span> <span class="nav-text">Classification-Based Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sampling-Based-Dead-Block-Prediction%EF%BC%88SDBP%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">Sampling Based Dead Block Prediction（SDBP）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Signature-Based-Hit-Prediction%EF%BC%88SHIP%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">Signature Based Hit Prediction（SHIP）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hawkeye"><span class="nav-number">2.3.</span> <span class="nav-text">Hawkeye</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Perceptron-Based-Prediction"><span class="nav-number">2.4.</span> <span class="nav-text">Perceptron-Based Prediction</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Prediction-Metrics"><span class="nav-number">3.</span> <span class="nav-text">Other Prediction Metrics</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Economic-Value-Added%EF%BC%88EVA%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">Economic Value Added（EVA）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Richer-Considerations"><span class="nav-number"></span> <span class="nav-text">Richer Considerations</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cost-Aware-Cache-Replacement"><span class="nav-number">1.</span> <span class="nav-text">Cost-Aware Cache Replacement</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Criticality-Driven-Cache-Optimizations"><span class="nav-number">2.</span> <span class="nav-text">Criticality-Driven Cache Optimizations</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mutil-Core-Aware-Cache-Management"><span class="nav-number">3.</span> <span class="nav-text">Mutil-Core-Aware Cache Management</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Prefetch-Aware-Cache-Replacement"><span class="nav-number">4.</span> <span class="nav-text">Prefetch-Aware Cache Replacement</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cache-Pollution"><span class="nav-number">4.1.</span> <span class="nav-text">Cache Pollution</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -492,13 +546,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">46k</span>
+    <span title="Symbols count total">48k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:16</span>
+    <span title="Reading time total">1:20</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
