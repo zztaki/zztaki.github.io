@@ -25,19 +25,21 @@
   <meta name="description" content="GL-Cache（FAST 23）论文阅读">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GL-Cache（FAST 23）">
-<meta property="og:url" content="http://example.com/2023/04/01/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/index.html">
+<meta property="og:url" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/index.html">
 <meta property="og:site_name" content="zztaki">
 <meta property="og:description" content="GL-Cache（FAST 23）论文阅读">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-04-01T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-04-05T07:39:57.536Z">
+<meta property="og:image" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg">
+<meta property="article:published_time" content="2023-04-05T04:52:57.000Z">
+<meta property="article:modified_time" content="2023-04-06T12:18:12.887Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
 <meta property="article:tag" content="论文阅读">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg">
 
-<link rel="canonical" href="http://example.com/2023/04/01/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
+<link rel="canonical" href="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
 
 
 <script id="page-configurations">
@@ -195,7 +197,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/01/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -218,14 +220,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2023-04-01 12:52:57" itemprop="dateCreated datePublished" datetime="2023-04-01T12:52:57+08:00">2023-04-01</time>
+              <time title="Created: 2023-04-05 12:52:57" itemprop="dateCreated datePublished" datetime="2023-04-05T12:52:57+08:00">2023-04-05</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-04-05 15:39:57" itemprop="dateModified" datetime="2023-04-05T15:39:57+08:00">2023-04-05</time>
+                <time title="Modified: 2023-04-06 20:18:12" itemprop="dateModified" datetime="2023-04-06T20:18:12+08:00">2023-04-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -250,14 +252,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>3.5k</span>
+              <span>5.7k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>6 mins.</span>
+              <span>9 mins.</span>
             </span>
             <div class="post-description">GL-Cache（FAST 23）论文阅读</div>
 
@@ -306,7 +308,7 @@
 </li>
 <li><p>learning-from-simple-experts（LeCaR, Cacheus）：performs evictions by choosing eviction candidates recommended by experts (e.g., LRU and LFU), and updates experts’ weights based on their past performance on the workload.</p>
 <ul>
-<li><strong>Disadvantage</strong>：性能取决于专家的选择，现有系统使用简单的专家，无法利用到专家未考虑的特征。</li>
+<li><strong>Disadvantage</strong>：受强化学习中的 “delayed rewards” 限制，在不佳驱逐和该对象再次访问之间，专家权重没有得到更新；性能取决于专家的选择，现有系统使用简单的专家，无法利用到专家未考虑的特征。</li>
 </ul>
 </li>
 </ul>
@@ -326,7 +328,7 @@
 <p>  答：GL-Cache introduces a group utility function (§3.4) to rank groups, which enables group-based eviction to achieve similar efficiency as object-based eviction (§4.2).</p>
 </li>
 <li><p>How to learn and predict the object-group utility online?</p>
-<p>  答：GL-Cache 在组级别使用重量级学习（均摊开销）从而识别出最佳驱逐组，再在驱逐组内充分利用轻量级对象指标保留一些非常有用的对象。两层驱逐使得 GL-Cache 能够在学习开销和缓存效率之间实现卓越的平衡。</p>
+<p>  答：(§3.5).</p>
 </li>
 </ul>
 </li>
@@ -338,7 +340,61 @@
 </ul>
 </li>
 </ol>
-<h1 id="Background-and-motivation"><a href="#Background-and-motivation" class="headerlink" title="Background and motivation"></a>Background and motivation</h1>
+<h1 id="Background-and-motivation"><a href="#Background-and-motivation" class="headerlink" title="Background and motivation"></a>Background and motivation</h1><p>两个重要的缓存指标：<strong>efficiency</strong> measured using hit ratio, <strong>performance</strong> measured using throughput.</p>
+<h1 id="GL-Cache-Group-level-learned-cache"><a href="#GL-Cache-Group-level-learned-cache" class="headerlink" title="GL-Cache: Group-level learned cache"></a>GL-Cache: Group-level learned cache</h1><p>The key idea behind group-level learning is to learn the usefulness of groups of objects (called “utility”).</p>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
+<li>objects are clustered into fixed-size groups when writing to cache (§3.3).</li>
+<li>The training module in GL-Cache collects training data online and periodically trains a model to learn the utility of object groups (§3.5).</li>
+<li>The inference module predicts object-group utility and ranks object groups for eviction. When the cache is full, object groups are evicted using a merge-based eviction which merges multiple groups into one, evicts most objects, and retains a small portion of popular objects (§3.6).</li>
+</ol>
+<h2 id="Group-level-learning"><a href="#Group-level-learning" class="headerlink" title="Group-level learning"></a>Group-level learning</h2><ol>
+<li>优势<ul>
+<li><strong>Grouping amortizes overheads</strong>：these overheads are amortized over multiple objects in the group. The metadata overhead is only added for each group and the cost of inference computation is also amortized over objects.</li>
+<li><strong>Grouping accumulates more signal</strong>：大多缓存工作负载遵守 Zipf 分布，也就是说大部分的对象只会收到少量的请求，对象级的学习每个对象只能收到很少的信号；而将大量对象集群在一起，该集群就能收获更多的请求，从而更好地学习和预测。</li>
+</ul>
+</li>
+<li>挑战<ul>
+<li>How to cluster objects into groups (§3.3)?</li>
+<li>How to compare the usefulness of object groups (§3.4)?</li>
+<li>How to learn the utility of object groups (§3.5)?</li>
+<li>How to perform evictions at group level (§3.6)?</li>
+</ul>
+</li>
+</ol>
+<h2 id="Object-groups"><a href="#Object-groups" class="headerlink" title="Object groups"></a>Object groups</h2><ol>
+<li>当对象进入缓存时，对象的分组就被它的简单静态对象特征决定了，如时间、租户 ID、内容类型、对象大小等。本项工作专注于基于写入时间的分组，这在所有系统中都可用，具有通用性。</li>
+<li>相似时间写入的对象展现出相似的行为，它们的重用时间更接近。</li>
+</ol>
+<h2 id="Utility-of-object-groups"><a href="#Utility-of-object-groups" class="headerlink" title="Utility of object groups"></a>Utility of object groups</h2><p>定义一个函数用于评估 group 的实用性。</p>
+<ol>
+<li>大对象占据更多空间，因此越大的对象有更低的实用性；（从另一个角度看，大对象驱逐后可以留下更多的空间存放更多的对象，因此更“值得”驱逐）</li>
+<li>前向重用距离越大的对象实用性更低；</li>
+</ol>
+<p>但是对象的前向重用距离是无法实时获得的，因此作者提出使用 GL-Cache 学习一个模型从而基于特征来预测对象组的实用性。</p>
+<h2 id="Learning-object-group-utility-in-GL-Cache"><a href="#Learning-object-group-utility-in-GL-Cache" class="headerlink" title="Learning object-group utility in GL-Cache"></a>Learning object-group utility in GL-Cache</h2><ol>
+<li>静态特征：request rete, write rate, miss ratio and mean object size；</li>
+<li>动态特征：age, #requests and #requested objects；</li>
+<li>学习模型：<ul>
+<li>gradient boosting machines (GBM) because tree models do not require feature normalization.</li>
+<li>将学习任务指定为一个回归问题，最小化对象组效用的均方损失。</li>
+</ul>
+</li>
+</ol>
+<h2 id="Evictions-of-object-groups"><a href="#Evictions-of-object-groups" class="headerlink" title="Evictions of object groups"></a>Evictions of object groups</h2><p>GL-Cache 在组级别使用重量级学习（均摊开销）从而识别出最佳驱逐组，再在驱逐组内充分利用轻量级对象指标（新近度、大小）保留一些非常有用的对象。两层驱逐使得 GL-Cache 能够在学习开销和缓存效率之间实现卓越的平衡。</p>
+<p><strong>key insight：组级别驱逐的命中率竟接近 Belady，没有带来命中率的大幅下降，而这种一次性驱逐多个对象可以分摊推理开销</strong>。</p>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><ol>
+<li><p>Will group-based eviction limit the efficiency upper bound when compared to object-based eviction ? </p>
+<p> <strong>组驱逐并不会成为实现高效率的瓶颈</strong></p>
+ <img src="/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg" class="" title="similar_hit_with_min">
+</li>
+<li><p>Can GL-Cache improve hit ratio and efficiency over other learned caches ?</p>
+</li>
+<li><p>Can GL-Cache meet production-level throughput requirements and how much overhead does GL-Cache add ? </p>
+</li>
+<li><p>How does GL-Cache improve efficiency without compromising throughput ?</p>
+</li>
+</ol>
+
     </div>
 
     
@@ -358,13 +414,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/03/14/CMU15445-Lab/" rel="prev" title="CMU15445-Lab">
-      <i class="fa fa-chevron-left"></i> CMU15445-Lab
+    <a href="/2023/04/03/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="prev" title="论文阅读">
+      <i class="fa fa-chevron-left"></i> 论文阅读
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/04/01/cache_replace_policies/" rel="next" title="cache replacement policies">
-      cache replacement policies <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -423,7 +476,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and motivation</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GL-Cache-Group-level-learned-cache"><span class="nav-number">3.</span> <span class="nav-text">GL-Cache: Group-level learned cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Group-level-learning"><span class="nav-number">3.2.</span> <span class="nav-text">Group-level learning</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Object-groups"><span class="nav-number">3.3.</span> <span class="nav-text">Object groups</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Utility-of-object-groups"><span class="nav-number">3.4.</span> <span class="nav-text">Utility of object groups</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Learning-object-group-utility-in-GL-Cache"><span class="nav-number">3.5.</span> <span class="nav-text">Learning object-group utility in GL-Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Evictions-of-object-groups"><span class="nav-number">3.6.</span> <span class="nav-text">Evictions of object groups</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -487,13 +540,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">53k</span>
+    <span title="Symbols count total">55k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:28</span>
+    <span title="Reading time total">1:32</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
