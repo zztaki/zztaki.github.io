@@ -22,22 +22,25 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="NyxCache（FAST 22）论文阅读">
+  <meta name="description" content="CacheSifter（FAST 22）论文阅读">
 <meta property="og:type" content="article">
-<meta property="og:title" content="NyxCache（FAST 22）">
-<meta property="og:url" content="http://example.com/2023/04/12/NyxCache%EF%BC%88FAST%2022%EF%BC%89/index.html">
+<meta property="og:title" content="CacheSifter（FAST 22）">
+<meta property="og:url" content="http://example.com/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/index.html">
 <meta property="og:site_name" content="zztaki">
-<meta property="og:description" content="NyxCache（FAST 22）论文阅读">
+<meta property="og:description" content="CacheSifter（FAST 22）论文阅读">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-04-12T08:17:57.000Z">
-<meta property="article:modified_time" content="2023-04-12T09:26:46.865Z">
+<meta property="og:image" content="http://example.com/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/CacheSifter%E6%A1%86%E6%9E%B6.jpg">
+<meta property="article:published_time" content="2023-04-12T09:43:57.000Z">
+<meta property="article:modified_time" content="2023-04-14T05:54:46.554Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
+<meta property="article:tag" content="ML">
 <meta property="article:tag" content="论文阅读">
-<meta property="article:tag" content="PM">
+<meta property="article:tag" content="Multi-level">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/CacheSifter%E6%A1%86%E6%9E%B6.jpg">
 
-<link rel="canonical" href="http://example.com/2023/04/12/NyxCache%EF%BC%88FAST%2022%EF%BC%89/">
+<link rel="canonical" href="http://example.com/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/">
 
 
 <script id="page-configurations">
@@ -50,7 +53,7 @@
   };
 </script>
 
-  <title>NyxCache（FAST 22） | zztaki</title>
+  <title>CacheSifter（FAST 22） | zztaki</title>
   
 
 
@@ -195,7 +198,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/12/NyxCache%EF%BC%88FAST%2022%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -208,7 +211,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          NyxCache（FAST 22）
+          CacheSifter（FAST 22）
         </h1>
 
         <div class="post-meta">
@@ -217,10 +220,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-04-12 16:17:57 / Modified: 17:26:46" itemprop="dateCreated datePublished" datetime="2023-04-12T16:17:57+08:00">2023-04-12</time>
+              <time title="Created: 2023-04-12 17:43:57" itemprop="dateCreated datePublished" datetime="2023-04-12T17:43:57+08:00">2023-04-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-04-14 13:54:46" itemprop="dateModified" datetime="2023-04-14T13:54:46+08:00">2023-04-14</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -244,16 +253,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>884</span>
+              <span>2.7k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>4 mins.</span>
             </span>
-            <div class="post-description">NyxCache（FAST 22）论文阅读</div>
+            <div class="post-description">CacheSifter（FAST 22）论文阅读</div>
 
         </div>
       </header>
@@ -266,18 +275,63 @@
       
         <p>Abstract</p>
 <ol>
-<li>本文提出了一个用于多租户持久性内存（multi-tenant persistent memory）缓存的访问调节框架，<strong>支持轻量级访问调节、每个缓存的资源使用估算和缓存间干扰分析</strong>。</li>
-<li>有了以上机制和准入控制、容量分配逻辑，本文构建了重要的<strong>共享策略</strong>，例如资源限制、Qos-awareness、公平性和按比例共享：Nyx 的资源限制可以准确地限制每个缓存的 PM 使用量，提供比带宽限制方法 5 倍的性能隔离 ；Nyx QoS 可以为延迟敏感型缓存提供 QoS 保证，同时为不受干扰的 best-effort 缓存提供更高的吞吐量（与以前基于 DRAM 的方法相比，最高可达 6 倍）。</li>
-<li>最后，本文也展示了 Nyx 对于真实负载也是有用的，隔离了写入高峰，并确保重要的缓存不会因为增加的 best-effort 流量而减慢。</li>
+<li>移动应用程序经常将下载文件作为缓存文件维护在本地存储中，从而获得更好的用户体验。但是这些缓存文件占据了移动闪存中的一大部分，对移动设备的性能和寿命有很大影响；</li>
+<li>本文提出了 CacheSifter 通用框架，并基于重用行为和内存&#x2F;存储使用量区分缓存文件；在线将缓存文件分为三类，通过移除大概率不会被重用的文件来减少闪存的写入量；</li>
+<li>作者在实际安卓设备上实现了 CacheSifter，并在具有代表性的应用中进行了评估。实验结果表示，依靠 ML 模型，CacheSifter 平均减少了 60% 的缓存文件对闪存的写入量，I&#x2F;O 密集型写性能改善了 20% 左右。</li>
 </ol>
-<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>为了提高实用性和简化管理，多个缓存实例通常被合并成一个多租户服务器。然而，多租户服务器很难确保每个客户端缓存都能满足性能目标；目前，一系列内存多租户缓存提供了不同的共享策略，比如对使用的内存容量和带宽进行限制，保证一定的 quality-of-service（Qos），并按比例分配资源。</p>
-<p>由于具有大容量、字节低开销、与 DRAM 性能接近的性质，PM 可以作为多租户的缓存。但是，与 DRAM 不同的是，PM 在读写性能上差别很大（最大读带宽 6.6GB&#x2F;s，最大写带宽 2.3GB&#x2F;s），读和写之间有着严重、不公平的干扰（以 1GB&#x2F;s 的速度写入会导致共同运行的读取工作负载的吞吐量和 P99 延迟减慢，这种程度和 8GB&#x2F;s 的速度读取相同）。</p>
-<p>因此，现有多租户 DRAM 和缓存技术无法适配到 PM 上，于是本文就提出针对多租户 PM 键值缓存的访问调节框架，无需硬件支持就能优化 PM。</p>
-<h1 id="Motivation-and-Challenges"><a href="#Motivation-and-Challenges" class="headerlink" title="Motivation and Challenges"></a>Motivation and Challenges</h1><p>评估先前的多租户缓存以及它们对于 PM 的限制。</p>
-<h1 id="NyxCache-Design"><a href="#NyxCache-Design" class="headerlink" title="NyxCache Design"></a>NyxCache Design</h1><p>NyxCache 的设计。</p>
-<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><p>评估 Nyx 机制的开销和策略的有效性。</p>
-<h1 id="Discussion"><a href="#Discussion" class="headerlink" title="Discussion"></a>Discussion</h1><p>讨论潜在的扩展。</p>
-<h1 id="Related-Work"><a href="#Related-Work" class="headerlink" title="Related Work"></a>Related Work</h1><p>对比相关工作。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>由于应用的动态性质和整体系统的优化，几乎所有移动应用需要从网络下载文件或数据。而移动设备上的缓存文件可以避免从网络中重新下载数据，从而满足执行延迟的需求。</p>
+<p>当前移动设备首先将缓存文件存储在主存中，然后写回闪存（默认在内存中保存 30s）。但是，近年来由于应用程序对数据量的需求增长，缓存文件的数量和大小按指数级增长，降低了移动设备的性能，同时大量缓存文件写回闪存，减少了移动设备的寿命。</p>
+<p>值得注意的是，一些缓存文件在其生命周期内只被使用一次，而其它缓存文件在被删除之前可能会被重新访问多次，但是目前的实际系统中，这些缓存文件被同等对待。</p>
+<p>现有的一些技术只在 DRAM 上存储缓存文件，减少对闪存的写回，但是，随着应用程序对于缓存文件的需求增长，这会有两个问题：（1）缓存数据在访问频率、生命周期和大小上有很大的区别；（2）在移动设备可用内存不足的情况下，维持无用的缓存文件会因为内存竞争而降低系统的整体性能。本文则根据缓存文件的重用行为管理缓存文件，从而提高系统性能和山存的使用寿命。</p>
+<p>本文提出的通用缓存文件管理框架，CacheSifter，使用轻量级机器学习算法将缓存文件动态分类成不同类别，并基于它们的数据访问模式动态地将不同类别的缓存文件放置在 DRAM 或闪存中。基于重用概率，缓存文件被分成三类：Burn-After-Reading (BAR)  文件，Transient 文件和 Long-living 文件。 </p>
+<h1 id="Cache-Files-in-Mobile-Systems"><a href="#Cache-Files-in-Mobile-Systems" class="headerlink" title="Cache Files in Mobile Systems"></a>Cache Files in Mobile Systems</h1><p><strong>为什么能够对不同缓存文件进行分类？</strong></p>
+<ol>
+<li>实验展示了不同厂商的智能手机、应用程序的<strong>缓存文件平均大小</strong>差异很大；</li>
+<li>实验展示了<strong>缓存文件对闪存的写入量</strong>占总写入量的 64%；</li>
+<li>实验展示<strong>不同应用程序的写入模式</strong>差异很大（社交软件的缓存文件写入量很大，单机游戏的缓存文件写入量很小）；</li>
+</ol>
+<p><strong>如何对不同缓存文件进行分类？</strong></p>
+<ol>
+<li>Burn-After-Reading (BAR)：该类缓存文件只在其生命周期开始阶段有些微重用，没有必要将这类文件写入闪存；</li>
+<li>Transient：只在创建之后的短期内活跃，有较多重用；</li>
+<li>Long-living：其它的缓存文件，表现出长期内持续有较多的重用。</li>
+</ol>
+<p><strong>管理缓存文件的挑战</strong></p>
+<ol>
+<li>缓存文件的重用行为可能会随时间变化，因此，在管理时需要实时地适应缓存文件的行为变化；</li>
+<li>现有系统都是将所有缓存文件同等对待，然而，对于不同类别的缓存文件，需要使用不同的策略进行管理。</li>
+</ol>
+<p>本文的主要目标是改善系统性能和存储寿命；探索应用程序缓存文件的访问模式并考虑基于 DRAM 的内存和基于闪存的移动设备存储在性能和寿命上的特点。</p>
+<h1 id="CacheSifter-Design"><a href="#CacheSifter-Design" class="headerlink" title="CacheSifter Design"></a>CacheSifter Design</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><h3 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a>设计原则</h3><ol>
+<li>对应用程序透明：CacheSifter 不能对用户体验造成较大影响，同时，也不能对用户应用程序进行任何更改；</li>
+<li>在线分类：分类器需要适应系统状态的动态变化和用户的配置；</li>
+<li>自适应内存管理：虽然使用内存保存缓存文件可以实现高效访问，但是使用太多的内存会导致系统性能下降。因此，CacheSifter 应该根据不同的活跃程序自适应调整内存使用量；</li>
+<li>适应用户行为的改变：缓存文件的类别可能会发生变化，比如该文件过去是 BAR 文件，但用户行为发生变化后，该文件可能成为 Long-living 文件；</li>
+<li>确保删除缓存文件时的安全：在删除 BAR 和 Transient 文件时，应用程序可能正在使用这些文件执行任务，因此，CacheSifter 在删除数据时不能造成应用程序 crash 或用户数据缺失。</li>
+</ol>
+<h3 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h3><p>CacheSifter 处于内核层，能够直接在页缓存上分类缓存文件而不会带来额外的内存开销和数据复制。所有新下载的文件被保存在主存并等待分类。</p>
+<img src="/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/CacheSifter%E6%A1%86%E6%9E%B6.jpg" class="" title="CacheSifter框架">
+
+<ol>
+<li>使用一个轻量级机器学习分类引擎在线将缓存文件分类成上述三类中的一类；</li>
+<li>为了更好地利用内存和闪存，丢弃所有 BAR 文件；</li>
+<li>将 Transient 文件保存在内存的一个 <strong>LRU-like</strong> 链表中，它包含一个活跃链表和一个不活跃链表。该类文件加入缓存时，插入活跃链表的头部，当离开活跃链表时，如若在活跃链表的存活时间大于阈值，将降级到不活跃链表的头部，否则直接丢弃；当命中不活跃链表的文件时，将提升到活跃链表的头部。当文件从链表中驱逐后，直接丢弃；</li>
+<li>将 Long-living 文件保存在内存中的另一个 LRU 链表中，当文件从链表中驱逐且 dirty，则加入闪存；只有在应用程序将该类文件标记为无效后，才从系统中删除。</li>
+<li></li>
+</ol>
+<p><strong>CacheSifter 带来了三个好处</strong></p>
+<ol>
+<li>避免将 BAR 和 Transient 文件写入闪存，减少了写竞争，延长了闪存寿命，改善了系统性能，节约了存储空间；</li>
+<li>Transient 文件直接从 DRAM 中访问，改善了该类文件的访问延迟；</li>
+<li>在内核层使用轻量级机器学习引擎优化缓存文件管理，仅带来微小开销且对用户程序透明。</li>
+</ol>
+<h2 id="Feature-based-Cache-Files-Management"><a href="#Feature-based-Cache-Files-Management" class="headerlink" title="Feature-based Cache Files Management"></a>Feature-based Cache Files Management</h2><p>CacheSifter 的有效性很大程度上依赖分类引擎的准确性，同时，开销也应该尽可能小。</p>
+<h3 id="Lightweight-Categorization-of-Cache-Files"><a href="#Lightweight-Categorization-of-Cache-Files" class="headerlink" title="Lightweight Categorization of Cache Files"></a>Lightweight Categorization of Cache Files</h3><p><strong>机器学习分类</strong></p>
+<p>本文选择轻量级神经网络 MLP 作为分类模型，而为了进一步降低开销，分类过程分为两步：首先区分是否是 BAR，如若不是，再区分 Transient&#x2F;Long-living（因为 Long-living 文件无法使用短期信息识别出来）。</p>
+<p>选择 K+6 个特征：（1）该文件创建后的前 K 个单位时间点（比如每个时间点 30s）访问的 I&#x2F;O 大小；（2）读取量、读取次数、写入量、写入次数；（3）文件大小和活跃时间（上次访问时间 - 第一次访问时间）。特别地，为权衡准确率和开销，第一个 MLP 模型需要 K 值小于第二个 MLP 模型。</p>
+<p>首先离线训练两个 MLP 模型，再定期重新训练模型以适应行为变化。</p>
+<p><strong>模型评价指标</strong></p>
+<p>准确率、召回率、准确率-召回率曲线。</p>
 
     </div>
 
@@ -288,8 +342,9 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Cache/" rel="tag"># Cache</a>
+              <a href="/tags/ML/" rel="tag"># ML</a>
               <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag"># 论文阅读</a>
-              <a href="/tags/PM/" rel="tag"># PM</a>
+              <a href="/tags/Multi-level/" rel="tag"># Multi-level</a>
           </div>
 
         
@@ -298,13 +353,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/" rel="prev" title="GL-Cache（FAST 23）">
-      <i class="fa fa-chevron-left"></i> GL-Cache（FAST 23）
+    <a href="/2023/04/12/NyxCache%EF%BC%88FAST%2022%EF%BC%89/" rel="prev" title="NyxCache（FAST 22）">
+      <i class="fa fa-chevron-left"></i> NyxCache（FAST 22）
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/04/12/CacheSifter%EF%BC%88FAST%2022%EF%BC%89/" rel="next" title="CacheSifter（FAST 22）">
-      CacheSifter（FAST 22） <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -363,7 +415,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation-and-Challenges"><span class="nav-number">2.</span> <span class="nav-text">Motivation and Challenges</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NyxCache-Design"><span class="nav-number">3.</span> <span class="nav-text">NyxCache Design</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Discussion"><span class="nav-number">5.</span> <span class="nav-text">Discussion</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Related-Work"><span class="nav-number">6.</span> <span class="nav-text">Related Work</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Cache-Files-in-Mobile-Systems"><span class="nav-number">2.</span> <span class="nav-text">Cache Files in Mobile Systems</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CacheSifter-Design"><span class="nav-number">3.</span> <span class="nav-text">CacheSifter Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">3.1.1.</span> <span class="nav-text">设计原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6"><span class="nav-number">3.1.2.</span> <span class="nav-text">框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Feature-based-Cache-Files-Management"><span class="nav-number">3.2.</span> <span class="nav-text">Feature-based Cache Files Management</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Lightweight-Categorization-of-Cache-Files"><span class="nav-number">3.2.1.</span> <span class="nav-text">Lightweight Categorization of Cache Files</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
