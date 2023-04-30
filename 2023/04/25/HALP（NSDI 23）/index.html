@@ -22,24 +22,24 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="GL-Cache（FAST 23）论文阅读">
+  <meta name="description" content="HALP（NSDI 23）论文阅读">
 <meta property="og:type" content="article">
-<meta property="og:title" content="GL-Cache（FAST 23）">
-<meta property="og:url" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/index.html">
+<meta property="og:title" content="HALP（NSDI 23）">
+<meta property="og:url" content="http://example.com/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/index.html">
 <meta property="og:site_name" content="zztaki">
-<meta property="og:description" content="GL-Cache（FAST 23）论文阅读">
+<meta property="og:description" content="HALP（NSDI 23）论文阅读">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg">
-<meta property="article:published_time" content="2023-04-05T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-04-14T09:44:07.731Z">
+<meta property="og:image" content="http://example.com/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/design.jpg">
+<meta property="article:published_time" content="2023-04-25T09:52:57.000Z">
+<meta property="article:modified_time" content="2023-04-30T13:23:37.915Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
 <meta property="article:tag" content="论文阅读">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg">
+<meta name="twitter:image" content="http://example.com/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/design.jpg">
 
-<link rel="canonical" href="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
+<link rel="canonical" href="http://example.com/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/">
 
 
 <script id="page-configurations">
@@ -52,7 +52,7 @@
   };
 </script>
 
-  <title>GL-Cache（FAST 23） | zztaki</title>
+  <title>HALP（NSDI 23） | zztaki</title>
   
 
 
@@ -197,7 +197,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -210,7 +210,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          GL-Cache（FAST 23）
+          HALP（NSDI 23）
         </h1>
 
         <div class="post-meta">
@@ -220,14 +220,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2023-04-05 12:52:57" itemprop="dateCreated datePublished" datetime="2023-04-05T12:52:57+08:00">2023-04-05</time>
+              <time title="Created: 2023-04-25 17:52:57" itemprop="dateCreated datePublished" datetime="2023-04-25T17:52:57+08:00">2023-04-25</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-04-14 17:44:07" itemprop="dateModified" datetime="2023-04-14T17:44:07+08:00">2023-04-14</time>
+                <time title="Modified: 2023-04-30 21:23:37" itemprop="dateModified" datetime="2023-04-30T21:23:37+08:00">2023-04-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -252,16 +252,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>5.7k</span>
+              <span>366</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>9 mins.</span>
+              <span>1 mins.</span>
             </span>
-            <div class="post-description">GL-Cache（FAST 23）论文阅读</div>
+            <div class="post-description">HALP（NSDI 23）论文阅读</div>
 
         </div>
       </header>
@@ -272,128 +272,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><strong>Abstract</strong></p>
-<p>Web 应用程序严重依赖软件缓存从而实现低延迟和高带宽。为适应工作负载的变化，近年提出了三种学习缓存（学习驱逐）：object-level learning，learning-from-distribution 和 learning-from-simple-experts。但是，这三种方法要么粒度太细（object-level），计算和存储开销比较大，要么就像其它两种一样粒度太粗，无法捕捉对象之间的差异而留下较大的效率提升空间。</p>
-<p>本文提出将相似对象集群到同一组并以组为单位执行学习和驱逐，<code>Learning at the group level accumulates more signals for learning, leverages more features with adaptive weights, and amortizes overheads over objects, thereby achieving both high efficiency and high throughput.</code></p>
-<p>与 SOTA 策略比较，GL-Cache 实现了高带宽和高命中率。</p>
-<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><ol>
-<li><p>Large-scale cache deployments enable the success of today’s Internet.</p>
-</li>
-<li><p>The main driving force of cache deployments is the cache’s ability to serve data with high throughput and low latency. Retrieving data from a cache is thousands of times faster than retrieving it from the backend.</p>
-<ul>
-<li>但是缓存总是部署在价格昂贵、容量有限的介质中，缓存容量通常比数据集大小小得多，因此<strong>决定哪些数据存储在缓存中</strong>格外重要。</li>
-<li>高效缓存能够存储更有用得数据从而无需请求后端数据系统就能服务更多的请求。缓存有效性通常被命中率衡量。</li>
-<li>当缓存满时，需要使用驱逐算法决定哪些数据被保存，哪些数据被驱逐。因此，<strong>驱逐策略对于缓存效率非常重要</strong>。</li>
-</ul>
-</li>
-<li><p>这些年许多驱逐算法利用不同的对象特征做驱逐决策。比如一些 LRU 的变体使用新近度的不同角度选择驱逐对象；频率+新近度；频率+对象大小；</p>
-<ul>
-<li>不同特征对于不同的工作负载具有不同程度的重要性，因此只是使用特定方式组合一个或者两个对象特征通常也就只能在一些工作负载中实现高效率。</li>
-<li><strong>learned caches</strong>: employed  machine learning to improve cache evictions.</li>
-</ul>
-</li>
-<li><p>将 learned caches 分为三类</p>
-<ul>
-<li><p>object-level learning（LRB）：learns the next access time for each object using dozens of object features and evicts the object with the furthest predicted request time.</p>
-<ul>
-<li><strong>Advantage</strong>：leverages more object features, learns the relative feature importance, and performs fine-grained learning on each cached object, it has the highest potential for achieving high efficiency.</li>
-<li><strong>Disadvantage</strong>：predicting and ranking objects at each eviction incurs significant computation and storage overheads as we observe LRB suffers from a 775× slow down compared to LRU.</li>
-</ul>
-</li>
-<li><p>learning-from-distribution（LHD）：models request probability distributions to inform eviction decisions. For example, LHD measures object hit density using age and size, and evicts the object with the lowest hit density.</p>
-<ul>
-<li><strong>Advantage</strong>：a lower computation and storage overhead because it models request probability using fewer features at a coarser granularity.</li>
-<li><strong>Disadvantage</strong>：still has a lower throughput compared to simple heuristics (e.g., LRU) because it has to <strong>randomly sample and compare many objects at each eviction</strong>. Moreover, the existing design (e.g., LHD [7]) <strong>does not leverage object features other than age and size, limiting its potential for high efficiency</strong>.</li>
-</ul>
-</li>
-<li><p>learning-from-simple-experts（LeCaR, Cacheus）：performs evictions by choosing eviction candidates recommended by experts (e.g., LRU and LFU), and updates experts’ weights based on their past performance on the workload.</p>
-<ul>
-<li><strong>Disadvantage</strong>：受强化学习中的 “delayed rewards” 限制，在不佳驱逐和该对象再次访问之间，专家权重没有得到更新；性能取决于专家的选择，现有系统使用简单的专家，无法利用到专家未考虑的特征。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>为了克服现有 learned caches 的缺点，提出以对象组为粒度进行学习。Group-level learning leverages multiple group-level features to learn object-group utility for evictions.</p>
-<ul>
-<li>It reduces the computation and storage overheads of learning by hundreds of times through amortization compared to learning at the object level.</li>
-<li>object groups accumulate more “signals” for learning and can leverage a variety of features for prediction, enabling better eviction decisions.</li>
-</ul>
-</li>
-<li><p>组级别学习需要回答以下几个问题</p>
-<ul>
-<li><p>How to group objects and perform evictions efficiently? </p>
-<p>  答：GL-Cache clusters similar objects into groups using write time (§3.3) and evicts the least useful groups using a merge-based eviction(§3.6).</p>
-</li>
-<li><p>How to measure the usefulness of object groups (termed “utility”) to determine the best eviction candidate? </p>
-<p>  答：GL-Cache introduces a group utility function (§3.4) to rank groups, which enables group-based eviction to achieve similar efficiency as object-based eviction (§4.2).</p>
-</li>
-<li><p>How to learn and predict the object-group utility online?</p>
-<p>  答：(§3.5).</p>
-</li>
-</ul>
-</li>
-<li><p>本文贡献</p>
-<ul>
-<li>基于学习粒度将 learned caches 分为三类，并提出一个新的缓存学习方法—— group-level learning。</li>
-<li>设计并实现了 GL-Cache，解决了上面提到的组级别学习的挑战。同时也是第一次定义了 group-level utility function 用于缓存驱逐。</li>
-<li>使用生产跟踪评估 GL-Cache，展现了组级别学习的高效率和高吞吐量。</li>
-</ul>
-</li>
-</ol>
-<h1 id="Background-and-motivation"><a href="#Background-and-motivation" class="headerlink" title="Background and motivation"></a>Background and motivation</h1><p>两个重要的缓存指标：<strong>efficiency</strong> measured using hit ratio, <strong>performance</strong> measured using throughput.</p>
-<h1 id="GL-Cache-Group-level-learned-cache"><a href="#GL-Cache-Group-level-learned-cache" class="headerlink" title="GL-Cache: Group-level learned cache"></a>GL-Cache: Group-level learned cache</h1><p>The key idea behind group-level learning is to learn the usefulness of groups of objects (called “utility”).</p>
-<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
-<li>objects are clustered into fixed-size groups when writing to cache (§3.3).</li>
-<li>The training module in GL-Cache collects training data online and periodically trains a model to learn the utility of object groups (§3.5).</li>
-<li>The inference module predicts object-group utility and ranks object groups for eviction. When the cache is full, object groups are evicted using a merge-based eviction which merges multiple groups into one, evicts most objects, and retains a small portion of popular objects (§3.6).</li>
-</ol>
-<h2 id="Group-level-learning"><a href="#Group-level-learning" class="headerlink" title="Group-level learning"></a>Group-level learning</h2><ol>
-<li>优势<ul>
-<li><strong>Grouping amortizes overheads</strong>：these overheads are amortized over multiple objects in the group. The metadata overhead is only added for each group and the cost of inference computation is also amortized over objects.</li>
-<li><strong>Grouping accumulates more signal</strong>：大多缓存工作负载遵守 Zipf 分布，也就是说大部分的对象只会收到少量的请求，对象级的学习每个对象只能收到很少的信号；而将大量对象集群在一起，该集群就能收获更多的请求，从而更好地学习和预测。</li>
-</ul>
-</li>
-<li>挑战<ul>
-<li>How to cluster objects into groups (§3.3)?</li>
-<li>How to compare the usefulness of object groups (§3.4)?</li>
-<li>How to learn the utility of object groups (§3.5)?</li>
-<li>How to perform evictions at group level (§3.6)?</li>
-</ul>
-</li>
-</ol>
-<h2 id="Object-groups"><a href="#Object-groups" class="headerlink" title="Object groups"></a>Object groups</h2><ol>
-<li>当对象进入缓存时，对象的分组就被它的简单静态对象特征决定了，如时间、租户 ID、内容类型、对象大小等。本项工作专注于基于写入时间的分组，这在所有系统中都可用，具有通用性。</li>
-<li>相似时间写入的对象展现出相似的行为，它们的重用时间更接近。</li>
-</ol>
-<h2 id="Utility-of-object-groups"><a href="#Utility-of-object-groups" class="headerlink" title="Utility of object groups"></a>Utility of object groups</h2><p>定义一个函数用于评估 group 的实用性。</p>
+        <p>本文的主要想法是：通过启发式算法选择驱逐候选集，再使用学习策略从中选择最佳驱逐对象。这样做可以减少 ML 预测的计算开销。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>learned caches 部署在大规模生产环境中的问题：</p>
 <ol>
-<li>大对象占据更多空间，因此越大的对象有更低的实用性；（从另一个角度看，大对象驱逐后可以留下更多的空间存放更多的对象，因此更“值得”驱逐）</li>
-<li>前向重用距离越大的对象实用性更低；</li>
+<li>对比于启发式算法，learned caches 训练和预测的计算开销太大了；</li>
+<li>大规模的 CDN 生产环境，即使是小部分区域的缓存性能下降也是不能接受的，因此，在 learned caches 效果不佳时，需要做好兜底操作；</li>
+<li>生产环境中即使是同一机架的机器缓存缺失率也不一样，如何准确评估一个新算法在 production noise 上的效果。</li>
 </ol>
-<p>但是对象的前向重用距离是无法实时获得的，因此作者提出使用 GL-Cache 学习一个模型从而基于特征来预测对象组的实用性。</p>
-<h2 id="Learning-object-group-utility-in-GL-Cache"><a href="#Learning-object-group-utility-in-GL-Cache" class="headerlink" title="Learning object-group utility in GL-Cache"></a>Learning object-group utility in GL-Cache</h2><ol>
-<li>静态特征：request rete, write rate, miss ratio and mean object size；</li>
-<li>动态特征：age, #requests and #requested objects；</li>
-<li>学习模型：<ul>
-<li>gradient boosting machines (GBM) because tree models do not require feature normalization.</li>
-<li>将学习任务指定为一个回归问题，最小化对象组效用的均方损失。</li>
-</ul>
-</li>
-</ol>
-<h2 id="Evictions-of-object-groups"><a href="#Evictions-of-object-groups" class="headerlink" title="Evictions of object groups"></a>Evictions of object groups</h2><p>GL-Cache 在组级别使用重量级学习（均摊开销）从而识别出最佳驱逐组，再在驱逐组内充分利用轻量级对象指标（新近度、大小）保留一些非常有用的对象。两层驱逐使得 GL-Cache 能够在学习开销和缓存效率之间实现卓越的平衡。</p>
-<p><strong>key insight：组级别驱逐的命中率竟接近 Belady，没有带来命中率的大幅下降，而这种一次性驱逐多个对象可以分摊推理开销</strong>。</p>
-<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><ol>
-<li><p>Will group-based eviction limit the efficiency upper bound when compared to object-based eviction ? </p>
-<p> <strong>组驱逐并不会成为实现高效率的瓶颈</strong></p>
- <img src="/2023/04/05/GL-Cache%EF%BC%88FAST%2023%EF%BC%89/similar_hit_with_min.jpg" class="" title="similar_hit_with_min">
-</li>
-<li><p>Can GL-Cache improve hit ratio and efficiency over other learned caches ?</p>
-</li>
-<li><p>Can GL-Cache meet production-level throughput requirements and how much overhead does GL-Cache add ? </p>
-</li>
-<li><p>How does GL-Cache improve efficiency without compromising throughput ?</p>
-</li>
-</ol>
+<h1 id="Design"><a href="#Design" class="headerlink" title="Design"></a>Design</h1><img src="/2023/04/25/HALP%EF%BC%88NSDI%2023%EF%BC%89/design.jpg" class="" title="design">
+
+<p>利用启发式算法从缓存尾部选取 4 个候选集，再以锦标赛方式进行 3 对比较选择最佳驱逐对象。</p>
+<p>1% 的机器使用原有启发式算法，其余机器使用 HALP，因此，可以监控 HALP 对性能的影响，从而及时切换为原有启发式算法。</p>
 
     </div>
 
@@ -414,13 +303,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/04/03/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="prev" title="论文阅读">
-      <i class="fa fa-chevron-left"></i> 论文阅读
+    <a href="/2023/04/20/Redis/" rel="prev" title="Redis">
+      <i class="fa fa-chevron-left"></i> Redis
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/04/12/NyxCache%EF%BC%88FAST%2022%EF%BC%89/" rel="next" title="NyxCache（FAST 22）">
-      NyxCache（FAST 22） <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -479,7 +365,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GL-Cache-Group-level-learned-cache"><span class="nav-number">3.</span> <span class="nav-text">GL-Cache: Group-level learned cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Group-level-learning"><span class="nav-number">3.2.</span> <span class="nav-text">Group-level learning</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Object-groups"><span class="nav-number">3.3.</span> <span class="nav-text">Object groups</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Utility-of-object-groups"><span class="nav-number">3.4.</span> <span class="nav-text">Utility of object groups</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Learning-object-group-utility-in-GL-Cache"><span class="nav-number">3.5.</span> <span class="nav-text">Learning object-group utility in GL-Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Evictions-of-object-groups"><span class="nav-number">3.6.</span> <span class="nav-text">Evictions of object groups</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">2.</span> <span class="nav-text">Design</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
