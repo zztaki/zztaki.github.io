@@ -34,7 +34,7 @@
 <meta property="og:image" content="http://example.com/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8entry.jpg">
 <meta property="og:image" content="http://example.com/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8%E5%85%83%E7%B4%A0%E7%9A%84%E7%BC%96%E7%A0%81.jpg">
 <meta property="article:published_time" content="2023-04-20T07:52:57.000Z">
-<meta property="article:modified_time" content="2023-05-03T09:43:24.892Z">
+<meta property="article:modified_time" content="2023-05-04T08:49:46.140Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Redis">
 <meta property="article:tag" content="源码分析">
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-05-03 17:43:24" itemprop="dateModified" datetime="2023-05-03T17:43:24+08:00">2023-05-03</time>
+                <time title="Modified: 2023-05-04 16:49:46" itemprop="dateModified" datetime="2023-05-04T16:49:46+08:00">2023-05-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -254,14 +254,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>7.3k</span>
+              <span>8.9k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>12 mins.</span>
+              <span>15 mins.</span>
             </span>
             <div class="post-description">Redis</div>
 
@@ -316,7 +316,10 @@
 
 <h2 id="快速列表"><a href="#快速列表" class="headerlink" title="快速列表"></a>快速列表</h2><p>位于 <code>quicklist.h</code> 和 <code>quicklist.c</code> 中。</p>
 <p>quicklist 是一个双向链表，链表中的每个节点是一个压缩列表。</p>
-<h1 id="数据对象"><a href="#数据对象" class="headerlink" title="数据对象"></a>数据对象</h1><p>Redis 基于上述数据结构创建了一个对象系统，</p>
+<h1 id="数据对象"><a href="#数据对象" class="headerlink" title="数据对象"></a>数据对象</h1><p>Redis 基于上述数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象和有序集合对象这五种类型的对象，每种对象都用到了至少一种我们前面所介绍的数据结构。</p>
+<p>位于 <code>server.h</code> 中的 <code>redisObject</code> 数据结构（robj）的 type 字段表示对象类型；encoding 字段表示底层数据存储结构（针对某一种类型对象，redis 可能会根据情况采用不同的数据结构存储）；ptr 指向数据所在的底层数据结构的存储位置。对象也可能使用多种数据结构存储，比如有序集合可以采用字典和跳跃表同时存储，分别利用两者的单点查询和范围查询优势，由于数据都是用指针存储，因此额外开销只是相关数据结构的 header 相关字段。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* The actual Redis Object */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_STRING 0    <span class="comment">/* String object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_LIST 1      <span class="comment">/* List object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_SET 2       <span class="comment">/* Set object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ZSET 3      <span class="comment">/* Sorted set object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_HASH 4      <span class="comment">/* Hash object. */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Objects encoding. Some kind of objects like Strings and Hashes can be</span></span><br><span class="line"><span class="comment"> * internally represented in multiple ways. The &#x27;encoding&#x27; field of the object</span></span><br><span class="line"><span class="comment"> * is set to one of this fields for this object. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_RAW 0     <span class="comment">/* Raw representation */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_INT 1     <span class="comment">/* Encoded as integer */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_HT 2      <span class="comment">/* Encoded as hash table */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_ZIPMAP 3  <span class="comment">/* No longer used: old hash encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_LINKEDLIST 4 <span class="comment">/* No longer used: old list encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_ZIPLIST 5 <span class="comment">/* No longer used: old list/hash/zset encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_INTSET 6  <span class="comment">/* Encoded as intset */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_SKIPLIST 7  <span class="comment">/* Encoded as skiplist */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_EMBSTR 8  <span class="comment">/* Embedded sds string encoding */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_QUICKLIST 9 <span class="comment">/* Encoded as linked list of listpacks */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_STREAM 10 <span class="comment">/* Encoded as a radix tree of listpacks */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_LISTPACK 11 <span class="comment">/* Encoded as a listpack */</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">redisObject</span> &#123;</span><br><span class="line">    <span class="type">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> lru:LRU_BITS; <span class="comment">/* LRU time (relative to global lru_clock) or</span></span><br><span class="line"><span class="comment">                            * LFU data (least significant 8 bits frequency</span></span><br><span class="line"><span class="comment">                            * and most significant 16 bits access time). */</span></span><br><span class="line">    <span class="type">int</span> refcount;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -465,13 +468,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">69k</span>
+    <span title="Symbols count total">71k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:56</span>
+    <span title="Reading time total">1:58</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
