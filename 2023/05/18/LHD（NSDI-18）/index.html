@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://example.com/2023/05/18/LHD%EF%BC%88NSDI-18%EF%BC%89/%E5%91%BD%E4%B8%AD%E5%AF%86%E5%BA%A6.jpg">
 <meta property="og:image" content="http://example.com/2023/05/18/LHD%EF%BC%88NSDI-18%EF%BC%89/%E9%99%84%E5%B8%A6%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF%E7%9A%84%E5%91%BD%E4%B8%AD%E5%AF%86%E5%BA%A6.jpg">
 <meta property="article:published_time" content="2023-05-18T10:39:28.000Z">
-<meta property="article:modified_time" content="2023-05-19T06:49:30.102Z">
+<meta property="article:modified_time" content="2023-05-19T06:52:41.704Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="论文阅读">
@@ -228,7 +228,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-05-19 14:49:30" itemprop="dateModified" datetime="2023-05-19T14:49:30+08:00">2023-05-19</time>
+                <time title="Modified: 2023-05-19 14:52:41" itemprop="dateModified" datetime="2023-05-19T14:52:41+08:00">2023-05-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -253,7 +253,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>616</span>
+              <span>619</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -284,7 +284,7 @@
 <img src="/2023/05/18/LHD%EF%BC%88NSDI-18%EF%BC%89/%E5%91%BD%E4%B8%AD%E5%AF%86%E5%BA%A6.jpg" class="" title="命中密度">
 
 <p>上图中的公式(5)表示：当对象已经在缓存存活 a，它的命中密度。其中分子是对象在 [1, ∞] 时间段的命中概率之和，也就是<strong>期望命中概率</strong>，分母则是对象大小和<strong>期望剩余生命周期</strong>的乘积。</p>
-<p>因此，LHD 可以在线监控所有对象的 H 和 L 的分布，分布中的每个点表示，在生命周期 x 时命中以及在生命周期 x 时命中或驱逐。有了这两个分布，就可以通过上图中的公式(5)计算所有缓存对象的命中密度（所有缓存对象已经在缓存中待的时间作为元数据保留）。</p>
+<p>因此，LHD 可以在线监控所有对象的 H 和 L 的分布，分布中的每个点表示，在生命周期 x 时命中以及在生命周期 x 时命中或驱逐的概率。有了这两个分布，就可以通过上图中的公式(5)计算所有缓存对象的命中密度（所有缓存对象已经在缓存中待的时间作为元数据保留）。</p>
 <p>更进一步，如果有额外信息，可以对额外信息中表示的每个类别计算一组 H 和 L 分布，如对象的访问次数。</p>
 <img src="/2023/05/18/LHD%EF%BC%88NSDI-18%EF%BC%89/%E9%99%84%E5%B8%A6%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF%E7%9A%84%E5%91%BD%E4%B8%AD%E5%AF%86%E5%BA%A6.jpg" class="" title="附带额外信息的命中密度">
 
