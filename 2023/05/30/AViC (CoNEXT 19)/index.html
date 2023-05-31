@@ -29,13 +29,16 @@
 <meta property="og:site_name" content="zztaki">
 <meta property="og:description" content="AViC(CoNEXT 19) 论文阅读">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/05/30/AViC%20(CoNEXT%2019)/%E9%A2%84%E6%B5%8B%E4%B8%8B%E6%AC%A1%E8%AE%BF%E9%97%AE%E6%97%B6%E9%97%B4.jpg">
+<meta property="og:image" content="http://example.com/2023/05/30/AViC%20(CoNEXT%2019)/%E4%B8%8D%E5%90%8C%E6%AF%94%E7%89%B9%E7%8E%87%E9%A2%84%E6%B5%8B.jpg">
 <meta property="article:published_time" content="2023-05-30T10:52:57.000Z">
-<meta property="article:modified_time" content="2023-05-30T13:41:55.092Z">
+<meta property="article:modified_time" content="2023-05-31T14:25:12.315Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
 <meta property="article:tag" content="论文阅读">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/05/30/AViC%20(CoNEXT%2019)/%E9%A2%84%E6%B5%8B%E4%B8%8B%E6%AC%A1%E8%AE%BF%E9%97%AE%E6%97%B6%E9%97%B4.jpg">
 
 <link rel="canonical" href="http://example.com/2023/05/30/AViC%20(CoNEXT%2019)/">
 
@@ -217,10 +220,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-05-30 18:52:57 / Modified: 21:41:55" itemprop="dateCreated datePublished" datetime="2023-05-30T18:52:57+08:00">2023-05-30</time>
+              <time title="Created: 2023-05-30 18:52:57" itemprop="dateCreated datePublished" datetime="2023-05-30T18:52:57+08:00">2023-05-30</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-05-31 22:25:12" itemprop="dateModified" datetime="2023-05-31T22:25:12+08:00">2023-05-31</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -244,14 +253,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>688</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>4 mins.</span>
             </span>
             <div class="post-description">AViC(CoNEXT 19) 论文阅读</div>
 
@@ -271,6 +280,59 @@
 <h2 id="Request-arrival-predictability"><a href="#Request-arrival-predictability" class="headerlink" title="Request arrival predictability"></a>Request arrival predictability</h2><p>客户端播放器请求一个视频块放置在播放缓冲区中，当该视频块即将播放完后，会自动请求下一个视频块，这个间隔略小于视频块的持续时间。</p>
 <p>这种发现启发了视频块的预取。</p>
 <h2 id="The-prevalence-of-singletons"><a href="#The-prevalence-of-singletons" class="headerlink" title="The prevalence of singletons"></a>The prevalence of singletons</h2><p>作者发现有 40% 的请求块在 12 小时内没有得到重用，这些块进入缓存会挤掉其它流行块从而造成缓存污染（Chunk size variability 更是加剧了这一现象）。（session 的含义还不是很懂，先继续往后看）</p>
+<h1 id="Design"><a href="#Design" class="headerlink" title="Design"></a>Design</h1><h2 id="Eviction"><a href="#Eviction" class="headerlink" title="Eviction"></a>Eviction</h2><p>AViC 维护缓存中所有块的<strong>预计下次访问时间</strong>，在需要进行驱逐时，选择最久才会访问的 chunk 进行驱逐。</p>
+<ol>
+<li><p><strong>使用最大堆维护缓存中的块元数据</strong>；</p>
+<ul>
+<li><p>创建：如果请求的块属于当前没有其他块缓存的视频 v，那么就为 v 创建一个新的视频记录 Rv。Rv 通过维护 sessions 记录映射来存储正在进行的视频 sessions 的有关信息。每个 sessions 记录都包含一个 sessionID（一个 32 字节的字符串）、session 请求的最后一个块以及请求该块的时间戳。除了 sessions 记录，Rv 还包含视频 v 的平均请求间隔。</p>
+</li>
+<li><p>预测及更新：当某个会话请求视频 v 中的块 n 时，将利用上述创建的元数据更新该块的下次预计访问时间，具体的伪代码如下。（更新这块文章写得有点奇怪，我感觉不只是请求块的预计下次访问时间会得到更新，所在视频之后的块应该也需要更新）</p>
+  <img src="/2023/05/30/AViC%20(CoNEXT%2019)/%E9%A2%84%E6%B5%8B%E4%B8%8B%E6%AC%A1%E8%AE%BF%E9%97%AE%E6%97%B6%E9%97%B4.jpg" class="" title="预测下次访问时间"></li>
+</ul>
+</li>
+<li><p><strong>周期性预测冷数据</strong>；</p>
+<ul>
+<li>如果某个视频 v 中的块很久没有访问了，那么这些块的预计下次访问时间很久没有得到更新，从而会位于最大堆的深处，造成缓存污染。因此，本文额外使用一个 LRU 链表维护所有视频记录，每次请求到来时，都会更新 LRU 链表尾部视频的所有块，就好像这些块被请求了一样，确保过时的视频最终会重新计算其估计值。</li>
+</ul>
+</li>
+<li><p><strong>针对不同比特率的请求预测</strong>；</p>
+<ul>
+<li><p>上述都是隐性假设只有一种规格的块，但实际上视频使用了多种比特率。</p>
+</li>
+<li><p>对算法1进行修改，考虑不同比特率的视频块访问次数，利用下式（3）作为请求块的预计下次访问时间。</p>
+  <img src="/2023/05/30/AViC%20(CoNEXT%2019)/%E4%B8%8D%E5%90%8C%E6%AF%94%E7%89%B9%E7%8E%87%E9%A2%84%E6%B5%8B.jpg" class="" title="不同比特率预测"></li>
+</ul>
+</li>
+</ol>
+<h2 id="Admission"><a href="#Admission" class="headerlink" title="Admission"></a>Admission</h2><p>使用决策树进行二分类，阻止 singleton 的块进入缓存。</p>
+<ol>
+<li>选择时间范围（及获取标签）；<ul>
+<li>额外使用 FIFO 模拟缓存，将完全替换 FIFO 中的全部内容所需时间设置为阈值 T，对于上一小节描述的预测，如果预测时间大于 T，将该块标记为 singleton 作为训练样本。</li>
+</ul>
+</li>
+<li>特征选择；<ul>
+<li>块大小、块在视频中的索引位置、块比特率；</li>
+<li>块所属的{视频的总会话数、视频会话的平均间隔、视频上次的访问时间}；</li>
+<li>current day 在一周中的索引、current time 在一天24小时中的索引。</li>
+</ul>
+</li>
+</ol>
+<h2 id="Efficiency-Optimizations"><a href="#Efficiency-Optimizations" class="headerlink" title="Efficiency Optimizations"></a>Efficiency Optimizations</h2><ol>
+<li>在更新请求块 i 的下次预计访问时间时，需要搜索所在视频所有的会话，开销很大；因此，本文额外使用反射的哈希表，大概思想是将视频块索引映射到请求该块的会话列表，此时只需要搜索 i-1, i-2… 块的会话列表是否为空；</li>
+<li>…这一部分技术细节很多，推荐看原文。</li>
+</ol>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><ol>
+<li>针对对象命中率、字节命中率、节省带宽进行了实验评估；</li>
+<li>对 AViC 的各个组件进行了消融实验；</li>
+<li>时间开销（本文只是将请求到来间隔和服务延迟进行了CDF比较，而不是带宽，不太有说服力，而且也没有和其它方法的服务延迟比较）；和 LRU、GDSF 的内存开销对比；</li>
+<li>对一些超参数的敏感性分析。</li>
+</ol>
+<p>这一部分很值得学习的地方在于，作者对实验结果进行了详细的原因描述，比如 GDSF 和 LHD 更偏向于驱逐大文件从而导致很多高质量的视频块从缓存中驱逐，然而这种块的流行度往往是很高的；这样做比单纯的展示实验效果更有说服力，也能进一步地展现前面设计中的内涵以及对效果的具体作用。</p>
+<h1 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h1><ol>
+<li>文章的组织架构非常好。在设计部分先简单将设计思想以及驱逐、准入策略描述清楚，再将精细优化独立作为一小节，有助于理解文章的内容的同时，展示出文章扎实的技术功底和低开销；</li>
+<li>了解了视频缓存场景的特性，视频连续块在访问模式上存在的联系非常有意思；</li>
+<li>文章的不足：场景特殊，通用性可能不足；创新性可能也有点不足，比较偏工程。</li>
+</ol>
 <!-- flag of hidden posts -->
     </div>
 
@@ -346,7 +408,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Properties-of-video-delivery"><span class="nav-number">2.</span> <span class="nav-text">Properties of video delivery</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Chunk-size-variability"><span class="nav-number">2.1.</span> <span class="nav-text">Chunk size variability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Request-arrival-predictability"><span class="nav-number">2.2.</span> <span class="nav-text">Request arrival predictability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-prevalence-of-singletons"><span class="nav-number">2.3.</span> <span class="nav-text">The prevalence of singletons</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Properties-of-video-delivery"><span class="nav-number">2.</span> <span class="nav-text">Properties of video delivery</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Chunk-size-variability"><span class="nav-number">2.1.</span> <span class="nav-text">Chunk size variability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Request-arrival-predictability"><span class="nav-number">2.2.</span> <span class="nav-text">Request arrival predictability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-prevalence-of-singletons"><span class="nav-number">2.3.</span> <span class="nav-text">The prevalence of singletons</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Eviction"><span class="nav-number">3.1.</span> <span class="nav-text">Eviction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Admission"><span class="nav-number">3.2.</span> <span class="nav-text">Admission</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Efficiency-Optimizations"><span class="nav-number">3.3.</span> <span class="nav-text">Efficiency Optimizations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%B6%E8%8E%B7"><span class="nav-number">5.</span> <span class="nav-text">收获</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
