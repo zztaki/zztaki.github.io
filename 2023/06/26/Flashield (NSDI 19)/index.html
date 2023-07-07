@@ -31,7 +31,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2023/06/26/Flashield%20(NSDI%2019)/%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
 <meta property="article:published_time" content="2023-06-26T10:52:57.000Z">
-<meta property="article:modified_time" content="2023-06-27T09:44:40.637Z">
+<meta property="article:modified_time" content="2023-07-07T06:21:51.316Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
@@ -227,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-06-27 17:44:40" itemprop="dateModified" datetime="2023-06-27T17:44:40+08:00">2023-06-27</time>
+                <time title="Modified: 2023-07-07 14:21:51" itemprop="dateModified" datetime="2023-07-07T14:21:51+08:00">2023-07-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -252,7 +252,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>501</span>
+              <span>651</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -294,8 +294,14 @@
 <p>流程：</p>
 <ol>
 <li>对象先写入内存；</li>
-<li>内存可用空间小于 segment 大小时，将预测结果为闪存友好的对象以 segment 粒度迁移至 SSD，预测结果为闪存不友好的对象直接逐出内存；</li>
-<li>闪存空间不够时，</li>
+<li>内存可用空间小于 segment 大小时，将预测结果为闪存友好（分数超过某阈值）的对象按分数高低以 segment 粒度迁移至 SSD，预测结果为闪存不友好的对象直接逐出内存；</li>
+<li>闪存空间不够时，以 FIFO 顺序驱逐 segment，segment 内部具有较高优先级的对象可以重新插入到内存中。</li>
+</ol>
+<h2 id="DRAM-as-a-Filter"><a href="#DRAM-as-a-Filter" class="headerlink" title="DRAM as a Filter"></a>DRAM as a Filter</h2><p>DRAM 作用</p>
+<ol>
+<li>作为过滤器来判断哪些对象应该被插入 SSD；</li>
+<li>充当对象移动到 SSD 以及无法从 SSD 中收益的对象的缓存层；</li>
+<li>存储用于在闪存中查找和逐出对象的元数据。</li>
 </ol>
 <!-- flag of hidden posts -->
     </div>
@@ -372,7 +378,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem"><span class="nav-number">1.</span> <span class="nav-text">Problem</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem"><span class="nav-number">1.</span> <span class="nav-text">Problem</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DRAM-as-a-Filter"><span class="nav-number">3.1.</span> <span class="nav-text">DRAM as a Filter</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
