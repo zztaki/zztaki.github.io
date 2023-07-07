@@ -30,8 +30,10 @@
 <meta property="og:description" content="Flashield (NSDI 19) 论文阅读">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2023/06/26/Flashield%20(NSDI%2019)/%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2023/06/26/Flashield%20(NSDI%2019)/lookup_flash.jpg">
+<meta property="og:image" content="http://example.com/2023/06/26/Flashield%20(NSDI%2019)/flash_index.jpg">
 <meta property="article:published_time" content="2023-06-26T10:52:57.000Z">
-<meta property="article:modified_time" content="2023-07-07T06:21:51.316Z">
+<meta property="article:modified_time" content="2023-07-07T09:05:48.002Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
@@ -227,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-07-07 14:21:51" itemprop="dateModified" datetime="2023-07-07T14:21:51+08:00">2023-07-07</time>
+                <time title="Modified: 2023-07-07 17:05:48" itemprop="dateModified" datetime="2023-07-07T17:05:48+08:00">2023-07-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -252,14 +254,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>651</span>
+              <span>1.4k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>2 mins.</span>
             </span>
             <div class="post-description">Flashield (NSDI 19) 论文阅读</div>
 
@@ -297,12 +299,29 @@
 <li>内存可用空间小于 segment 大小时，将预测结果为闪存友好（分数超过某阈值）的对象按分数高低以 segment 粒度迁移至 SSD，预测结果为闪存不友好的对象直接逐出内存；</li>
 <li>闪存空间不够时，以 FIFO 顺序驱逐 segment，segment 内部具有较高优先级的对象可以重新插入到内存中。</li>
 </ol>
-<h2 id="DRAM-as-a-Filter"><a href="#DRAM-as-a-Filter" class="headerlink" title="DRAM as a Filter"></a>DRAM as a Filter</h2><p>DRAM 作用</p>
+<p>DRAM 作用：</p>
 <ol>
 <li>作为过滤器来判断哪些对象应该被插入 SSD；</li>
 <li>充当对象移动到 SSD 以及无法从 SSD 中收益的对象的缓存层；</li>
 <li>存储用于在闪存中查找和逐出对象的元数据。</li>
 </ol>
+<h2 id="SVM-predicts-Flashiness"><a href="#SVM-predicts-Flashiness" class="headerlink" title="SVM predicts Flashiness"></a>SVM predicts Flashiness</h2><p>flashiness 定义为对象能从 SSD 中受益的程度。</p>
+<p>选用 SVM 作为模型，在对象即将从内存中驱逐时，使用对象在内存中被访问的次数、更新的次数作为特征，预测对象的 flashiness，从而决定是否插入 SSD。</p>
+<h2 id="DRAM-as-an-Index-for-Flash"><a href="#DRAM-as-an-Index-for-Flash" class="headerlink" title="DRAM as an Index for Flash"></a>DRAM as an Index for Flash</h2><p>将对象的索引保存在内存中，能够减少更新时对闪存的大量写入、降低索引的读取时延，但由于 DRAM 也作为数据的缓存层，因此需要尽可能将索引设计小。</p>
+<p>Flash 的索引应该包含：key、value 在 Flash 中的位置、在驱逐队列中的位置。</p>
+<ol>
+<li>Flash Index Hashtable：”key” -&gt; {segment_id, a hash function}；<ul>
+<li>为了避免哈希碰撞导致的哈希表扩展，使用 multi-choice（多个哈希表） 代替 chain，如果全都冲突，则驱逐最后一个冲突对象；</li>
+</ul>
+</li>
+<li>Flash Bloom Filters：为了避免哈希碰撞导致的对 Flash 的过多读，为每个 segment 配置一个布隆过滤器，过滤 key 一定不在该 segment 中的情况，从而无需浪费一次 Flash 读，而是可以直接去查找下一个哈希函数；（文中讲到，布隆过滤器结果 true 但是不在 segment 的情况只占 1%，从而平均只需 1.03 次 Flash 读）</li>
+</ol>
+<p>当对象在布隆过滤器上显示 true 时，得到一个 {segment_id, a hash function <strong>h</strong>} 的条目，h(key) 求得该对象在 segment 中的偏移量，读 Flash 中该 segment 的对应偏移，并进一步检查 key 值是否相等。</p>
+<img src="/2023/06/26/Flashield%20(NSDI%2019)/lookup_flash.jpg" class="" title="lookup_flash">
+
+<img src="/2023/06/26/Flashield%20(NSDI%2019)/flash_index.jpg" class="" title="flash_index">
+
+<h2 id="Evict"><a href="#Evict" class="headerlink" title="Evict"></a>Evict</h2><p>全局 CLOCK 算法维护 DRAM 和 FLASH 中的所有缓存对象。如果下一个驱逐对象在 DRAM 中，则直接驱逐；如果在 FLASH 中，在 Flash Index Hashtable 将对应项标记为 ghost，它将随着所在 segment 从 Flash 删除而驱逐。</p>
 <!-- flag of hidden posts -->
     </div>
 
@@ -378,7 +397,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem"><span class="nav-number">1.</span> <span class="nav-text">Problem</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DRAM-as-a-Filter"><span class="nav-number">3.1.</span> <span class="nav-text">DRAM as a Filter</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem"><span class="nav-number">1.</span> <span class="nav-text">Problem</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SVM-predicts-Flashiness"><span class="nav-number">3.1.</span> <span class="nav-text">SVM predicts Flashiness</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DRAM-as-an-Index-for-Flash"><span class="nav-number">3.2.</span> <span class="nav-text">DRAM as an Index for Flash</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Evict"><span class="nav-number">3.3.</span> <span class="nav-text">Evict</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
