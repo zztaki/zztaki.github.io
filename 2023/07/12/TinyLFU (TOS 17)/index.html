@@ -29,12 +29,15 @@
 <meta property="og:site_name" content="zztaki">
 <meta property="og:description" content="TinyLFU (TOS17) 论文阅读">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/07/12/TinyLFU%20(TOS%2017)/Overview.jpg">
+<meta property="og:image" content="http://example.com/2023/07/12/TinyLFU%20(TOS%2017)/count_bloom_filter.jpg">
 <meta property="article:published_time" content="2023-07-12T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-07-13T03:24:26.501Z">
+<meta property="article:modified_time" content="2023-07-13T07:42:22.231Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="论文阅读">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/07/12/TinyLFU%20(TOS%2017)/Overview.jpg">
 
 <link rel="canonical" href="http://example.com/2023/07/12/TinyLFU%20(TOS%2017)/">
 
@@ -224,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-07-13 11:24:26" itemprop="dateModified" datetime="2023-07-13T11:24:26+08:00">2023-07-13</time>
+                <time title="Modified: 2023-07-13 15:42:22" itemprop="dateModified" datetime="2023-07-13T15:42:22+08:00">2023-07-13</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -249,14 +252,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>738</span>
+              <span>978</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>2 mins.</span>
             </span>
             <div class="post-description">TinyLFU (TOS17) 论文阅读</div>
 
@@ -271,7 +274,7 @@
       
         <p>SOTA 缓存准入（高效）。</p>
 <h1 id="TinyLFU-Architecture"><a href="#TinyLFU-Architecture" class="headerlink" title="TinyLFU Architecture"></a>TinyLFU Architecture</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>缓存驱逐策略选择驱逐对象，TinyLFU 将驱逐对象和缺失对象进行比较，以决定是否以驱逐对象为代价准入缺失对象。</p>
-
+<img src="/2023/07/12/TinyLFU%20(TOS%2017)/Overview.jpg" class="" title="Overview">
 
 <h2 id="Challenges"><a href="#Challenges" class="headerlink" title="Challenges"></a>Challenges</h2><ol>
 <li>如何维护最近请求对象的历史信息，删除久远的历史信息；</li>
@@ -283,7 +286,7 @@
 <li>只会额外增加 Log(W) 个 bits 的空间开销；</li>
 <li>久远的请求信息会指数衰减。</li>
 </ol>
-<h2 id="Counting-Bloom-Filter"><a href="#Counting-Bloom-Filter" class="headerlink" title="Counting Bloom Filter"></a>Counting Bloom Filter</h2>
+<h2 id="Counting-Bloom-Filter"><a href="#Counting-Bloom-Filter" class="headerlink" title="Counting Bloom Filter"></a>Counting Bloom Filter</h2><img src="/2023/07/12/TinyLFU%20(TOS%2017)/count_bloom_filter.jpg" class="" title="count_bloom_filter">
 
 <p>增加计数：当请求到来时，通过每个哈希函数映射到各自的索引，将最小计数的对应计数器值+1，如 {2, 2, 5} -&gt; {3, 3, 5}（实际代码还是倾向增加所有计数器）；</p>
 <p>估算计数：通过每个哈希函数映射到各自的索引，取对应计数器中的最小值。</p>
@@ -294,6 +297,8 @@
 <p> （门卫，很形象 (:</p>
 </li>
 </ol>
+<h1 id="Extension"><a href="#Extension" class="headerlink" title="Extension"></a>Extension</h1><p>TinyLFU 无法适应对象大小可变的缓存环境，因此，作者在 TOS 22 上提出了一种大小感知的 TinyLFU 策略（AV-TinyLFU，aggregated victims）。</p>
+<p>当准入一个对象需要驱逐多个对象时，使用分离的替换策略选出多个驱逐对象，计算所有驱逐对象的频率和，将之与请求对象的频率进行比较，如果 freq(req) &gt; freq(victims)，则准入；否则，不准入，且将所有 victims 进行 promote。（<strong>考虑 freq&#x2F;size 是否更好</strong>）</p>
 
     </div>
 
@@ -375,7 +380,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TinyLFU-Architecture"><span class="nav-number">1.</span> <span class="nav-text">TinyLFU Architecture</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Challenges"><span class="nav-number">1.2.</span> <span class="nav-text">Challenges</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Freshness-Mechanism"><span class="nav-number">1.3.</span> <span class="nav-text">Freshness Mechanism</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Counting-Bloom-Filter"><span class="nav-number">1.4.</span> <span class="nav-text">Counting Bloom Filter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Space-Reduction"><span class="nav-number">1.4.1.</span> <span class="nav-text">Space Reduction</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TinyLFU-Architecture"><span class="nav-number">1.</span> <span class="nav-text">TinyLFU Architecture</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Challenges"><span class="nav-number">1.2.</span> <span class="nav-text">Challenges</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Freshness-Mechanism"><span class="nav-number">1.3.</span> <span class="nav-text">Freshness Mechanism</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Counting-Bloom-Filter"><span class="nav-number">1.4.</span> <span class="nav-text">Counting Bloom Filter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Space-Reduction"><span class="nav-number">1.4.1.</span> <span class="nav-text">Space Reduction</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Extension"><span class="nav-number">2.</span> <span class="nav-text">Extension</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -445,7 +450,7 @@
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:33</span>
+    <span title="Reading time total">1:34</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
