@@ -214,7 +214,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2023-09-10 15:41:28 / Modified: 22:38:50" itemprop="dateCreated datePublished" datetime="2023-09-10T15:41:28+08:00">2023-09-10</time>
+              <time title="Created: 2023-09-10 15:41:28 / Modified: 22:40:50" itemprop="dateCreated datePublished" datetime="2023-09-10T15:41:28+08:00">2023-09-10</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -251,18 +251,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>在片上缓存场景下，将 OPT 缓存替换算法应用于过去的访问请求，从中学习以指导未来的缓存替换决策。**”If past behavior is a good predictor of future behavior, then our replacement policy will approach the behavior of Belady’s algorithm.”**</p>
-<h1 id="Hawkeye"><a href="#Hawkeye" class="headerlink" title="Hawkeye"></a>Hawkeye</h1><h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><img src="/2023/09/10/Hawkeye-ISCA-16/overview.jpg" class="" title="overview">
-
-<p>OPTgen 使用过去的访问记录，模拟 OPT 行为以产生训练数据；</p>
-<p>Hawkeye Predictor 对新插入对象进行分类：缓存友好和缓存厌恶。</p>
-<h2 id="OPTgen"><a href="#OPTgen" class="headerlink" title="OPTgen"></a>OPTgen</h2><p>两个定义</p>
-<ol>
-<li>usage interval：从对某数据的引用 X 开始，到下次对相同数据的引用 X’ 的长度；</li>
-<li>liveness interval：在 OPT 策略下，缓存行在缓存中的驻留时间段。</li>
-</ol>
-<p>如果在 X 的 usage interval 过程中，任何时刻其它对象的 liveness intervals 重叠数目达到了缓存容量，则在下一次的引用 X’ 时，该数据缺失；否则，该数据命中。（对于 Belady 的理解，最直观的是在缓存驱逐决策过程中，驱逐从此时开始，缓存空间中前向重用距离最大的对象，<strong>而这里给了一个全新的视角，某个对象引用的 usage interval 过程中，其它对象的 livness intervals 最大重叠数达到了缓存容量，这意味着其它对象的在最大重叠时，该对象的前向重用距离就已经是最大的了，这从缓存驱逐决策的视角转化为了对象下次重用时是否命中的判断</strong>）。</p>
-
+          <p>Hawkeye (ISCA 16) 论文阅读</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/10/Hawkeye-ISCA-16/">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
