@@ -43,7 +43,7 @@
 <meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/librados%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
 <meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/aio.jpg">
 <meta property="article:published_time" content="2022-10-22T06:52:57.000Z">
-<meta property="article:modified_time" content="2023-07-26T08:11:46.200Z">
+<meta property="article:modified_time" content="2023-08-30T05:35:44.606Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Ceph">
 <meta name="twitter:card" content="summary">
@@ -237,7 +237,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-07-26 16:11:46" itemprop="dateModified" datetime="2023-07-26T16:11:46+08:00">2023-07-26</time>
+                <time title="Modified: 2023-08-30 13:35:44" itemprop="dateModified" datetime="2023-08-30T13:35:44+08:00">2023-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -722,7 +722,7 @@
 <p> IO 提交后就可以返回了，BlueStore 起了一个单独的线程检查 IO 的完成情况，当真正完成的时候，执行回调函数通知调用方。</p>
 <h3 id="FreelistManager"><a href="#FreelistManager" class="headerlink" title="FreelistManager"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/91025247">FreelistManager</a></h3><h3 id="blueStore-中的对象-IO"><a href="#blueStore-中的对象-IO" class="headerlink" title="blueStore 中的对象 IO"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/92397191">blueStore 中的对象 IO</a></h3><ol>
 <li><p>Onode：<strong>对象元数据在内存中的数据结构</strong>；</p>
- <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Onode</span>&#123;</span><br><span class="line">    Collection *c;  <span class="comment">// Onode 对应 PG</span></span><br><span class="line">    <span class="type">ghobject_t</span> oid; <span class="comment">// 对象</span></span><br><span class="line">    mempool::bluestore_cache_meta::string key; <span class="comment">// key under PREFIX_OBJ where we are stored</span></span><br><span class="line">    <span class="type">bluestore_onode_t</span> onode;  <span class="comment">// onode 磁盘数据结构</span></span><br><span class="line">    <span class="type">bool</span> exists;              <span class="comment">// true if object logically exists</span></span><br><span class="line">    <span class="type">bool</span> cached;              <span class="comment">// Onode is logically in the cache</span></span><br><span class="line">                              <span class="comment">// (it can be pinned and hence physically out</span></span><br><span class="line">                              <span class="comment">// of it at the moment though)</span></span><br><span class="line">    ExtentMap extent_map;     <span class="comment">// 有序的Extent逻辑空间集合，持久化在RocksDB。lexetnt---&gt;blob</span></span><br><span class="line">    std::shared_ptr&lt;<span class="type">int64_t</span>&gt; cache_age_bin;  <span class="comment">///&lt; cache age bin</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Onode</span>&#123;</span><br><span class="line">    Collection *c;  <span class="comment">// Onode 所属 PG</span></span><br><span class="line">    <span class="type">ghobject_t</span> oid; <span class="comment">// 对象</span></span><br><span class="line">    mempool::bluestore_cache_meta::string key; <span class="comment">// key under PREFIX_OBJ where we are stored</span></span><br><span class="line">    <span class="type">bluestore_onode_t</span> onode;  <span class="comment">// onode 磁盘数据结构</span></span><br><span class="line">    <span class="type">bool</span> exists;              <span class="comment">// true if object logically exists</span></span><br><span class="line">    <span class="type">bool</span> cached;              <span class="comment">// Onode is logically in the cache</span></span><br><span class="line">                              <span class="comment">// (it can be pinned and hence physically out</span></span><br><span class="line">                              <span class="comment">// of it at the moment though)</span></span><br><span class="line">    ExtentMap extent_map;     <span class="comment">// 有序的Extent逻辑空间集合，持久化在RocksDB。lexetnt---&gt;blob</span></span><br><span class="line">    std::shared_ptr&lt;<span class="type">int64_t</span>&gt; cache_age_bin;  <span class="comment">///&lt; cache age bin</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>bluestore_onode：<strong>对象元数据在磁盘中的数据结构</strong>；</p>
  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// onode: per-object metadata</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bluestore_onode_t</span> &#123;</span><br><span class="line">    <span class="type">uint64_t</span> nid = <span class="number">0</span>;                    <span class="comment">///&lt; numeric id (locally unique)</span></span><br><span class="line">  	<span class="type">uint64_t</span> size = <span class="number">0</span>;                   <span class="comment">///&lt; object size</span></span><br><span class="line">  	<span class="comment">// mempool to be assigned to buffer::ptr manually，对象扩展属性</span></span><br><span class="line">  	std::map&lt;mempool::bluestore_cache_meta::string, ceph::buffer::ptr&gt; attrs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -856,7 +856,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -906,13 +906,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">56k</span>
+    <span title="Symbols count total">57k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:34</span>
+    <span title="Reading time total">1:35</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
