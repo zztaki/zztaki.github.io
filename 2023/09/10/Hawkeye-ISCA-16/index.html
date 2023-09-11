@@ -30,8 +30,10 @@
 <meta property="og:description" content="Hawkeye (ISCA 16) 论文阅读">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/overview.jpg">
+<meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_example.jpg">
+<meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_illustrate.jpg">
 <meta property="article:published_time" content="2023-09-10T07:41:28.000Z">
-<meta property="article:modified_time" content="2023-09-10T14:43:27.948Z">
+<meta property="article:modified_time" content="2023-09-11T08:04:53.300Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
@@ -219,10 +221,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-09-10 15:41:28 / Modified: 22:43:27" itemprop="dateCreated datePublished" datetime="2023-09-10T15:41:28+08:00">2023-09-10</time>
+              <time title="Created: 2023-09-10 15:41:28" itemprop="dateCreated datePublished" datetime="2023-09-10T15:41:28+08:00">2023-09-10</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-11 16:04:53" itemprop="dateModified" datetime="2023-09-11T16:04:53+08:00">2023-09-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -246,14 +254,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>618</span>
+              <span>2.3k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>4 mins.</span>
             </span>
             <div class="post-description">Hawkeye (ISCA 16) 论文阅读</div>
 
@@ -266,17 +274,51 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>在片上缓存场景下，将 OPT 缓存替换算法应用于过去的访问请求，从中学习以指导未来的缓存替换决策。**”If past behavior is a good predictor of future behavior, then our replacement policy will approach the behavior of Belady’s algorithm.”**</p>
+        <p>在片上缓存场景下，将 OPT 缓存替换算法应用于过去的访问请求，从中学习以指导未来的缓存替换决策。</p>
+<p>“<strong>If past behavior is a good predictor of future behavior, then our replacement policy will approach the behavior of Belady’s algorithm.</strong>“</p>
 <h1 id="Hawkeye"><a href="#Hawkeye" class="headerlink" title="Hawkeye"></a>Hawkeye</h1><h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><img src="/2023/09/10/Hawkeye-ISCA-16/overview.jpg" class="" title="overview">
 
 <p>OPTgen 使用过去的访问记录，模拟 OPT 行为以产生训练数据；</p>
 <p>Hawkeye Predictor 对新插入对象进行分类：缓存友好和缓存厌恶。</p>
-<h2 id="OPTgen"><a href="#OPTgen" class="headerlink" title="OPTgen"></a>OPTgen</h2><p>两个定义</p>
+<h2 id="OPTgen"><a href="#OPTgen" class="headerlink" title="OPTgen"></a>OPTgen</h2><p>三个定义</p>
 <ol>
 <li>usage interval：从对某数据的引用 X 开始，到下次对相同数据的引用 X’ 的长度；</li>
-<li>liveness interval：在 OPT 策略下，缓存行在缓存中的驻留时间段。</li>
+<li>liveness interval：在 OPT 策略下，缓存行在缓存中的驻留时间段；</li>
+<li>occupancy vector：记录每个时刻使用的缓存容量。</li>
 </ol>
 <p>如果在 X 的 usage interval 过程中，任何时刻其它对象的 liveness intervals 重叠数目达到了缓存容量，则在下一次的引用 X’ 时，该数据缺失；否则，该数据命中。（对于 Belady 的理解，最直观的是在缓存驱逐决策过程中，驱逐从此时开始，缓存空间中前向重用距离最大的对象，<strong>而这里给了一个全新的视角，某个对象引用的 usage interval 过程中，其它对象的 liveness intervals 最大重叠数达到了缓存容量，这意味着在此最大重叠时刻，该对象的前向重用距离就已经是最大的了，这从缓存驱逐决策的视角转化为了对象下次重用时是否命中的判断</strong>）。</p>
+<p>对于下图所示，X 第一次引用时的 usage interval 为 6，重用距离为 3，但是，在 liveness interval 过程中，其它对象的 liveness intervals 最大重叠数仅为 1，因此，在第一次引用时，OPT 的判断为 X 下次引用将命中。</p>
+<img src="/2023/09/10/Hawkeye-ISCA-16/OPTgen_example.jpg" class="">
+
+<p>对于下面的访问 trace，OPT 策略使得缓存命中数为 4（<strong>实际上这是带准入的 OPT——当缓存容量满时，如若当前缺失对象的前向重用距离大于缓存中的所有对象，则不会准入，这比不关心准入的一般 OPT 命中率更高</strong>），其中，occupancy vector 的使用方式如下</p>
+<ol>
+<li>最近引用的条目对应值为 0；（如果不考虑准入，则条目初始值为 1）</li>
+<li>某对象的首次引用不会对 occupancy vector 的其他值造成影响，这反映出 OPT 只能基于对象的下次重用做出判断；</li>
+<li>如果对象不是首次引用，OPTgen 将检查该对象对应 usage interval 过程中是否每个引用在 occupancy vector 中的值（等于 liveness intervals  重叠数）都小于缓存容量。如果是，则 OPT 在该对象上次引用时会将其加入缓存，此次访问命中，并且将 usage interval 过程中每个引用在 occupancy vector 中的值加 1；否则，此次访问缺失，无需更新其它引用在 occupancy vector 的值。</li>
+</ol>
+<img src="/2023/09/10/Hawkeye-ISCA-16/OPTgen_illustrate.jpg" class="" title="OPTgen_illustrate">
+
+<h2 id="Hawkeye-Predictor"><a href="#Hawkeye-Predictor" class="headerlink" title="Hawkeye Predictor"></a>Hawkeye Predictor</h2><p>“为何可以做预测” 基于这样一个事实：给定执行 load 命令的 PC，OPT 所做出的决策是相似的。文中提到，90.4% 的 load PC，在 OPT 看来有相同的缓存行为（缓存友好和缓存厌恶）。</p>
+<p>文中提到，预测器有 8K 个条目，并使用 13-bit 的 hashed PC 进行索引，每个条目有一个 3-bit 计数器。如果 OPTgen 确定 X 在 OPT 策略下将是缓存命中，则增大上次访问 X 的 PC 对应条目的计数器，否则，减小计数器。</p>
+<p>对于每次访问，预测器都通过当前的 load 指令 PC 进行索引，对应条目的 3-bit 计数器的高位标识其加载的数据是否缓存友好。</p>
+<h2 id="Replacement"><a href="#Replacement" class="headerlink" title="Replacement"></a>Replacement</h2><p>在缓存替换时，Hawkeye 总体目标是先驱逐缓存厌恶对象，如果没有，则驱逐最久没有访问的缓存友好行（LRU），并减小其在预测器中的对应计数器。</p>
+<p>进一步，作者将 Hawkeye 与 RRIP 结合，使用一个 3-bit 的计数器来标志驱逐优先级，具体做法是</p>
+<ol>
+<li>RRIP 计数器值越大，驱逐优先级越高；</li>
+<li>在每次缓存访问时，Hawkeye 也测其生成一个二进制预测来指示该对象是否缓存友好，如果缓存友好，则赋予其 RRIP&#x3D;0，同时，如果该对象不在缓存，还会增加其它 RRIP&lt;6 的缓存对象的 RRIP 计数器（有点像 CLOCK）；如果缓存厌恶，则赋予其 RRIP&#x3D;7；</li>
+<li>在缓存替换时，任何 RRIP&#x3D;7（缓存厌恶）对象都会被选为驱逐候选者，而如果没有，则驱逐 RRIP 值最大的对象（LRU）。</li>
+</ol>
+<p>以上确保了缓存厌恶对象会首先被驱逐（因为缓存友好对象的 RRIP 计数器最多增长到6）。</p>
+<h1 id="与-LRB-的异同"><a href="#与-LRB-的异同" class="headerlink" title="与 LRB 的异同"></a>与 LRB 的异同</h1><p>相同点</p>
+<ol>
+<li>Hawkeye 使用了 8X 缓存容量的时间窗口，LRB 使用了 2X 缓存容量的时间窗口，它们本质上都是希望从过去的时间窗口内探寻对象的缓存行为；</li>
+<li>在进行驱逐决策时，Hawkeye 驱逐 RRIP 值最大的对象，该值是否为7标识了是否为缓存厌恶，小于7时，其大小则反映了对象的新近度；LRB 驱逐缓存对象中重用距离预测值最大的对象。</li>
+</ol>
+<p>不同点</p>
+<ol>
+<li>Hawkeye 将 OPT 的决策看成一个二分类问题，并使用精彩地 liveness intervals 重叠数来非常准确地模拟出了 OPT 的行为，同时考虑了前向重用距离和缓存的需求（重叠数）；LRB 将 OPT 决策看成一个回归问题，在时间窗口中简单地使用引用距离来作为标签进行训练；</li>
+<li>Hawkeye 应用于片上缓存，特征仅为加载指令的 PC 值，标签为在 OPT 策略下是否缓存命中；LRB 应用于 CDN 缓存，特征非常多，包括指数衰减新近度、频率、对象大小等等，标签为引用距离，而对于引用距离大于时间窗口（2X 缓存大小）的对象，引用距离即 2X 缓存大小。</li>
+</ol>
 
     </div>
 
@@ -359,7 +401,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hawkeye"><span class="nav-number">1.</span> <span class="nav-text">Hawkeye</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">1.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OPTgen"><span class="nav-number">1.2.</span> <span class="nav-text">OPTgen</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hawkeye"><span class="nav-number">1.</span> <span class="nav-text">Hawkeye</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">1.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OPTgen"><span class="nav-number">1.2.</span> <span class="nav-text">OPTgen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hawkeye-Predictor"><span class="nav-number">1.3.</span> <span class="nav-text">Hawkeye Predictor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replacement"><span class="nav-number">1.4.</span> <span class="nav-text">Replacement</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8E-LRB-%E7%9A%84%E5%BC%82%E5%90%8C"><span class="nav-number">2.</span> <span class="nav-text">与 LRB 的异同</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -423,13 +465,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">57k</span>
+    <span title="Symbols count total">59k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:35</span>
+    <span title="Reading time total">1:38</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
