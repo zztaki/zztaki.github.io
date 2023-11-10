@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_example.jpg">
 <meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_illustrate.jpg">
 <meta property="article:published_time" content="2023-09-10T07:41:28.000Z">
-<meta property="article:modified_time" content="2023-09-11T08:04:53.300Z">
+<meta property="article:modified_time" content="2023-09-12T05:29:08.917Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="ML">
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-09-11 16:04:53" itemprop="dateModified" datetime="2023-09-11T16:04:53+08:00">2023-09-11</time>
+                <time title="Modified: 2023-09-12 13:29:08" itemprop="dateModified" datetime="2023-09-12T13:29:08+08:00">2023-09-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -254,7 +254,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>2.3k</span>
+              <span>2.6k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -316,8 +316,15 @@
 </ol>
 <p>不同点</p>
 <ol>
-<li>Hawkeye 将 OPT 的决策看成一个二分类问题，并使用精彩地 liveness intervals 重叠数来非常准确地模拟出了 OPT 的行为，同时考虑了前向重用距离和缓存的需求（重叠数）；LRB 将 OPT 决策看成一个回归问题，在时间窗口中简单地使用引用距离来作为标签进行训练；</li>
+<li>Hawkeye 将 OPT 的决策看成一个二分类问题，并使用精彩的 liveness intervals 重叠数来非常准确地模拟出了 OPT 的行为，考虑了前向重用距离和缓存的需求（重叠数）；LRB 将 OPT 决策看成一个回归问题，在时间窗口中简单地使用引用距离来作为标签进行训练；</li>
 <li>Hawkeye 应用于片上缓存，特征仅为加载指令的 PC 值，标签为在 OPT 策略下是否缓存命中；LRB 应用于 CDN 缓存，特征非常多，包括指数衰减新近度、频率、对象大小等等，标签为引用距离，而对于引用距离大于时间窗口（2X 缓存大小）的对象，引用距离即 2X 缓存大小。</li>
+</ol>
+<h1 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h1><p>对于学习缓存，Hawkeye 和 LRB 这两篇不同应用场景下的缓存替换经典工作揭示了学习缓存过程中非常重要的几个问题</p>
+<ol>
+<li>如何建模缓存问题？（这两个工作都是缓存替换，因此这里就是建模缓存替换问题，它们都是将问题建模成从 OPT 算法中学习驱逐的对应关系，Hawkeye 驱逐过去在 OPT 策略下不会缓存命中的对象，LRB 驱逐过去在 OPT 策略下引用距离过大的对象）</li>
+<li>如何获取训练数据？（使用和缓存大小长度相关的时间窗口捕获历史 trace）</li>
+<li>特征和标签是什么？（PC，OPT 策略下是否缓存命中）以及（新近度、频率、对象大小等特征，重用距离）</li>
+<li>如何决定驱逐对象？（使用预测器对缓存对象进行预测，驱逐优先级最高的对象，<strong>对于缓存替换，这一步开销太大了</strong>）</li>
 </ol>
 
     </div>
@@ -342,7 +349,10 @@
     <a href="/2023/07/12/TinyLFU%20(TOS%2017)/" rel="prev" title="TinyLFU (TOS 17)">
       <i class="fa fa-chevron-left"></i> TinyLFU (TOS 17)
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/11/10/%E5%AD%98%E5%82%A8%E7%A1%AC%E4%BB%B6/" rel="next" title="存储相关的硬件技术">
+      存储相关的硬件技术 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -401,7 +411,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hawkeye"><span class="nav-number">1.</span> <span class="nav-text">Hawkeye</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">1.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OPTgen"><span class="nav-number">1.2.</span> <span class="nav-text">OPTgen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hawkeye-Predictor"><span class="nav-number">1.3.</span> <span class="nav-text">Hawkeye Predictor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replacement"><span class="nav-number">1.4.</span> <span class="nav-text">Replacement</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8E-LRB-%E7%9A%84%E5%BC%82%E5%90%8C"><span class="nav-number">2.</span> <span class="nav-text">与 LRB 的异同</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hawkeye"><span class="nav-number">1.</span> <span class="nav-text">Hawkeye</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">1.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OPTgen"><span class="nav-number">1.2.</span> <span class="nav-text">OPTgen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hawkeye-Predictor"><span class="nav-number">1.3.</span> <span class="nav-text">Hawkeye Predictor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replacement"><span class="nav-number">1.4.</span> <span class="nav-text">Replacement</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8E-LRB-%E7%9A%84%E5%BC%82%E5%90%8C"><span class="nav-number">2.</span> <span class="nav-text">与 LRB 的异同</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%B6%E8%8E%B7"><span class="nav-number">3.</span> <span class="nav-text">收获</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -415,20 +425,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -471,7 +481,7 @@
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:38</span>
+    <span title="Reading time total">1:39</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>

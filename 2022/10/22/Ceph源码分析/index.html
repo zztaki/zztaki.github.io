@@ -43,7 +43,7 @@
 <meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/librados%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
 <meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/aio.jpg">
 <meta property="article:published_time" content="2022-10-22T06:52:57.000Z">
-<meta property="article:modified_time" content="2023-08-30T05:35:44.606Z">
+<meta property="article:modified_time" content="2023-10-30T03:41:08.041Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Ceph">
 <meta name="twitter:card" content="summary">
@@ -237,7 +237,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-08-30 13:35:44" itemprop="dateModified" datetime="2023-08-30T13:35:44+08:00">2023-08-30</time>
+                <time title="Modified: 2023-10-30 11:41:08" itemprop="dateModified" datetime="2023-10-30T11:41:08+08:00">2023-10-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -755,7 +755,7 @@
 </li>
 </ul>
 </li>
-<li><p>数据：对象的数据使用<code>BufferSpace</code>来管理。</p>
+<li><p>数据：对象的数据使用<code>BufferSpace</code>来管理。作为一个二级索引。</p>
  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">BufferSpace</span> &#123;</span><br><span class="line">    <span class="comment">// buffer map</span></span><br><span class="line">    mempool::bluestore_cache_meta::map&lt;<span class="type">uint32_t</span>, std::unique_ptr&lt;Buffer&gt;&gt; buffer_map;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// we use a bare intrusive list here instead of std::map because</span></span><br><span class="line">    <span class="comment">// it uses less memory and we expect this to be very small (very</span></span><br><span class="line">    <span class="comment">// few IOs in flight to the same Blob at the same time).</span></span><br><span class="line">    <span class="comment">// 包含脏数据的缓存队列</span></span><br><span class="line">    <span class="type">state_list_t</span> writing;   <span class="comment">///&lt; writing buffers, sorted by seq, ascending</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p> 当数据写完时，会根据标记决定是否缓存。<code>BlueStore::BufferSpace::_finish_write</code>；当读取完成时，也会根据标记决定是否缓存。<code>bluestore_default_buffered_read</code>、<code>BlueStore::_do_read</code>。（<strong>这里和缓存准入有关系吗？</strong>）</p>
@@ -856,20 +856,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -912,7 +912,7 @@
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:38</span>
+    <span title="Reading time total">1:39</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
