@@ -30,7 +30,7 @@
 <meta property="og:description" content="CXL-SSD（ATC 23）论文阅读">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-26T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-12-26T09:39:10.782Z">
+<meta property="article:modified_time" content="2023-12-27T02:43:43.144Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="论文阅读">
@@ -222,10 +222,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-12-26 12:52:57 / Modified: 17:39:10" itemprop="dateCreated datePublished" datetime="2023-12-26T12:52:57+08:00">2023-12-26</time>
+              <time title="Created: 2023-12-26 12:52:57" itemprop="dateCreated datePublished" datetime="2023-12-26T12:52:57+08:00">2023-12-26</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-12-27 10:43:43" itemprop="dateModified" datetime="2023-12-27T10:43:43+08:00">2023-12-27</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -249,14 +255,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.9k</span>
+              <span>2.3k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>3 mins.</span>
+              <span>4 mins.</span>
             </span>
             <div class="post-description">CXL-SSD（ATC 23）论文阅读</div>
 
@@ -270,12 +276,12 @@
 
       
         <p>基于 CXL，探索使用廉价的闪存克服内存墙（<strong>在这里应该是指对内存的需求增长远远大于内存容量增长的速度</strong>）的可行性。</p>
-<p>作者在本文中分析了现有技术的一些限制，并建议进行一些系统级的改变以使用闪存实现近似 DRAM 的性能。</p>
+<p>作者在本文中分析了现有技术的一些限制，并建议进行一些系统级的改变以使得闪存实现近似 DRAM 的性能。</p>
 <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>数据库，数据分析和机器学习等业务对内存的需求增长远远大于内存容量的增长速度。是否可以使用闪存克服内存墙呢？新兴的互联技术比如 CXL，Gen-Z，CCIX 和 OpenCAPI 允许 PCIe 设备被 CPU 使用 load&#x2F;store 指令直接访问，并且它们的可扩展性更好（更多的 PCIe 设备可以跨交换机连接，这与用于 DRAM 的 DIMM 不同）。</p>
 <p>但是，使用闪存作为 CPU 直接访问的主存仍然有三个挑战。</p>
 <ol>
-<li>内存请求粒度和闪存粒度不匹配；这可能导致流量放大（比如 64B 的缓存行刷新到 CXL-SSD 中，可能需要 16KB 的闪存读，64 B 的更新和 16 KB 的写入）。</li>
-<li>闪存比 DRAM 的慢几个数量级；</li>
+<li>内存请求粒度和闪存粒度不匹配；这可能导致流量放大（比如 64B 的缓存行刷新到 CXL-SSD 中，可能需要 16KB 的闪存读，64B 的更新和 16 KB 的写入，但其实后文主要讲的是在请求 64KB 的过程中，LLC 可能会发送接下来的 64B 请求，导致延时命中）。</li>
+<li>闪存比 DRAM 慢几个数量级；</li>
 <li>闪存的耐用性有限；</li>
 </ol>
 <p>作者探索一些设计选项，特别是使用缓存和预取来克服以上挑战，以使得 CXL-SSD 可以作为主存来克服内存墙。作者谈到，先前有一些技术已经证明了 CXL-SSD 的可行性，但本文是第一篇开源的对 CXL-SSD 设计选项和使用现有技术进行优化的深度研究（既然如此的话，那么找一个场景、动机，使用 CXL 可以一定程度上解决这个问题，并讲讲如何高效地使用 CXL 解决这个问题，这种行文逻辑就更可行了，而不用太担心创新型）。</p>
@@ -307,7 +313,15 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>单独使用缓存并不足以掩盖闪存的较长时延；此时进一步增加预取策略可以提高缓存命中率，提高时延；</p>
 <p>由于内存访问粒度和闪存访问粒度不一致，会导致闪存的重叠访问，放大了闪存后端的流量，此时使用 MSHRs 技术可以通过单次闪存读取服务多个 64B 内存访问；</p>
 <p>ULL 和 SLC 闪存科技的性能差异很小，而如果使用 MLC 和 TLC 闪存，即使有足够大的 DRAM Cache，它们的性能和寿命仍然较差。</p>
-<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><h2 id="不同缓存替换策略"><a href="#不同缓存替换策略" class="headerlink" title="不同缓存替换策略"></a>不同缓存替换策略</h2><p>测试了不同缓存替换算法，以及不同关联度的情况下，CXL-SSD 的请求延时和写入量。</p>
+<h2 id="预取策略"><a href="#预取策略" class="headerlink" title="预取策略"></a>预取策略</h2><p>测试了几个预取算法，发现在某些工作负载下，预取器反而会降低性能；</p>
+<p>负载强度，读写率，局部性会影响 CXL-SSD 的寿命；</p>
+<p>CXL-SSD 的 performance-per-cost 比纯 DRAM 高（加了 小DRAM 做分层…）；</p>
+<p>预取器的准确度对性能提升很重要；</p>
+<p>预取器的准确度低时，造成的缓存污染是性能降低的主要原因；</p>
+<p>虚拟地址-物理地址的转换，使得 CXL-SSD 的预取变得困难，具体来说，基于虚拟地址预取的效果比基于物理地址的预取效果好；</p>
+<p>内核为设备提供内存访问提示（大致意思是将一些频繁访问的地址发送给 CXL-SSD，由它根据这些地址触发预取操作），通过将延迟命中转换为缓存命中，可以进一步降低时延。</p>
+
     </div>
 
     
@@ -389,7 +403,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background"><span class="nav-number">2.</span> <span class="nav-text">Background</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CXL-%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%9C%BA%E4%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">CXL 带来的机会</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CXL-SSD-%E4%BD%9C%E4%B8%BA%E4%B8%BB%E5%AD%98%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">2.2.</span> <span class="nav-text">CXL-SSD 作为主存的挑战</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA-CXL-SSD-%E5%A2%9E%E5%8A%A0-DRAM-Cache"><span class="nav-number">3.1.</span> <span class="nav-text">为 CXL-SSD 增加 DRAM Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%8F%96"><span class="nav-number">3.2.</span> <span class="nav-text">预取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%8F%E5%B0%91%E9%97%AA%E5%AD%98%E6%B5%81%E9%87%8F"><span class="nav-number">3.3.</span> <span class="nav-text">减少闪存流量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AA%E5%AD%98%E7%A7%91%E6%8A%80%E5%92%8C%E5%B9%B6%E8%A1%8C"><span class="nav-number">3.4.</span> <span class="nav-text">闪存科技和并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background"><span class="nav-number">2.</span> <span class="nav-text">Background</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CXL-%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%9C%BA%E4%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">CXL 带来的机会</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CXL-SSD-%E4%BD%9C%E4%B8%BA%E4%B8%BB%E5%AD%98%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">2.2.</span> <span class="nav-text">CXL-SSD 作为主存的挑战</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA-CXL-SSD-%E5%A2%9E%E5%8A%A0-DRAM-Cache"><span class="nav-number">3.1.</span> <span class="nav-text">为 CXL-SSD 增加 DRAM Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%8F%96"><span class="nav-number">3.2.</span> <span class="nav-text">预取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%8F%E5%B0%91%E9%97%AA%E5%AD%98%E6%B5%81%E9%87%8F"><span class="nav-number">3.3.</span> <span class="nav-text">减少闪存流量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AA%E5%AD%98%E7%A7%91%E6%8A%80%E5%92%8C%E5%B9%B6%E8%A1%8C"><span class="nav-number">3.4.</span> <span class="nav-text">闪存科技和并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E7%BC%93%E5%AD%98%E6%9B%BF%E6%8D%A2%E7%AD%96%E7%95%A5"><span class="nav-number">4.1.</span> <span class="nav-text">不同缓存替换策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%8F%96%E7%AD%96%E7%95%A5"><span class="nav-number">4.2.</span> <span class="nav-text">预取策略</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -459,7 +473,7 @@
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">1:56</span>
+    <span title="Reading time total">1:57</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
