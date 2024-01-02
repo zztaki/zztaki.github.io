@@ -22,26 +22,27 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="RLCache (JSAC 20) 论文阅读">
+  <meta name="description" content="Ditto（SOSP 23）论文阅读">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RLCache (JSAC 20)">
-<meta property="og:url" content="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/index.html">
+<meta property="og:title" content="Ditto（SOSP 23）">
+<meta property="og:url" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/index.html">
 <meta property="og:site_name" content="zztaki">
-<meta property="og:description" content="RLCache (JSAC 20) 论文阅读">
+<meta property="og:description" content="Ditto（SOSP 23）论文阅读">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/feature.jpg">
-<meta property="og:image" content="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/reward.jpg">
-<meta property="og:image" content="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/train.jpg">
-<meta property="article:published_time" content="2023-07-10T09:52:57.000Z">
-<meta property="article:modified_time" content="2023-07-11T02:51:13.610Z">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/different_application_client_affect_hit.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/concurrent_number_affect_hit.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/memory_resize_challenge.jpg">
+<meta property="article:published_time" content="2023-12-29T04:52:57.000Z">
+<meta property="article:modified_time" content="2024-01-02T06:22:42.155Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
-<meta property="article:tag" content="ML">
 <meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="内存分离">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/feature.jpg">
+<meta name="twitter:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg">
 
-<link rel="canonical" href="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/">
+<link rel="canonical" href="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/">
 
 
 <script id="page-configurations">
@@ -54,7 +55,7 @@
   };
 </script>
 
-  <title>RLCache (JSAC 20) | zztaki</title><meta name="robots" content="noindex">
+  <title>Ditto（SOSP 23） | zztaki</title>
   
 
 
@@ -204,7 +205,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/10/RLCache%20(JSAC%2020)/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -217,7 +218,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          RLCache (JSAC 20)
+          Ditto（SOSP 23）
         </h1>
 
         <div class="post-meta">
@@ -227,14 +228,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2023-07-10 17:52:57" itemprop="dateCreated datePublished" datetime="2023-07-10T17:52:57+08:00">2023-07-10</time>
+              <time title="Created: 2023-12-29 12:52:57" itemprop="dateCreated datePublished" datetime="2023-12-29T12:52:57+08:00">2023-12-29</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-07-11 10:51:13" itemprop="dateModified" datetime="2023-07-11T10:51:13+08:00">2023-07-11</time>
+                <time title="Modified: 2024-01-02 14:22:42" itemprop="dateModified" datetime="2024-01-02T14:22:42+08:00">2024-01-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,16 +260,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>314</span>
+              <span>3.2k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>5 mins.</span>
             </span>
-            <div class="post-description">RLCache (JSAC 20) 论文阅读</div>
+            <div class="post-description">Ditto（SOSP 23）论文阅读</div>
 
         </div>
       </header>
@@ -279,21 +280,55 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>使用强化学习进行缓存准入决策。</p>
-<h1 id="RL-Cache"><a href="#RL-Cache" class="headerlink" title="RL-Cache"></a>RL-Cache</h1><p>当前请求对象的特征向量为<strong>状态</strong>，缓存准入为<strong>决策</strong>，缓存命中为<strong>奖励</strong>；</p>
-<h2 id="特征选择"><a href="#特征选择" class="headerlink" title="特征选择"></a>特征选择</h2><img src="/2023/07/10/RLCache%20(JSAC%2020)/feature.jpg" class="" title="feature">
+        <p>内存缓存系统是云服务的重要组成部分。然而，由于服务器上 CPU 和内存的耦合，现有缓存系统无法以资源有效和快速的方式调整资源。</p>
+<p>作者建议将内存缓存系统移植到分离内存（DM）架构中以应对上述问题。但是，在分离内存上构建弹性缓存系统具有挑战：对远程内存的访问绕过了远程缓存服务器上的 CPU，会阻碍缓存算法（promotion 和 demotion）的执行；此外，计算和内存资源的弹性变化（并发客户端数量的改变，缓存容量的改变）会影响数据的访问模式，从而影响缓存算法的命中率。</p>
+<p>作者设计了 Ditto，第一个分离内存上的缓存系统，（1）提出以客户端为中心的缓存框架，仅依赖于远程内存访问，就可以在分离内存的计算池中高效地执行不同的缓存算法；（2）采用分布式自适应缓存机制（类 Cacheus）动态选择合适的缓存算法。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>内存缓存系统广泛应用于云服务中，以提高吞吐量和降低延迟。然而，由于云服务请求负载的动态变化和突发性，弹性（根据负载变化调整计算和内存资源的能力）对于内存缓存系统至关重要。</p>
+<p>然而现有的缓存系统构建和部署在将 CPU 和内存紧耦合的单体服务器上，这将导致动态资源调整上存在两个问题：（1）由于 CPU 和内存必须作为大规模集群上的固定大小虚拟机一起添加或减少，资源利用率收到影响（服务可能只想添加更多内存或 CPU 核心来增加缓存容量或请求吞吐量）；（2）调整资源需要进行长时间的数据迁移，导致资源调整的速度太慢，无法应对请求量的爆发；（<strong>现有问题：资源利用率低，资源分配调整速度慢</strong>）</p>
+<p>DM 有机会解决上述问题。它将单台服务器上的 CPU 和内存解耦为独立的计算和内存池，并使用高速互连技术（RDMA 和 CXL）将计算池和内存池互相连接。因此，CPU 和内存可以根据应用需求独立调整，从而提高资源利用率；此外，由于数据被计算池中的所有 CPU 核心共享，因此可以大大降低数据迁移的频率（只有在特殊情况才需要迁移）。</p>
+<p>但要在 DM 上实现缓存系统，必须解决两个挑战：</p>
+<ol>
+<li>绕过远程缓存服务器上的 CPU 后会阻碍缓存算法的执行。缓存算法通过各自的考量指标维护缓存对象的驱逐优先级，一旦数据访问改变了对象的热度，现有缓存算法<strong>依赖缓存服务器上的 CPU 监视对象热度并维护缓存队列数据结构。</strong>然而，在 DM 上的缓存系统中，计算池里的应用程序客户端在访问对象时将绕过内存池中的 CPU，导致在数据路径上无法更新请求对象的热度；此外如何高效地选择驱逐对象也是一个问题，缓存数据结构只能通过额外的高开销 RDMA 操作进行对象提升和降级，而这些数据结构在高并发场景下又会存在大量锁竞争。</li>
+<li>调整资源会影响缓存命中率。缓存命中率和工作负载的访问模式、缓存大小有关。在 DM 上，这两个属性都会随着动态资源的调整而变化。数据访问模式随着并发客户端数量（即计算资源）的变化而变化，缓存大小随着分配的内存空间（即内存资源）的变化而变化。因此，最大化命中率的最佳缓存算法会随着资源设置而动态变化。具有固定缓存算法的缓存系统无法适应 DM 的这些动态特征，并可能导致命中率较低。</li>
+</ol>
+<p>作者首先提出带有分布式热度监控、基于采样驱逐功能的以客户端为中心的缓存框架…使用 MAB 动态选择驱逐算法…</p>
+<p>贡献：</p>
+<ol>
+<li>讨论在 DM 上构建缓存系统的优势和挑战；</li>
+<li>提出以客户端为中心的缓存框架，不同的缓存算法可以被灵活地集成并高效地在 DM 上执行；提出一个采样友好地哈希表和频率计数缓存以提高框架效率；</li>
+<li>提出分布式自适应缓存，根据动态资源变化和数据访问模式改变选择最佳缓存算法；并通过轻量级驱逐历史和懒惰权重更新机制使得策略在 DM 上高效执行；</li>
+<li>合成+真实工作负载测试 Ditto 的性能。</li>
+</ol>
+<h1 id="Background-and-Motivation"><a href="#Background-and-Motivation" class="headerlink" title="Background and Motivation"></a>Background and Motivation</h1><h2 id="单体服务器上的缓存系统问题"><a href="#单体服务器上的缓存系统问题" class="headerlink" title="单体服务器上的缓存系统问题"></a>单体服务器上的缓存系统问题</h2><ol>
+<li>资源利用率低。单体服务器上现有的缓存服务的资源（例如 AWS 的 ElastiCache）被以固定大小的虚拟机粒度（1个 CPU，2GB DRAM）进行分配。然而，应用程序有时可能只需要 CPU 或者内存，导致资源利用率低。</li>
+<li>资源调整速度慢。现有内存缓存系统将数据分片到多个虚拟机，以利用更多的 CPU 和内存资源。然而，当新虚拟机添加到缓存集群后，缓存数据必须重新分片和迁移，将造成一定程度的性能下降；而在虚拟机回收时，又因为迁移将导致资源回收延迟。</li>
+</ol>
+<h2 id="分离内存"><a href="#分离内存" class="headerlink" title="分离内存"></a>分离内存</h2><p>分离内存被提出以降低总成本和改善云数据中心应用程序的弹性。它将单体服务器的计算和内存资源解耦为独立的计算和内存池，计算池中包含计算节点，具有丰富的 CPU 核心和少量用作运行时缓存的 DRAM，而内存池则具有足够的内存节点和计算能力较弱的控制器（1-2 个 CPU 核心）来执行管理任务（网络连接和内存管理）。<strong>计算节点和内存节点通过高带宽、微秒级延迟的 CPU 旁路互连（RDMA 和 CXL）连接，</strong>保证内存访问的性能要求。计算节点可以通过控制器提供的 ALLOC 和 FREE 接口来分配和释放内存池中可变大小的内存块。</p>
+<p>DM 解耦了计算和内存资源后，它们就可以以更细的粒度单独分配，并根据应用程序需求分配准确数量的资源，实现高资源利用率的目标；其次，因为内存池中的缓存数据可以被计算池中的所有计算节点访问，所以它可以大大降低数据迁移的频率，无需在扩容或缩容内存时进行数据迁，大大降低数据迁移成本，使得资源调整迅速生效。</p>
+<h1 id="Challenges"><a href="#Challenges" class="headerlink" title="Challenges"></a>Challenges</h1><h2 id="在-DM-上执行缓存算法"><a href="#在-DM-上执行缓存算法" class="headerlink" title="在 DM 上执行缓存算法"></a>在 DM 上执行缓存算法</h2><p>现有缓存算法都是为以服务器为中心的缓存系统设计的，所有数据都是被服务端的 CPU 访问和驱逐，这种设计模式无法应用于 DM，因为（1）DM 上的缓存系统是以客户端为中心的，所有客户端都是以 CPU 旁路的形式直接访问和驱逐数据的；（2）内存池上的计算能力太弱，难以在数据路径上执行缓存算法。这将导致两个问题。</p>
+<p>首先是如何在客户端为中心的环境下评估缓存对象的热度。现有缓存算法通过监视和统计所有数据访问来评估对象热度。由于单体缓存服务器上的 CPU 访问所有数据，所以可以在以服务器为中心的缓存系统上轻松实现监控。但是对于 DM，无法在内存池或客户端上监控缓存对象的访问，因为（1）RDMA 绕过了内存池中的 CPU，（2）<strong>计算池中的各个客户端不知道全局数据访问。</strong></p>
+<p>其次是如何在客户端高效地选择驱逐对象。DM 上的缓存数据结构必须由计算池中的客户端进行维护，导致需要多个 RTT 完成数据获取和缓存数据结构更新操作，导致维护缓存数据结构效率低，并且还可能存在大量的锁冲突。微秒级的锁延迟和多次锁失败导致的网络争用将严重成为缓存系统吞吐量的瓶颈。</p>
+<p>左图说明，由于额外的 RDMA 操作，导致 KVC 和 KVC-S 的吞吐率和延迟性能较差，右图说明由于锁竞争，它们的吞吐量差。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg" class="" title="execute_cache_algo_on_dm_challenge">
 
-<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>有着指数线性单元激活函数的全连接神经网络，具有<strong>5</strong>个隐藏层，输出层使用 softmax 激活函数，并包含两个神经元，它们生成允许或不允许请求的对象进入缓存的两个相应结果的概率。</p>
-<h2 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h2><ol>
-<li>使用 MC 采样生成 m 个<strong>缓存准入决策序列</strong>，每个序列包含 k 次<strong>缓存准入决策</strong>；</li>
-<li>从额外带有 L 个后续请求的 m 个缓存准入决策序列中，选择奖励值 Top p% 的序列，以引导策略搜索朝向最大化命中率方向；<ul>
-<li>奖励函数：<img src="/2023/07/10/RLCache%20(JSAC%2020)/reward.jpg" class="" title="reward"></li>
+<h2 id="动态资源变化影响命中率"><a href="#动态资源变化影响命中率" class="headerlink" title="动态资源变化影响命中率"></a>动态资源变化影响命中率</h2><p>缓存命中率与数据访问模式、缓存大小密切相关。当动态调整计算和内存资源时，这两者都会受到影响。此时，具有固定缓存算法的缓存系统无法适应，可能导致命中率较低。</p>
+<ol>
+<li><p>改变计算资源影响命中率；</p>
+<p> 在 DM 的缓存系统上，应用程序在计算池中执行多个客户端线程去并发访问内存池中的缓存数据，缓存对象的访问模式将是所有应用程序访问模式的混合。</p>
+<p> 当计算资源变化时，一个应用程序的客户端线程数量也将变化，会改变访问模式的整体组合，并以两种方式影响单个缓存算法的命中率。</p>
+<ul>
+<li><p>首先，一个应用程序的数据访问占比随着其客户端线程的数量而变化；下图显示，随着 LRU 友好应用程序的客户端线程数占比增加，其命中率增高。（占比低时命中率低，应该是由于其它应用程序挤占了命中机会）</p>
+  <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/different_application_client_affect_hit.jpg" class="" title="different_application_client_affect_hit">
+</li>
+<li><p>其次，客户端的并发执行改变了工作负载的原始访问模式。左图坐标（0.25, 0.5）表示，使用 LRU 算法，在 50% 的工作负载上，它们相对命中率变化高于 0.25，即并发执行存在不确定性，同一数据集下命中率可能不稳定；右图显示，对于同一个应用程序，计算资源的变化将导致最优缓存算法改变。</p>
+  <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/concurrent_number_affect_hit.jpg" class="" title="concurrent_number_affect_hit"></li>
 </ul>
 </li>
-<li>利用上一步选择的序列，通过使用二元交叉损失函数进行反向传播，更新权重。</li>
+<li><p>改变内存资源影响命中率；</p>
+<p> 对于同一工作负载，改变内存资源会影响命中率，甚至于改变其访问模式（比如从扫描变成 LFU 友好型）。</p>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/memory_resize_challenge.jpg" class="" title="memory_resize_challenge"></li>
 </ol>
-<p>当权重 w 收敛或者迭代次数达到阈值，将滑动到下一个 <strong>k</strong> 请求窗口，重复以上步骤。</p>
-<img src="/2023/07/10/RLCache%20(JSAC%2020)/train.jpg" class="" title="train"><!-- flag of hidden posts -->
+
     </div>
 
     
@@ -303,14 +338,21 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Cache/" rel="tag"># Cache</a>
-              <a href="/tags/ML/" rel="tag"># ML</a>
               <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag"># 论文阅读</a>
+              <a href="/tags/%E5%86%85%E5%AD%98%E5%88%86%E7%A6%BB/" rel="tag"># 内存分离</a>
           </div>
 
         
 
 
         
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/27/Demystifying_CXL_Memory%EF%BC%88MICRO%2023%EF%BC%89/" rel="prev" title="Demystifying CXL Memory（MICRO 23）">
+      <i class="fa fa-chevron-left"></i> Demystifying CXL Memory（MICRO 23）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
       </footer>
     
   </article>
@@ -368,7 +410,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RL-Cache"><span class="nav-number">1.</span> <span class="nav-text">RL-Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9"><span class="nav-number">1.1.</span> <span class="nav-text">特征选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C"><span class="nav-number">1.2.</span> <span class="nav-text">网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83"><span class="nav-number">1.3.</span> <span class="nav-text">训练</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-Motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and Motivation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BD%93%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">单体服务器上的缓存系统问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%A6%BB%E5%86%85%E5%AD%98"><span class="nav-number">2.2.</span> <span class="nav-text">分离内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Challenges"><span class="nav-number">3.</span> <span class="nav-text">Challenges</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-DM-%E4%B8%8A%E6%89%A7%E8%A1%8C%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">在 DM 上执行缓存算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E5%8F%98%E5%8C%96%E5%BD%B1%E5%93%8D%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="nav-number">3.2.</span> <span class="nav-text">动态资源变化影响命中率</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
