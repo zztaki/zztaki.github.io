@@ -39,8 +39,11 @@
 <meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/logic_fifo.jpg">
 <meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/history_insert_evict.jpg">
 <meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/lazy_weight_update.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/elasticity.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/efficiency.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/more_cores_on_MN.jpg">
 <meta property="article:published_time" content="2023-12-29T04:52:57.000Z">
-<meta property="article:modified_time" content="2024-01-03T03:45:08.678Z">
+<meta property="article:modified_time" content="2024-01-04T06:05:27.459Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="论文阅读">
@@ -241,7 +244,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-01-03 11:45:08" itemprop="dateModified" datetime="2024-01-03T11:45:08+08:00">2024-01-03</time>
+                <time title="Modified: 2024-01-04 14:05:27" itemprop="dateModified" datetime="2024-01-04T14:05:27+08:00">2024-01-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -266,14 +269,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>6.7k</span>
+              <span>7.7k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>11 mins.</span>
+              <span>13 mins.</span>
             </span>
             <div class="post-description">Ditto（SOSP 23）论文阅读</div>
 
@@ -383,6 +386,28 @@
 <p>上图展示了懒惰权重更新方案的流程。每个客户端在本地维护专家权重以做出驱逐决策，当客户端发现遗憾时，它根据历史条目中的专家位图将惩罚应用于本地专家权重，惩罚被记录在惩罚 buffer 中。当缓冲的惩罚超过阈值时，客户端通过基于 RDMA 的 RPC 请求将所有惩罚发送到保存专家权重的内存节点的控制器。在受到客户端的惩罚后，内存节点的控制器首先将惩罚应用于全局专家权重，然后将更新后的全局权重回复给所有客户端。</p>
 <p>为了减少通过网络传输惩罚的带宽消耗，Ditto 利用指数函数的属性（指数相加）压缩惩罚，从而使得惩罚列表变成单个值。</p>
 <p>尽管本地客户端的专家权重并不总和全局权重同步，但是作者说这个并没有影响 Ditto 的适应性。</p>
+<h2 id="Discussions"><a href="#Discussions" class="headerlink" title="Discussions"></a>Discussions</h2><p><strong>元数据扩展。</strong>如果有额外元数据（没有存储在哈希表中），执行 Get 和 Set 操作后，需要额外的 RDMA_WRITE 来异步更新额外元数据；在缓存驱逐时，需要额外的 RDMA_READ 获取额外元数据一同输入到优先级函数中。</p>
+<p><strong>元数据开销。</strong>每个历史条目占 40 字节，历史条目总数和缓存对象的最大数量相等；对于每个缓存对象，在哈希表中需要占据 40 字节；对于每个专家，需要一个 4 字节浮点数。</p>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><p><strong>mark：如何将 trace 分发到多个客户端？</strong></p>
+<p>缓存驱逐时的采样大小：5（和 Redis 一样）；</p>
+<p>历史记录大小：Cache Capacity（和 LeCaR 一样）；</p>
+<p>FC Cache 的阈值：10，FC Cache 的容量：10 MB（实验结果评估）；</p>
+<p>MAB 学习率：0.1，本地 100 次的权重更新再传输给全局权重。</p>
+<h2 id="弹性"><a href="#弹性" class="headerlink" title="弹性"></a>弹性</h2><p>基于 DM 的缓存系统 Ditto 相比于基于传统单体服务器的 Redis 来说，资源利用率以及资源切换时的调整速度都更好。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/elasticity.jpg" class="" title="elasticity">
+
+<h2 id="效率"><a href="#效率" class="headerlink" title="效率"></a>效率</h2><p>为了评估 Ditto 在 DM 上可以高效执行缓存算法，作者在 YCSB 基准上评估了其与 Shard-LRU，CliqueMap 的吞吐量和尾延迟。Ditto 的性能瓶颈仅在 RNIC 的传输速率上；而 Shard-LRU 会随着客户端数量的增加，远程锁争用成为瓶颈；CliqueMap 的瓶颈则在于内存池的计算能力</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/efficiency.jpg" class="" title="efficiency">
+
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/more_cores_on_MN.jpg" class="" title="more_cores_on_MN">
+
+<h2 id="适应性"><a href="#适应性" class="headerlink" title="适应性"></a>适应性</h2><h3 id="适应不同的真实工作负载"><a href="#适应不同的真实工作负载" class="headerlink" title="适应不同的真实工作负载"></a>适应不同的真实工作负载</h3><p>MAB 集成多种缓存算法，使得可以根据不同的访问模式切换最合适的缓存算法，能够适应大部分工作负载。</p>
+<h3 id="适应动态资源调整"><a href="#适应动态资源调整" class="headerlink" title="适应动态资源调整"></a>适应动态资源调整</h3><p>计算资源变化（客户端数量改变）和内存资源变化（缓存大小改变），Ditto 都能够很好地适应。</p>
+<h2 id="灵活性"><a href="#灵活性" class="headerlink" title="灵活性"></a>灵活性</h2><p>只需少量的额外代码，就可以集成多种缓存算法。</p>
+<h2 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h2><p>Design 部分各自的技术对于吞吐量的提升。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文提出了 Ditto，第一个基于内存分离架构的缓存系统，可以实现更好的弹性。</p>
+<p>Ditto 解决了在 DM 上构建缓存系统的挑战，即<strong>执行现有以服务器为中心的缓存算法并处理动态变化的资源和数据访问模式导致的低命中率</strong>。具体地说，它通过提出一种以客户端为中心的缓存框架，以有效地在 DM 上执行缓存算法；提出一种分布式自适应缓存方案来适应资源和工作负载的变化。</p>
+<p>实验结果表明，Ditto 有效地适应了 DM 上的资源和工作负载变化，并且在 YCSB 合成工作负载上优于单片服务器上最先进的缓存系统高达 9 倍，在现实世界的键值跟踪上优于最先进的缓存系统 3.6 倍。</p>
 
     </div>
 
@@ -465,7 +490,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-Motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and Motivation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BD%93%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">单体服务器上的缓存系统问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%A6%BB%E5%86%85%E5%AD%98"><span class="nav-number">2.2.</span> <span class="nav-text">分离内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Challenges"><span class="nav-number">3.</span> <span class="nav-text">Challenges</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-DM-%E4%B8%8A%E6%89%A7%E8%A1%8C%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">在 DM 上执行缓存算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E5%8F%98%E5%8C%96%E5%BD%B1%E5%93%8D%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="nav-number">3.2.</span> <span class="nav-text">动态资源变化影响命中率</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">4.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">4.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A5%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6"><span class="nav-number">4.2.</span> <span class="nav-text">以客户端为中心的缓存框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%87%E6%A0%B7%E5%8F%8B%E5%A5%BD%E5%93%88%E5%B8%8C%E8%A1%A8"><span class="nav-number">4.2.1.</span> <span class="nav-text">采样友好哈希表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%91%E7%8E%87%E8%AE%A1%E6%95%B0%E5%99%A8%E7%BC%93%E5%AD%98"><span class="nav-number">4.2.2.</span> <span class="nav-text">频率计数器缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%87%AA%E9%80%82%E5%BA%94%E7%BC%93%E5%AD%98"><span class="nav-number">4.3.</span> <span class="nav-text">分布式自适应缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%A9%B1%E9%80%90%E5%8E%86%E5%8F%B2"><span class="nav-number">4.3.1.</span> <span class="nav-text">轻量级驱逐历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%83%B0%E4%B8%93%E5%AE%B6%E6%9D%83%E9%87%8D%E6%9B%B4%E6%96%B0"><span class="nav-number">4.3.2.</span> <span class="nav-text">懒惰专家权重更新</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-Motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and Motivation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BD%93%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">单体服务器上的缓存系统问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%A6%BB%E5%86%85%E5%AD%98"><span class="nav-number">2.2.</span> <span class="nav-text">分离内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Challenges"><span class="nav-number">3.</span> <span class="nav-text">Challenges</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-DM-%E4%B8%8A%E6%89%A7%E8%A1%8C%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">在 DM 上执行缓存算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E5%8F%98%E5%8C%96%E5%BD%B1%E5%93%8D%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="nav-number">3.2.</span> <span class="nav-text">动态资源变化影响命中率</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">4.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">4.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A5%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6"><span class="nav-number">4.2.</span> <span class="nav-text">以客户端为中心的缓存框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%87%E6%A0%B7%E5%8F%8B%E5%A5%BD%E5%93%88%E5%B8%8C%E8%A1%A8"><span class="nav-number">4.2.1.</span> <span class="nav-text">采样友好哈希表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%91%E7%8E%87%E8%AE%A1%E6%95%B0%E5%99%A8%E7%BC%93%E5%AD%98"><span class="nav-number">4.2.2.</span> <span class="nav-text">频率计数器缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%87%AA%E9%80%82%E5%BA%94%E7%BC%93%E5%AD%98"><span class="nav-number">4.3.</span> <span class="nav-text">分布式自适应缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%A9%B1%E9%80%90%E5%8E%86%E5%8F%B2"><span class="nav-number">4.3.1.</span> <span class="nav-text">轻量级驱逐历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%83%B0%E4%B8%93%E5%AE%B6%E6%9D%83%E9%87%8D%E6%9B%B4%E6%96%B0"><span class="nav-number">4.3.2.</span> <span class="nav-text">懒惰专家权重更新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Discussions"><span class="nav-number">4.4.</span> <span class="nav-text">Discussions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">5.</span> <span class="nav-text">Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%B9%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">弹性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%88%E7%8E%87"><span class="nav-number">5.2.</span> <span class="nav-text">效率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E6%80%A7"><span class="nav-number">5.3.</span> <span class="nav-text">适应性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E4%B8%8D%E5%90%8C%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD"><span class="nav-number">5.3.1.</span> <span class="nav-text">适应不同的真实工作负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E8%B0%83%E6%95%B4"><span class="nav-number">5.3.2.</span> <span class="nav-text">适应动态资源调整</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%81%B5%E6%B4%BB%E6%80%A7"><span class="nav-number">5.4.</span> <span class="nav-text">灵活性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C"><span class="nav-number">5.5.</span> <span class="nav-text">消融实验</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -529,13 +554,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">79k</span>
+    <span title="Symbols count total">80k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:11</span>
+    <span title="Reading time total">2:13</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
