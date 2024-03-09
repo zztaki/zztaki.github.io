@@ -29,13 +29,22 @@
 <meta property="og:site_name" content="zztaki">
 <meta property="og:description" content="Pond（ASPLOS 23）论文阅读">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/memory_stranding.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/local_and_cxl.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/cxl_slowdown.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/EMC.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pool_size_latency.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pool_size_impact.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pond_control_plane.jpg">
+<meta property="og:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/prediction_models.jpg">
 <meta property="article:published_time" content="2023-11-28T04:52:57.000Z">
-<meta property="article:modified_time" content="2023-12-25T09:00:30.016Z">
+<meta property="article:modified_time" content="2024-01-05T09:21:46.169Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="论文阅读">
 <meta property="article:tag" content="CXL">
 <meta property="article:tag" content="分层">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/memory_stranding.jpg">
 
 <link rel="canonical" href="http://example.com/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/">
 
@@ -230,7 +239,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-12-25 17:00:30" itemprop="dateModified" datetime="2023-12-25T17:00:30+08:00">2023-12-25</time>
+                <time title="Modified: 2024-01-05 17:21:46" itemprop="dateModified" datetime="2024-01-05T17:21:46+08:00">2024-01-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -255,14 +264,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>121</span>
+              <span>1.9k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>1 mins.</span>
+              <span>3 mins.</span>
             </span>
             <div class="post-description">Pond（ASPLOS 23）论文阅读</div>
 
@@ -275,9 +284,54 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>内存池化对于公有云有很大吸引力，比如提高 DRAM 利用率；但内存池化可能对性能造成伤害，比如远端内存的访问延时大于本地内存的访问延时。</p>
+        <p>内存池化有望提高 DRAM 利用率，这对公有云有很大的吸引力；但内存池化可能对性能造成伤害，因为远端内存的访问延时大于本地内存的访问延时。</p>
 <p>Pond 是一个建立在 CXL 标准之上的内存池系统，显著降低 DRAM 成本且满足云性能目标。</p>
-<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p><strong>动机。</strong>许多公有云客户以虚拟机（VM）的形式部署 workloads，这给公有云提供商带来了一个重大挑战：如何以具有性价比的硬件成本为不透明的虚拟机（无法查看客户在虚拟机中运行的内容）实现高性能。</p>
+<p>内存是影响性能和成本的关键因素。内存成本非常高，占微软 Azure 和 Meta 服务器成本的 40% 和 50%；然而，在 Azure 生产环境下，<strong>内存搁浅</strong>（一台服务器上 CPU 核心已经全部租给虚拟机使用，但存在部分未分配的内存容量。从云服务提供商的角度看就是 CPU 售尽了，内存没售尽）非常严重，且是内存浪费的主要原因；此外，已分配给虚拟机的内存未必被充分利用，比如虚拟机共有 8GB 内存，但是最多只使用了 6GB，那么如果剩余 2GB 全部来自池内存，也不会影响性能。</p>
+<p><strong>现有最优技术的局限性。</strong>现有的进程级内存压缩技术需要页中断，这会增加微妙延迟，且不再静态分配内存；内存分解可以池化内存，将搁浅的内存返回到内存池中供其它服务器使用，但是，现有的分离内存也具有微秒级访问延迟，并且需要页中断或对 VM guest 进行修改。</p>
+<p><strong>Insights</strong></p>
+<ol>
+<li><p>分析了 Azure 100 个生产集群的跟踪，相比同一 NUMA 上的内存访问，CXL 技术使得 8-16 插槽大小（能够使用该内存池的 CPU 插槽数量）的内存池增加 70-90 ns，使得机架级大小的内存池增加 180 ns 延迟。而 8-16 个插槽的池大小可以节省足够的 DRAM；</p>
+<ul>
+<li><p>在 CPU 资源利用率高的集群中，未分配搁浅内存的比例可高达 25%；</p>
+  <img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/memory_stranding.jpg" class="" title="memory_stranding"></li>
+</ul>
+</li>
+<li><p>对于 Azure 上的典型 158 工作负载，分析它们在 CXL 内存相比于在本地内存中运行时产生的性能损失。发现（1）40% 左右的工作负载性能损失在 5% 以内；（2）21% 的工作负载遭遇了超过 25% 的性能损失。说明<strong>部分工作负载对内存延迟不敏感，可以完全分配 CXL 内存，而对于延迟敏感的内存，可以配置本地和 CXL 混合内存</strong>。</p>
+ <img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/local_and_cxl.jpg" class="" title="local_and_cxl">
+
+ <img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/cxl_slowdown.jpg" class="" title="cxl_slowdown">
+</li>
+<li><p>对于已分配给虚拟机的内存，50% 的虚拟机占用的租用内存不足 50%，此时，即使<strong>未使用的内存全部来自内存池也不会影响延迟敏感的虚拟机</strong>。如果将池内存作为 zero-core 虚拟 NUMA（zNUMA）节点暴漏给虚拟机的操作系统，这个结论确实成立。</p>
+</li>
+<li><p>如果可以正确预测（1）一个虚拟机是否延迟敏感，（2）虚拟机未使用的内存大小，则分配的 CXL 内存具有和同一 NUMA 上的内存相同的性能；对于失败的预测，引入一种新颖的监视系统，如果检测到内存性能不佳便触发缓存措施，将虚拟机迁移为仅使用同一 NUMA 节点内存。</p>
+</li>
+</ol>
+<p>基于以上 insights，Pond 通过 ML 模型预测虚拟机是否延迟敏感以及未使用的内存大小，静态分配同一 NUMA 节点内存和动态分配池内存，并通过监视系统检测性能，性能不佳时进行适当迁移。</p>
+<h1 id="Design"><a href="#Design" class="headerlink" title="Design"></a>Design</h1><p><strong>设计目标。</strong></p>
+<ol>
+<li>高性能。在采用访问速度相对较慢的外部 CXL 内存后，虚拟机的性能应该与完全使用本地 NUMA 上的 DRAM 性能接近；</li>
+<li>硬件兼容性。与虚拟化加速器兼容；</li>
+<li>软件兼容性。与不透明的虚拟机和客户应用程序相兼容；</li>
+<li>低开销。额外开销尽可能小。</li>
+</ol>
+<h2 id="池内存大小"><a href="#池内存大小" class="headerlink" title="池内存大小"></a>池内存大小</h2><p>作者发现最多可以有 16 个 CPU sockets 可以直接与 EMC（external memory controller） 相连，而如果大于 16，则需要加入 CXL 交换机，这会显著增加内存池的访问延迟和硬件成本。</p>
+<img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/EMC.jpg" class="" title="EMC">
+
+<img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pool_size_latency.jpg" class="" title="pool_size_latency">
+
+<p>此外，作者发现当池大小大于 16 时，收益明显递减。因此，8&#x2F;16 的池大小是性能和成本的平衡点。</p>
+<img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pool_size_impact.jpg" class="" title="pool_size_impact">
+
+<h2 id="混合内存分配"><a href="#混合内存分配" class="headerlink" title="混合内存分配"></a>混合内存分配</h2><p>当需要分配一个虚拟机时，首先使用 ML 模型预测需要为虚拟机分配多少本地内存，再通过调度程序将目标主机及其池内存需求信息告知池管理器，池管理器触发内存在线工作流程，调度程序通知虚拟机管理程序在与内存量匹配的 zNUMA 节点上启动虚拟机。</p>
+<img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/pond_control_plane.jpg" class="" title="pond_control_plane">
+
+<h2 id="预测模型"><a href="#预测模型" class="headerlink" title="预测模型"></a>预测模型</h2><p>首先检查当前请求的虚拟机是否可以和工作负载历史相关联，具体实现方式是通过检查过去的虚拟机是否具有与请求虚拟机相同的元数据（例如客户 ID，虚拟机类型和位置）。如果有过去的工作负载历史记录，便预测该虚拟机是否对内存延迟敏感（比如全使用池内存相比于全使用本地内存，性能下降在 5% 以内可以被视为不敏感）；如果虚拟机没有工作负载历史记录或预计对延迟敏感，再预测其未使用的内存容量，对应部分使用池内存分配。</p>
+<p>与此同时，在虚拟机运行过程中监视其性能，如果使用到了池内存，则需要进行虚拟机迁移，重新进行内存分配。</p>
+<img src="/2023/11/28/Pond%EF%BC%88ASPLOS%2023%EF%BC%89/prediction_models.jpg" class="" title="prediction_models">
+
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>使用 NUMA 模拟。在具有两个 sockets 的服务器上只使用一个 socket，而在另一个 socket 上禁用所有 CPU 核心，模拟成 CXL 内存池。</p>
+
     </div>
 
     
@@ -362,7 +416,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">2.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%A0%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.1.</span> <span class="nav-text">池内存大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="nav-number">2.2.</span> <span class="nav-text">混合内存分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E6%B5%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.3.</span> <span class="nav-text">预测模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.4.</span> <span class="nav-text">实现</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -376,7 +430,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -389,7 +443,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -426,13 +480,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">80k</span>
+    <span title="Symbols count total">82k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:13</span>
+    <span title="Reading time total">2:17</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
