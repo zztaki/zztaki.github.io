@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="TPP（ASPLOS 23）论文阅读">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TPP（ASPLOS 23）">
+<meta property="og:url" content="http://example.com/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/index.html">
+<meta property="og:site_name" content="zztaki">
+<meta property="og:description" content="TPP（ASPLOS 23）论文阅读">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/TPP_decouple.jpg">
+<meta property="article:published_time" content="2023-12-25T04:52:57.000Z">
+<meta property="article:modified_time" content="2024-04-25T11:37:32.281Z">
+<meta property="article:author" content="zztaki">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="CXL">
+<meta property="article:tag" content="分层">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/TPP_decouple.jpg">
+
+<link rel="canonical" href="http://example.com/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>TPP（ASPLOS 23） | zztaki</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+	  <a target="_blank" rel="noopener" href="https://github.com/zztaki" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zztaki</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">fitness and bulking~</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-cv">
+
+    <a href="/CV/CV.pdf" rel="section"><i class="fa fa-user fa-fw"></i>CV</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TPP（ASPLOS 23）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-12-25 12:52:57" itemprop="dateCreated datePublished" datetime="2023-12-25T12:52:57+08:00">2023-12-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-25 19:37:32" itemprop="dateModified" datetime="2024-04-25T19:37:32+08:00">2024-04-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Memory/" itemprop="url" rel="index"><span itemprop="name">Memory</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+            <div class="post-description">TPP（ASPLOS 23）论文阅读</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>大规模数据中心的内存需求急剧增加，此时，CXL 带来的内存扩展将可能成为这一问题的解决方案。然而，如果没有有效的内存管理（比如页面放置），可能会导致本地内存和 CXL 内存这一分层内存性能下降。</p>
+<p>因此，作者提出一个操作系统内核级的应用程序透明页面放置策略，无需应用程序特定的提示，能够有效地做到从本地内存将冷数据降级到 CXL 内存，从 CXL 内存将热数据提升到本地内存。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><ol>
+<li>内存分层是否有益？<ul>
+<li>静态层面上每个应用程序在一定时期内，页面们的冷热度是否保持不变；同一应用程序的不同类型页面是否有不同的冷热度；不同类型的应用程序申请的页面是否有不同的冷热度；<strong>（performance 的前提）</strong></li>
+<li>动态层面上能否以较低的开销实时监测页面的冷热度；<strong>（efficiency 开销是否值得）</strong>。然后作者构建了一个用户态工具 Chameleon，使用现有 CPU 的 PEBS 机制表征应用程序的内存访问行为，并生成不同类型的页面（匿名页面，file page cache，共享内存等等）的热力图。</li>
+</ul>
+</li>
+<li>Chameleon 表征（1）很大一部分的工作集是暖&#x2F;冷的，可以卸载到低速层而不会对性能带来严重影响；（2）大部分匿名内存（堆内存，栈内存，mmap）往往更热，而大部分 file page cache 更冷；（3）页面访问模式一定时间内保持稳定（分钟到小时）；（4）通过新的（取消）分配，实际物理页地址可以相当快地将其行为从热更改为冷，反之亦然。静态页面分配会显着降低性能。</li>
+<li>基于 Chameleon 的观察，提出操作系统级透明页面放置机制 TPP，有效地将页面放置在分层内存系统中，以便相对热的页面保留在快速内存层中，而冷页面则移动到慢速内存层中。三个组件<ul>
+<li>轻量级回收机制：将较冷页面降级到低速层；</li>
+<li>将多 NUMA 系统的分配和回收逻辑解耦，以维持高速层节点上的空闲页面空间；</li>
+<li>页面提升机制：有效的识别低速层中的热页，已将其提升到高速层；</li>
+<li>同时支持页面类型感知分配，可以将匿名页面放置到高速层，file page cache 放置到低速层。</li>
+</ul>
+</li>
+</ol>
+<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><p>数据中心应用对内存的需求日益增长；</p>
+<p>CPU 和内存的紧耦合设计限制了灵活性和可扩展性；而 CXL 的到来有助于独立扩展内存资源，并确保更好地利用闲置资源；</p>
+<p>meta 应用程序分配的内存中有 55%-80% 在任何两分钟间隔内保持空闲状态，如果将这些内存页面迁移至低速层，将可以为更多热页分配到高速层。</p>
+<h1 id="Chameleon"><a href="#Chameleon" class="headerlink" title="Chameleon"></a>Chameleon</h1><h2 id="一段时间内页面的冷热度"><a href="#一段时间内页面的冷热度" class="headerlink" title="一段时间内页面的冷热度"></a>一段时间内页面的冷热度</h2><p>Web，cache，warehouse，Ads 四类应用程序，在任何两分钟间隔内，分配的内存中有 55%-80% 是闲置的（这两分钟内没有被访问），可以将这些页面迁移至低速层。</p>
+<h2 id="不同类型页面的冷热度"><a href="#不同类型页面的冷热度" class="headerlink" title="不同类型页面的冷热度"></a>不同类型页面的冷热度</h2><p>大部分匿名页面是热的，然而 file page 则相对较冷。</p>
+<h2 id="随着时间推移，不同类型页面的使用情况"><a href="#随着时间推移，不同类型页面的使用情况" class="headerlink" title="随着时间推移，不同类型页面的使用情况"></a>随着时间推移，不同类型页面的使用情况</h2><p>Web 服务开启时，将虚拟机的二进制和字节码文件加载至内存，此时 file page 占据大部分内存，随着时间推移，file page 比例逐渐减少，匿名页面比例之间增加。</p>
+<p>Cache 应用程序的 file page 占据 70-82%。</p>
+<p>Data Warehousr 工作负载的匿名页面占据 85%。</p>
+<p>大部分应用程序的匿名页面和 file page 比例比较稳定，因此，页面放置机制在做决策时，应该具备感知页面类型的功能（这有什么关联吗？）</p>
+<h2 id="页面类型对性能的影响"><a href="#页面类型对性能的影响" class="headerlink" title="页面类型对性能的影响"></a>页面类型对性能的影响</h2><p>大多数情况下，随着匿名页面的使用增加，应用程序的吞吐量增加。</p>
+<h2 id="页面重用时间粒度"><a href="#页面重用时间粒度" class="headerlink" title="页面重用时间粒度"></a>页面重用时间粒度</h2><p>Web 和 Cache 应用程序 80% 的页面在十分钟间隔后会得到访问，而 Warehoust 应用程序则只有 20%，Warehoust 会持续分配新页面（扫描工作负载）。</p>
+<h1 id="TPP"><a href="#TPP" class="headerlink" title="TPP"></a>TPP</h1><h2 id="轻量降级到-CXL-内存"><a href="#轻量降级到-CXL-内存" class="headerlink" title="轻量降级到 CXL 内存"></a>轻量降级到 CXL 内存</h2><p>本地内存使用 LRU 链表，当本地内存容量达到降级水位时，将 LRU 尾部对象异步迁移至 CXL 节点；如果有多个 CXL 节点，则降级至距离当前 CPU 最近的那一个。</p>
+<h2 id="解耦分配和回收"><a href="#解耦分配和回收" class="headerlink" title="解耦分配和回收"></a>解耦分配和回收</h2><p>原有逻辑中，如果节点空闲内存低于低水位，TPP 将冷页面降级到 CXL 节点，并且，本地节点的内存分配将中止指导回收器释放了足够的内存达到高水位。由于回收比分配慢，本地内存节点频繁中止分配，更多的页面被分配到 CXL 节点，导致性能下降。</p>
+<p>因此，有必要为本地内存预留足够的容量，如此一下，新的分配可以蜂拥至本地内存节点（新的分配页面往往很流行），并且本地内存节点可以接收来自 CXL 节点的页面提升。</p>
+<p>具体做法就是设置降级水位和分配水位，当达到降级水位时，将 LRU 的尾页面迁移至 CXL 内存，此时仍可以在本地内存节点分配内存。</p>
+<img src="/2023/12/25/TPP%EF%BC%88ASPLOS%2023%EF%BC%89/TPP_decouple.jpg" class="" title="TPP_decouple">
+
+<h2 id="来自-CXL-节点的页面提升"><a href="#来自-CXL-节点的页面提升" class="headerlink" title="来自 CXL 节点的页面提升"></a>来自 CXL 节点的页面提升</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag"># 论文阅读</a>
+              <a href="/tags/CXL/" rel="tag"># CXL</a>
+              <a href="/tags/%E5%88%86%E5%B1%82/" rel="tag"># 分层</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/18/Pangu%EF%BC%88FAST%2023%EF%BC%89/" rel="prev" title="Pangu（FAST 23）">
+      <i class="fa fa-chevron-left"></i> Pangu（FAST 23）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/26/CXL-SSD%EF%BC%88ATC%2023%EF%BC%89/" rel="next" title="CXL-SSD（ATC 23）">
+      CXL-SSD（ATC 23） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Chameleon"><span class="nav-number">3.</span> <span class="nav-text">Chameleon</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E5%86%85%E9%A1%B5%E9%9D%A2%E7%9A%84%E5%86%B7%E7%83%AD%E5%BA%A6"><span class="nav-number">3.1.</span> <span class="nav-text">一段时间内页面的冷热度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E7%B1%BB%E5%9E%8B%E9%A1%B5%E9%9D%A2%E7%9A%84%E5%86%B7%E7%83%AD%E5%BA%A6"><span class="nav-number">3.2.</span> <span class="nav-text">不同类型页面的冷热度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%8F%E7%9D%80%E6%97%B6%E9%97%B4%E6%8E%A8%E7%A7%BB%EF%BC%8C%E4%B8%8D%E5%90%8C%E7%B1%BB%E5%9E%8B%E9%A1%B5%E9%9D%A2%E7%9A%84%E4%BD%BF%E7%94%A8%E6%83%85%E5%86%B5"><span class="nav-number">3.3.</span> <span class="nav-text">随着时间推移，不同类型页面的使用情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E7%B1%BB%E5%9E%8B%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">3.4.</span> <span class="nav-text">页面类型对性能的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E9%87%8D%E7%94%A8%E6%97%B6%E9%97%B4%E7%B2%92%E5%BA%A6"><span class="nav-number">3.5.</span> <span class="nav-text">页面重用时间粒度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TPP"><span class="nav-number">4.</span> <span class="nav-text">TPP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E9%99%8D%E7%BA%A7%E5%88%B0-CXL-%E5%86%85%E5%AD%98"><span class="nav-number">4.1.</span> <span class="nav-text">轻量降级到 CXL 内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E8%80%A6%E5%88%86%E9%85%8D%E5%92%8C%E5%9B%9E%E6%94%B6"><span class="nav-number">4.2.</span> <span class="nav-text">解耦分配和回收</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%A5%E8%87%AA-CXL-%E8%8A%82%E7%82%B9%E7%9A%84%E9%A1%B5%E9%9D%A2%E6%8F%90%E5%8D%87"><span class="nav-number">4.3.</span> <span class="nav-text">来自 CXL 节点的页面提升</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zztaki</p>
+  <div class="site-description" itemprop="description">fitness</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zztaki</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">82k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:17</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+

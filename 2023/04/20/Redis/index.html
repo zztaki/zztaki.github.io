@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis">
+<meta property="og:url" content="http://example.com/2023/04/20/Redis/index.html">
+<meta property="og:site_name" content="zztaki">
+<meta property="og:description" content="Redis">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/04/20/Redis/%E8%B7%B3%E8%B7%83%E8%A1%A8.jpg">
+<meta property="og:image" content="http://example.com/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8.jpg">
+<meta property="og:image" content="http://example.com/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8entry.jpg">
+<meta property="og:image" content="http://example.com/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8%E5%85%83%E7%B4%A0%E7%9A%84%E7%BC%96%E7%A0%81.jpg">
+<meta property="article:published_time" content="2023-04-20T07:52:57.000Z">
+<meta property="article:modified_time" content="2024-04-25T11:37:32.272Z">
+<meta property="article:author" content="zztaki">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="源码分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/04/20/Redis/%E8%B7%B3%E8%B7%83%E8%A1%A8.jpg">
+
+<link rel="canonical" href="http://example.com/2023/04/20/Redis/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Redis | zztaki</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+	  <a target="_blank" rel="noopener" href="https://github.com/zztaki" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zztaki</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">fitness and bulking~</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-cv">
+
+    <a href="/CV/CV.pdf" rel="section"><i class="fa fa-user fa-fw"></i>CV</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/20/Redis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-04-20 15:52:57" itemprop="dateCreated datePublished" datetime="2023-04-20T15:52:57+08:00">2023-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-25 19:37:32" itemprop="dateModified" datetime="2024-04-25T19:37:32+08:00">2024-04-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>20 mins.</span>
+            </span>
+            <div class="post-description">Redis</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基本数据结构"><a href="#基本数据结构" class="headerlink" title="基本数据结构"></a>基本数据结构</h1><h2 id="简单动态字符串"><a href="#简单动态字符串" class="headerlink" title="简单动态字符串"></a>简单动态字符串</h2><p>位于 <code>sds.h</code> 和 <code>sds.c</code> 中。</p>
+<p>C语言用 ‘\0’ 作为字符串结束符，而如果字符串内容本身就包含 ‘\0’ 则会被截断，无法做到二进制安全。因此，redis 将<strong>柔性字符数组</strong>包装到 sds 数据结构中，同时使用 len 和 alloc 表示已使用字符数组的长度和预分配长度。</p>
+<p><strong>注</strong>：柔性数组只能放在结构体的末尾，而之所以使用柔性数组而不是字符指针，是因为柔性数组的地址和结构体是连续的，可以方便地通过柔性数组的首地址偏移得到结构体的首地址（<code>buf[-1]</code> 一定是 <code>flags</code> 字段，进一步可以知道所在结构体的大小）。</p>
+<p>为精细地管理字符串，节约内存空间，设置了各个长度范围的字符串结构体。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">__attribute__</span>((__packed__)) sdshdr5 &#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> flags; <span class="comment">/* 3 个最低有效位表示类型, 同时 5 个最高有效位表示字符串长度 */</span></span><br><span class="line">    <span class="type">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">__attribute__</span>((__packed__)) sdshdr8 &#123;</span><br><span class="line">    <span class="type">uint8_t</span> len;         <span class="comment">/* 已使用的长度 */</span></span><br><span class="line">    <span class="type">uint8_t</span> alloc;       <span class="comment">/* 分配给 buf 的长度 - 1 （不包含结构体中的元数据以及 buf 中的</span></span><br><span class="line"><span class="comment">                            &#x27;\0&#x27; 结束符） */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> flags; <span class="comment">/* 3位最低有效位表示类型, 其余5个比特位未被使用 */</span></span><br><span class="line">    <span class="type">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">__attribute__</span>((__packed__)) sdshdr16 &#123;</span><br><span class="line">    <span class="type">uint16_t</span> len;        <span class="comment">/* 已使用的长度 */</span></span><br><span class="line">    <span class="type">uint16_t</span> alloc;      <span class="comment">/* 分配给 buf 的长度 - 1 （不包含结构体中的元数据以及 buf 中的</span></span><br><span class="line"><span class="comment">                           &#x27;\0&#x27; 结束符） */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> flags; <span class="comment">/* 3位最低有效位表示类型, 其余5个比特位未被使用 */</span></span><br><span class="line">    <span class="type">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">__attribute__</span>((__packed__)) sdshdr32 &#123;</span><br><span class="line">    <span class="type">uint32_t</span> len;        <span class="comment">/* 已使用的长度 */</span></span><br><span class="line">    <span class="type">uint32_t</span> alloc;      <span class="comment">/* 分配给 buf 的长度 - 1 （不包含结构体中的元数据以及 buf 中的</span></span><br><span class="line"><span class="comment">                           &#x27;\0&#x27; 结束符） */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> flags; <span class="comment">/* 3位最低有效位表示类型, 其余5个比特位未被使用 */</span></span><br><span class="line">    <span class="type">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">__attribute__</span>((__packed__)) sdshdr64 &#123;</span><br><span class="line">    <span class="type">uint64_t</span> len;        <span class="comment">/* 已使用的长度 */</span></span><br><span class="line">    <span class="type">uint64_t</span> alloc;      <span class="comment">/* 分配给 buf 的长度 - 1 （不包含结构体中的元数据以及 buf 中的</span></span><br><span class="line"><span class="comment">                           &#x27;\0&#x27; 结束符） */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> flags; <span class="comment">/* 3位最低有效位表示类型, 其余5个比特位未被使用 */</span></span><br><span class="line">    <span class="type">char</span> buf[];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="双向链表"><a href="#双向链表" class="headerlink" title="双向链表"></a>双向链表</h2><p>位于 <code>adlist.h</code> 和 <code>adlist.c</code> 中。</p>
+<p>redis 双向链表的节点可以存储任意类型的 value，因此，每个 list 可以设置自己的 dup、free 和 match 函数，达到多态目的。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 双端链表节点 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">listNode</span> &#123;</span><br><span class="line">    <span class="comment">/* 指向前驱节点的指针 */</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">listNode</span> *prev;</span><br><span class="line">    <span class="comment">/* 指向后继节点的指针 */</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">listNode</span> *next;</span><br><span class="line">    <span class="comment">/* void * 指针，指向具体的元素，节点可以是任意类型 */</span></span><br><span class="line">    <span class="type">void</span> *value;</span><br><span class="line">&#125; listNode;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 双端链表</span></span><br><span class="line"><span class="comment"> * 有记录头尾两节点，支持从链表头部或者尾部进行遍历，是早期列表键 PUSH/POP 实现高效的关键</span></span><br><span class="line"><span class="comment"> * 每个链表节点有记录前驱节点和后继节点的指针，可以使得列表键支持往后或者往前进行遍历</span></span><br><span class="line"><span class="comment"> * 有额外用 len 存储链表长度，O(1) 的时间复杂度获取节点个数，是 LLEN 命令高效的关键 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">list</span> &#123;</span><br><span class="line">    <span class="comment">/* 指向链表头节点的指针，支持从表头开始遍历 */</span></span><br><span class="line">    listNode *head;</span><br><span class="line">    <span class="comment">/* 指向链表尾节点的指针，支持从表尾开始遍历 */</span></span><br><span class="line">    listNode *tail;</span><br><span class="line">    <span class="comment">/* 各种类型的链表可以定义自己的复制函数 / 释放函数 / 比较函数 */</span></span><br><span class="line">    <span class="type">void</span> *(*dup)(<span class="type">void</span> *ptr);</span><br><span class="line">    <span class="built_in">void</span> (*free)(<span class="type">void</span> *ptr);</span><br><span class="line">    <span class="built_in">int</span> (*match)(<span class="type">void</span> *ptr, <span class="type">void</span> *key);</span><br><span class="line">    <span class="comment">/* 链表长度，即链表节点数量，O(1) 时间复杂度获取 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> len;</span><br><span class="line">&#125; list;</span><br></pre></td></tr></table></figure>
+
+<h2 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h2><p>位于 <code>dict.h</code> 和 <code>dict.c</code> 中。</p>
+<p>dictEntry 存储键值对；dict 为字典结构，其中使用了两个哈希表，第二个哈希表一般情况下不用，只有在扩容缩容操作时，避免长时间 rehash 导致阻塞，将新申请空间存在第二个哈希表中，rehash 过程中，添加操作往第二个哈希表中进行，查找、删除和修改在两个哈希表中依次进行，除此之外，第一个哈希表中的键值对需要在服务空闲时重新计算哈希桶索引，全部迁移插入到第二个哈希表中；dictType 为字典类型，针对不同类型的键和值配置合适的复制、析构和比较函数等，达到多态目的。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">dictEntry</span> &#123;</span><br><span class="line">    <span class="comment">/* void * 类型的 key，可以指向任意类型的键 */</span></span><br><span class="line">    <span class="type">void</span> *key;</span><br><span class="line">    <span class="comment">/* 联合体 v 中包含了指向实际值的指针 *val、无符号的 64 位整数、有符号的 64 位整数，以及 double 双精度浮点数。</span></span><br><span class="line"><span class="comment">     * 这是一种节省内存的方式，因为当值为整数或者双精度浮点数时，由于它们本身就是 64 位的，void *val 指针也是占用 64 位（64 操作系统下），</span></span><br><span class="line"><span class="comment">     * 所以它们可以直接存在键值对的结构体中，避免再使用一个指针，从而节省内存开销（8 个字节）</span></span><br><span class="line"><span class="comment">     * 当然也可以是 void *，存储任何类型的数据，最早 redis1.0 版本就只是 void* */</span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="type">void</span> *val;</span><br><span class="line">        <span class="type">uint64_t</span> u64;</span><br><span class="line">        <span class="type">int64_t</span> s64;</span><br><span class="line">        <span class="type">double</span> d;</span><br><span class="line">    &#125; v;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">dictEntry</span> *next;     <span class="comment">/* 同一个 hash 桶中的下一个条目.</span></span><br><span class="line"><span class="comment">                                 * 通过形成一个链表解决桶内的哈希冲突. */</span></span><br><span class="line">    <span class="type">void</span> *metadata[];           <span class="comment">/* 一块任意长度的数据 (按 void* 的大小对齐),</span></span><br><span class="line"><span class="comment">                                 * 具体长度由 &#x27;dictType&#x27; 中的</span></span><br><span class="line"><span class="comment">                                 * dictEntryMetadataBytes() 返回. */</span></span><br><span class="line">&#125; dictEntry;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 字典类型，因为我们会将字典用在各个地方，例如键空间、过期字典等等等，只要是想用字典（哈希表）的场景都可以用</span></span><br><span class="line"><span class="comment"> * 这样的话每种类型的字典，它对应的 key / value 肯定类型是不一致的，这就需要有一些自定义的方法，例如键值对复制、析构等 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">dictType</span> &#123;</span><br><span class="line">    <span class="comment">/* 字典里哈希表的哈希算法，目前使用的是基于 DJB 实现的字符串哈希算法</span></span><br><span class="line"><span class="comment">     * 比较出名的有 siphash，redis 4.0 中引进了它。3.0 之前使用的是 DJBX33A，3.0 - 4.0 使用的是 MurmurHash2 */</span></span><br><span class="line">    <span class="built_in">uint64_t</span> (*hashFunction)(<span class="type">const</span> <span class="type">void</span> *key);</span><br><span class="line">    <span class="comment">/* 键拷贝 */</span></span><br><span class="line">    <span class="type">void</span> *(*keyDup)(dict *d, <span class="type">const</span> <span class="type">void</span> *key);</span><br><span class="line">    <span class="comment">/* 值拷贝 */</span></span><br><span class="line">    <span class="type">void</span> *(*valDup)(dict *d, <span class="type">const</span> <span class="type">void</span> *obj);</span><br><span class="line">    <span class="comment">/* 键比较 */</span></span><br><span class="line">    <span class="built_in">int</span> (*keyCompare)(dict *d, <span class="type">const</span> <span class="type">void</span> *key1, <span class="type">const</span> <span class="type">void</span> *key2);</span><br><span class="line">    <span class="comment">/* 键析构 */</span></span><br><span class="line">    <span class="built_in">void</span> (*keyDestructor)(dict *d, <span class="type">void</span> *key);</span><br><span class="line">    <span class="comment">/* 值析构 */</span></span><br><span class="line">    <span class="built_in">void</span> (*valDestructor)(dict *d, <span class="type">void</span> *obj);</span><br><span class="line">    <span class="comment">/* 字典里的哈希表是否允许扩容 */</span></span><br><span class="line">    <span class="built_in">int</span> (*expandAllowed)(<span class="type">size_t</span> moreMem, <span class="type">double</span> usedRatio);</span><br><span class="line">    <span class="comment">/* 允许调用者向条目 (dictEntry) 中添加额外的元信息.</span></span><br><span class="line"><span class="comment">     * 这段额外信息的内存会在条目分配时被零初始化. */</span></span><br><span class="line">    <span class="built_in">size_t</span> (*dictEntryMetadataBytes)(dict *d);</span><br><span class="line">&#125; dictType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">dict</span> &#123;</span><br><span class="line">    <span class="comment">/* 字典类型，8 bytes */</span></span><br><span class="line">    dictType *type;</span><br><span class="line">    <span class="comment">/* 字典中使用了两个哈希表,</span></span><br><span class="line"><span class="comment">     * (看看那些以 &#x27;ht_&#x27; 为前缀的成员, 它们都是一个长度为 2 的数组)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 我们可以将它们视为</span></span><br><span class="line"><span class="comment">     * struct&#123;</span></span><br><span class="line"><span class="comment">     *   ht_table[2];</span></span><br><span class="line"><span class="comment">     *   ht_used[2];</span></span><br><span class="line"><span class="comment">     *   ht_size_exp[2];</span></span><br><span class="line"><span class="comment">     * &#125; hash_table[2];</span></span><br><span class="line"><span class="comment">     * 为了优化字典的内存结构,</span></span><br><span class="line"><span class="comment">     * 减少对齐产生的空洞,</span></span><br><span class="line"><span class="comment">     * 我们将这些数据分散于整个结构体中.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 平时只使用下标为 0 的哈希表.</span></span><br><span class="line"><span class="comment">     * 当需要进行 rehash 时 (&#x27;rehashidx&#x27; != -1),</span></span><br><span class="line"><span class="comment">     * 下标为 1 的一组数据会作为一组新的哈希表,</span></span><br><span class="line"><span class="comment">     * 渐进地进行 rehash 避免一次性 rehash 造成长时间的阻塞.</span></span><br><span class="line"><span class="comment">     * 当 rehash 完成时, 将新的哈希表置入下标为 0 的组别中,</span></span><br><span class="line"><span class="comment">     * 同时将 &#x27;rehashidx&#x27; 置为 -1.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    dictEntry **ht_table[<span class="number">2</span>];</span><br><span class="line">    <span class="comment">/* 哈希表存储的键数量，它与哈希表的大小 size 的比值就是 load factor 负载因子，</span></span><br><span class="line"><span class="comment">     * 值越大说明哈希碰撞的可能性也越大，字典的平均查找效率也越低</span></span><br><span class="line"><span class="comment">     * 理论上负载因子 &lt;=1 的时候，字典能保持平均 O(1) 的时间复杂度查询</span></span><br><span class="line"><span class="comment">     * 当负载因子等于哈希表大小的时候，说明哈希表退化成链表了，此时查询的时间复杂度退化为 O(N)</span></span><br><span class="line"><span class="comment">     * redis 会监控字典的负载因子，在负载因子变大的时候，会对哈希表进行扩容，后面会提到的渐进式 rehash */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> ht_used[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">    <span class="type">long</span> rehashidx; <span class="comment">/* rehashing not in progress if rehashidx == -1 */</span></span><br><span class="line">                    <span class="comment">/* rehash 的进度.</span></span><br><span class="line"><span class="comment">                     * 如果此变量值为 -1, 则当前未进行 rehash. */</span></span><br><span class="line">    <span class="comment">/* 将小尺寸的变量置于结构体的尾部, 减少对齐产生的额外空间开销. */</span></span><br><span class="line">    <span class="type">int16_t</span> pauserehash; <span class="comment">/* If &gt;0 rehashing is paused (&lt;0 indicates coding error) */</span></span><br><span class="line">                         <span class="comment">/* 如果此变量值 &gt;0 表示 rehash 暂停</span></span><br><span class="line"><span class="comment">                          * (&lt;0 表示编写的代码出错了). */</span></span><br><span class="line">    <span class="comment">/* 存储哈希表大小的指数表示，通过这个可以直接计算出哈希表的大小，例如 exp = 10, size = 2 ** 10</span></span><br><span class="line"><span class="comment">     * 能避免说直接存储 size 的实际值，以前 8 字节存储的数值现在变成 1 字节进行存储 */</span></span><br><span class="line">    <span class="type">signed</span> <span class="type">char</span> ht_size_exp[<span class="number">2</span>]; <span class="comment">/* exponent of size. (size = 1&lt;&lt;exp) */</span></span><br><span class="line">                                <span class="comment">/* 哈希表大小的指数表示.</span></span><br><span class="line"><span class="comment">                                 * (以 2 为底, 大小 = 1 &lt;&lt; 指数) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="跳跃表"><a href="#跳跃表" class="headerlink" title="跳跃表"></a>跳跃表</h2><p><code>server.h</code> 中的 <code>zskiplist</code> 结构和 <code>zskiplistNode</code> 结构，<code>t_zset.c</code> 中以 <code>zsl</code> 开头的函数。</p>
+<img src="/2023/04/20/Redis/%E8%B7%B3%E8%B7%83%E8%A1%A8.jpg" class="" title="跳跃表">
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">zskiplistNode</span> &#123;</span><br><span class="line">    sds ele;					       <span class="comment">// 存储字符串类型数据</span></span><br><span class="line">    <span class="type">double</span> score;                      <span class="comment">// 优先分数 </span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">zskiplistNode</span> *backward;    <span class="comment">// 指向当前节点最底层的前一个节点</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">zskiplistLevel</span> &#123;</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">zskiplistNode</span> *forward; <span class="comment">// 指向本层下一节点，尾节点指向 NULL</span></span><br><span class="line">        <span class="type">unsigned</span> <span class="type">long</span> span;            <span class="comment">// forward 指向的节点和本节点之间的元素个数，span 值越大，跳过的节点个数越多</span></span><br><span class="line">    &#125; level[]; 						   <span class="comment">// 柔性数组，每个节点的数组长度不一样</span></span><br><span class="line">&#125; zskiplistNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">zskiplist</span> &#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">zskiplistNode</span> *header, *tail;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> length;  <span class="comment">// 跳跃表节点个数（等于元素总数，不包括头节点）</span></span><br><span class="line">    <span class="type">int</span> level;             <span class="comment">// 跳跃表高度（除头节点外，层数最多的节点的层高）</span></span><br><span class="line">&#125; zskiplist;</span><br></pre></td></tr></table></figure>
+
+<p>跳跃表的头节点高度为 <code>MAXLEVEL</code>，其它节点创建时随机设置高度，高度越高概率越小。</p>
+<p>重点是 <code>update</code> 和 <code>rank</code> 数组的理解。</p>
+<p><code>update[]</code>：记录每层比插入元素 score 或字典序小的最近节点；</p>
+<p><code>rank[]</code>：记录插入位置在每层中从头节点跨越了多少个节点。</p>
+<h2 id="整数集合"><a href="#整数集合" class="headerlink" title="整数集合"></a>整数集合</h2><p>位于 <code>intset.h</code> 和 <code>intset.c</code> 中。</p>
+<p>整数集合中的元素<strong>从小到大</strong>排列在数组中。为节省空间，有三种底层数组类型，随着插入整数的编码提升，提升整数集合底层数组的类型。（插入和删除操作效率比较低，涉及 <code>memmove</code>）</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 整数集合 </span></span><br><span class="line"><span class="comment"> * 记录不包含重复元素的各个整数(由小到大的顺序) </span></span><br><span class="line"><span class="comment"> * 底层数组默认是 int16_t 类型, 可能随着新增元素的大小升级至 int32_t 或 int64_t 类型*/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">intset</span> &#123;</span><br><span class="line">    <span class="comment">/* 编码, 记录整数集合底层数组(contents)的类型*/</span></span><br><span class="line">    <span class="type">uint32_t</span> encoding;</span><br><span class="line">    <span class="comment">/* 记录整数集合包含的元素个数 */</span></span><br><span class="line">    <span class="type">uint32_t</span> length;</span><br><span class="line">    <span class="comment">/* 整数集合的底层实现, 虽声明为 int8_t 类型,但真正的类型取决于 encoding */</span></span><br><span class="line">    <span class="type">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+
+<h2 id="压缩列表"><a href="#压缩列表" class="headerlink" title="压缩列表"></a>压缩列表</h2><p>位于 <code>ziplist.h</code> 和 <code>ziplist.c</code> 中。</p>
+<p>压缩列表适合存储小整数以及短字符串，并且元素数量较少。</p>
+<img src="/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8.jpg" class="" title="压缩列表">
+
+<p>压缩列表中的 entry 在内存中有三个字段，previous_entry_length 字段表示<strong>前一个元素</strong>的字节长度，占1个或者5个字节，当前一个元素的长度小于254字节时，用1个字节表示；当前一个元素的长度大于或等于254字节时，用5个字节来表示。而此时 previous_entry_length 字段的第1个字节是固定的0xFE，后面4个字节才真正表示前一个元素的长度。假设已知当前元素的首地址为p，那么 p-previous_entry_length 就是前一个元素的首地址，从而实现压缩列表从尾到头的遍历。</p>
+<img src="/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8entry.jpg" class="" title="压缩列表entry">
+
+<p>encoding 字段同样长度可变，为1字节、2字节或者5字节，用来表示<strong>当前元素</strong>的数据和字节长度；content 字段则是存储的实际内容。</p>
+<img src="/2023/04/20/Redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8%E5%85%83%E7%B4%A0%E7%9A%84%E7%BC%96%E7%A0%81.jpg" class="" title="压缩列表元素的编码">
+
+<p>压缩列表中的 entry 被解码后保存在 zlentry 结构体中。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 这是一个很关键的结构体，将 ziplist 节点信息填充成一个 zlentry 结构体，方便后面进行函数操作</span></span><br><span class="line"><span class="comment"> * 需要注意这并不是一个 ziplist 节点在内存中实际的编码布局，只是为了方便我们使用</span></span><br><span class="line"><span class="comment"> * */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">zlentry</span> &#123;</span><br><span class="line">    <span class="comment">/* 存储下面 prevrawlen 所需要的字节数 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> prevrawlensize; <span class="comment">/* Bytes used to encode the previous entry len*/</span></span><br><span class="line">    <span class="comment">/* 存储前一个节点的字节长度 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> prevrawlen;     <span class="comment">/* Previous entry len. */</span></span><br><span class="line">    <span class="comment">/* 存储下面 len 所需要的字节数 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> lensize;        <span class="comment">/* Bytes used to encode this entry type/len.</span></span><br><span class="line"><span class="comment">                                    For example strings have a 1, 2 or 5 bytes</span></span><br><span class="line"><span class="comment">                                    header. Integers always use a single byte.*/</span></span><br><span class="line">    <span class="comment">/* 存储当前节点的字节长度 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> len;            <span class="comment">/* Bytes used to represent the actual entry.</span></span><br><span class="line"><span class="comment">                                    For strings this is just the string length</span></span><br><span class="line"><span class="comment">                                    while for integers it is 1, 2, 3, 4, 8 or</span></span><br><span class="line"><span class="comment">                                    0 (for 4 bit immediate) depending on the</span></span><br><span class="line"><span class="comment">                                    number range. */</span></span><br><span class="line">    <span class="comment">/* prevrawlensize + lensize 当前节点的头部字节，</span></span><br><span class="line"><span class="comment">     * 其实是 prevlen + encoding 两项占用的字节数 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> headersize;     <span class="comment">/* prevrawlensize + lensize. */</span></span><br><span class="line">    <span class="comment">/* 存储当前节点的数据编码格式 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> encoding;      <span class="comment">/* Set to ZIP_STR_* or ZIP_INT_* depending on</span></span><br><span class="line"><span class="comment">                                    the entry encoding. However for 4 bits</span></span><br><span class="line"><span class="comment">                                    immediate integers this can assume a range</span></span><br><span class="line"><span class="comment">                                    of values and must be range-checked. */</span></span><br><span class="line">    <span class="comment">/* 指向当前节点开头第一个字节的指针 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *p;            <span class="comment">/* Pointer to the very start of the entry, that</span></span><br><span class="line"><span class="comment">                                    is, this points to prev-entry-len field. */</span></span><br><span class="line">&#125; zlentry;</span><br></pre></td></tr></table></figure>
+
+<h2 id="快速列表"><a href="#快速列表" class="headerlink" title="快速列表"></a>快速列表</h2><p>位于 <code>quicklist.h</code> 和 <code>quicklist.c</code> 中。</p>
+<p>quicklist 是一个双向链表，链表中的每个节点是一个压缩列表。</p>
+<h1 id="数据对象"><a href="#数据对象" class="headerlink" title="数据对象"></a>数据对象</h1><p>Redis 基于上述数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象和有序集合对象这五种类型的对象，每种对象都用到了至少一种我们前面所介绍的数据结构。</p>
+<p>位于 <code>server.h</code> 中的 <code>redisObject</code> 数据结构（robj）的 type 字段表示对象类型；encoding 字段表示底层数据存储结构（针对某一种类型对象，redis 可能会根据情况采用不同的数据结构存储）；ptr 指向数据所在的底层数据结构的存储位置。对象也可能使用多种数据结构存储，比如有序集合可以采用字典和跳跃表同时存储，分别利用两者的单点查询和范围查询优势，由于数据都是用指针存储，因此额外开销只是相关数据结构的 header 相关字段。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* The actual Redis Object */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_STRING 0    <span class="comment">/* String object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_LIST 1      <span class="comment">/* List object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_SET 2       <span class="comment">/* Set object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ZSET 3      <span class="comment">/* Sorted set object. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_HASH 4      <span class="comment">/* Hash object. */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Objects encoding. Some kind of objects like Strings and Hashes can be</span></span><br><span class="line"><span class="comment"> * internally represented in multiple ways. The &#x27;encoding&#x27; field of the object</span></span><br><span class="line"><span class="comment"> * is set to one of this fields for this object. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_RAW 0     <span class="comment">/* Raw representation */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_INT 1     <span class="comment">/* Encoded as integer */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_HT 2      <span class="comment">/* Encoded as hash table */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_ZIPMAP 3  <span class="comment">/* No longer used: old hash encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_LINKEDLIST 4 <span class="comment">/* No longer used: old list encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_ZIPLIST 5 <span class="comment">/* No longer used: old list/hash/zset encoding. */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_INTSET 6  <span class="comment">/* Encoded as intset */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_SKIPLIST 7  <span class="comment">/* Encoded as skiplist */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_EMBSTR 8  <span class="comment">/* Embedded sds string encoding */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_QUICKLIST 9 <span class="comment">/* Encoded as linked list of listpacks */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_STREAM 10 <span class="comment">/* Encoded as a radix tree of listpacks */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OBJ_ENCODING_LISTPACK 11 <span class="comment">/* Encoded as a listpack */</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">redisObject</span> &#123;</span><br><span class="line">    <span class="type">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> lru:LRU_BITS; <span class="comment">/* LRU time (relative to global lru_clock) or</span></span><br><span class="line"><span class="comment">                            * LFU data (least significant 8 bits frequency</span></span><br><span class="line"><span class="comment">                            * and most significant 16 bits access time). */</span></span><br><span class="line">    <span class="type">int</span> refcount;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Redis-处理客户端命令"><a href="#Redis-处理客户端命令" class="headerlink" title="Redis 处理客户端命令"></a>Redis 处理客户端命令</h1><h2 id="相关数据结构"><a href="#相关数据结构" class="headerlink" title="相关数据结构"></a>相关数据结构</h2><p>客户端数据结构，位于 <code>server.h</code> 中。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">client</span> &#123;</span><br><span class="line">    <span class="type">uint64_t</span> id;            <span class="comment">/* 客户端唯一 id */</span></span><br><span class="line">    redisDb *db;            <span class="comment">/* 指向当前选择的数据库 */</span></span><br><span class="line">    robj *name;             <span class="comment">/* 客户端名称 */</span></span><br><span class="line">    sds querybuf;           <span class="comment">/* 输入缓冲区，recv 函数接收的客户端命令请求暂时缓存在此处 */</span></span><br><span class="line">    <span class="type">int</span> argc;               <span class="comment">/* 命令请求的参数个数 */</span></span><br><span class="line">    robj **argv;            <span class="comment">/* 命令请求的参数内容依次解析到此处 */</span></span><br><span class="line"></span><br><span class="line">    list *reply;            <span class="comment">/* 存储待返回给客户端的命令回复数据 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> reply_bytes; <span class="comment">/* reply 列表所有节点的存储空间之和 */</span></span><br><span class="line">    <span class="type">size_t</span> sentlen;         <span class="comment">/* 已返回给客户端的字节数 */</span></span><br><span class="line"></span><br><span class="line">    <span class="type">time_t</span> lastinteraction; <span class="comment">/* 客户端上次与服务器交互时间，用于客户端的超时处理 */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Response buffer */</span></span><br><span class="line">    <span class="type">size_t</span> buf_peak; <span class="comment">/* Peak used size of buffer in last 5 sec interval. */</span></span><br><span class="line">    <span class="type">mstime_t</span> buf_peak_last_reset_time; <span class="comment">/* keeps the last time the buffer peak value was reset */</span></span><br><span class="line">    <span class="type">int</span> bufpos;</span><br><span class="line">    <span class="type">size_t</span> buf_usable_size; <span class="comment">/* Usable size of buffer. */</span></span><br><span class="line">    <span class="type">char</span> *buf;</span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">&#125; client;</span><br></pre></td></tr></table></figure>
+
+<p>服务端数据结构，位于 <code>server.h</code> 中。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">redisServer</span>&#123;</span><br><span class="line">	<span class="type">char</span> *configfile; 						<span class="comment">/* 配置文件绝对路径 */</span></span><br><span class="line">	<span class="type">int</span> dbnum; 								<span class="comment">/* 数据库的数目 */</span></span><br><span class="line">	redisDb *db; 							<span class="comment">/* 数据库数组 */</span></span><br><span class="line">    dict *commands; 						<span class="comment">/* 命令字典，放置命令名称到命令对象的映射 */</span></span><br><span class="line">    aeEventLoop *el; 						<span class="comment">/* 事件循环 */</span></span><br><span class="line">    <span class="type">int</span> port; 								<span class="comment">/* 服务器监听端口号，可通过参数 port 配置，默认为 6379 */</span></span><br><span class="line">	<span class="type">char</span> * bindaddr[CONFIG_BINDADDR_MAX]; 	<span class="comment">/* 绑定的所有 IP */</span></span><br><span class="line">    <span class="type">int</span> bindaddr_count; 					<span class="comment">/* 用户配置的 IP 地址数目 */</span></span><br><span class="line">    socketFds ipfd; 						<span class="comment">/* 存储所有 IP 地址创建的 socket 文件描述符 */</span></span><br><span class="line">	list *clients; 							<span class="comment">/* 当前连接的所有客户端 */</span></span><br><span class="line">    <span class="type">int</span> maxidletime; 						<span class="comment">/* 最大空闲时间 */</span></span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>命令数据结构，位于 <code>server.h</code>  中。Redis 支持的所有命令都在全局变量 <code>struct redisCommand redisCommandTable[]</code> 中。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">redisCommand</span> &#123;</span><br><span class="line">	<span class="type">char</span> *declared_name;			<span class="comment">/* 命令名称 */</span></span><br><span class="line">	redisCommandProc *proc; 		<span class="comment">/* 命令处理函数 */</span></span><br><span class="line">	<span class="type">int</span> arity;						<span class="comment">/* 命令参数数目（-N 表示参数数目必须 &gt;= N；N 表示参数数目必须 = N） */</span></span><br><span class="line">	<span class="type">int</span> flags;						<span class="comment">/* 命令的二进制标志 */</span></span><br><span class="line">	<span class="type">long</span> <span class="type">long</span> microseconds, calls;	<span class="comment">/* 服务器启动至今该命令总执行时间；该命令总执行次数。用于统计 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>当服务端收到一个命令请求时，如果到 redisCommandTable 中查找命令，耗时太高。因此，Redis 在服务器初始时，将命令表转化为一个字典。</p>
+<p>事件循环数据结构，位于 <code>ae.h</code> 中。文件事件（socket 的可读可写时间）和时间事件（定时任务）都封装在该数据结构中</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* State of an event based program */</span></span><br><span class="line"><span class="comment">/* 事件处理器的状态 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">aeEventLoop</span> &#123;</span><br><span class="line">    <span class="comment">/* 目前已经注册的最大文件描述符 */</span></span><br><span class="line">    <span class="type">int</span> maxfd;   <span class="comment">/* highest file descriptor currently registered */</span></span><br><span class="line">    <span class="comment">/* 目前追踪的最大文件描述符数量，redis 初始化的时候会设置好的一个固定值</span></span><br><span class="line"><span class="comment">     * 初始化事件循环器的时候会把这个值赋值给 setsize，见 server.h 文件的 CONFIG_FDSET_INCR</span></span><br><span class="line"><span class="comment">     * server.maxclients + RESERVED_FDS（32） + 96 */</span></span><br><span class="line">    <span class="type">int</span> setsize; <span class="comment">/* max number of file descriptors tracked */</span></span><br><span class="line">    <span class="comment">/* 用于生成时间事件的 ID */</span></span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> timeEventNextId;</span><br><span class="line">    <span class="comment">/* 已注册的文件事件，在初始化的时候会初始化 setsize 个位置 */</span></span><br><span class="line">    aeFileEvent *events; <span class="comment">/* Registered events */</span></span><br><span class="line">    <span class="comment">/* 已就绪的文件事件 */</span></span><br><span class="line">    aeFiredEvent *fired; <span class="comment">/* Fired events */</span></span><br><span class="line">    <span class="comment">/* 时间事件链表的头节点 */</span></span><br><span class="line">    aeTimeEvent *timeEventHead;</span><br><span class="line">    <span class="comment">/* 事件处理器的开关 */</span></span><br><span class="line">    <span class="type">int</span> stop;</span><br><span class="line">    <span class="comment">/* 多路复用库的私有数据 */</span></span><br><span class="line">    <span class="type">void</span> *apidata; <span class="comment">/* This is used for polling API specific data */</span></span><br><span class="line">    <span class="comment">/* 在处理事件前要执行的函数 */</span></span><br><span class="line">    aeBeforeSleepProc *beforesleep;</span><br><span class="line">    <span class="comment">/* 在处理事件后要执行的函数 */</span></span><br><span class="line">    aeBeforeSleepProc *aftersleep;</span><br><span class="line">    <span class="type">int</span> flags;</span><br><span class="line">&#125; aeEventLoop;</span><br></pre></td></tr></table></figure>
+
+<h2 id="服务端启动"><a href="#服务端启动" class="headerlink" title="服务端启动"></a>服务端启动</h2><h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ol>
+<li><p>初始化配置，包括用户可配置的参数，以及命令表数组初始化成字典；</p>
+<p> 位于 <code>server.c</code> 中的 <code>initServerConfig</code> 函数执行。</p>
+</li>
+<li><p>加载并解析配置文件；</p>
+<p> 位于 <code>config.c</code> 中的 <code>loadServerConfig</code> 函数执行。</p>
+</li>
+<li><p>初始化服务器内部变量，比如数据库、全局变量和共享对象等；</p>
+<p> 位于 <code>server.c</code> 中的 <code>initServer</code> 函数执行。</p>
+</li>
+<li><p>创建事件循环 eventLoop，分配结构体所需内存，创建 epoll；</p>
+<p> 位于 <code>ae.c</code> 中的 <code>aeCreateEventLoop</code> 函数执行。</p>
+</li>
+</ol>
+<h3 id="启动监听"><a href="#启动监听" class="headerlink" title="启动监听"></a>启动监听</h3><ol>
+<li><p>创建 socket 并启动监听；</p>
+<p> 位于 <code>server.c</code> 中的 <code>listenToPort</code> 函数执行。</p>
+</li>
+<li><p>创建文件事件和时间事件；</p>
+</li>
+<li><p>开启事件循环；</p>
+<p> 位于 <code>ae.c</code> 中的 <code>aeMain</code> 函数执行。</p>
+</li>
+</ol>
+<h2 id="命令处理"><a href="#命令处理" class="headerlink" title="命令处理"></a>命令处理</h2><p>服务端启动完成后，只需要等待客户端连接并发送命令请求即可。</p>
+<h3 id="命令解析"><a href="#命令解析" class="headerlink" title="命令解析"></a>命令解析</h3><p>命令请求首先通过 <code>readQueryFromClient</code> 函数处理后存储在客户端的 <code>querybuf</code> 中，并调用 <code>processInputBuffer</code> 函数解析命令请求，将参数个数和各个参数存储在客户端的 <code>argc</code> 和 <code>argv</code> 中。</p>
+<h3 id="命令调用"><a href="#命令调用" class="headerlink" title="命令调用"></a>命令调用</h3><p>解析完成后，会调用 <code>processCommand</code> 函数处理命令请求，包括一系列的校验以及最后调用 <code>call</code> 函数，通过 <code>c-&gt;cmd-&gt;proc(c)</code> 执行命令。**(后续如果想要读命令的执行细节，就只需要关注这一块就可以了)**</p>
+<h3 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h3><p>结果保存在客户端的 <code>reply</code> 或 <code>buf</code> 中。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+              <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag"># 源码分析</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/17/Large-scale%20Analysis%20at%20Twitter%20Cache%20Clusters%EF%BC%88TOS%2021%EF%BC%89/" rel="prev" title="Large-scale Analysis at Twitter Cache Clusters（TOS 21）">
+      <i class="fa fa-chevron-left"></i> Large-scale Analysis at Twitter Cache Clusters（TOS 21）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/20/LRB%EF%BC%88NSDI%2020%EF%BC%89/" rel="next" title="LRB（NSDI 20）">
+      LRB（NSDI 20） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">基本数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="nav-number">1.1.</span> <span class="nav-text">简单动态字符串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">双向链表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E5%85%B8"><span class="nav-number">1.3.</span> <span class="nav-text">字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%B3%E8%B7%83%E8%A1%A8"><span class="nav-number">1.4.</span> <span class="nav-text">跳跃表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E6%95%B0%E9%9B%86%E5%90%88"><span class="nav-number">1.5.</span> <span class="nav-text">整数集合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8"><span class="nav-number">1.6.</span> <span class="nav-text">压缩列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E5%88%97%E8%A1%A8"><span class="nav-number">1.7.</span> <span class="nav-text">快速列表</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.</span> <span class="nav-text">数据对象</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Redis-%E5%A4%84%E7%90%86%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">Redis 处理客户端命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">相关数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%90%AF%E5%8A%A8"><span class="nav-number">3.2.</span> <span class="nav-text">服务端启动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.2.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E7%9B%91%E5%90%AC"><span class="nav-number">3.2.2.</span> <span class="nav-text">启动监听</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E5%A4%84%E7%90%86"><span class="nav-number">3.3.</span> <span class="nav-text">命令处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A7%A3%E6%9E%90"><span class="nav-number">3.3.1.</span> <span class="nav-text">命令解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%B0%83%E7%94%A8"><span class="nav-number">3.3.2.</span> <span class="nav-text">命令调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C"><span class="nav-number">3.3.3.</span> <span class="nav-text">返回结果</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zztaki</p>
+  <div class="site-description" itemprop="description">fitness</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zztaki</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">82k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:17</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+

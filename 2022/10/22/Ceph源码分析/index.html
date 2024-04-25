@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="《Ceph源码分析》笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ceph源码分析">
+<meta property="og:url" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="zztaki">
+<meta property="og:description" content="《Ceph源码分析》笔记">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ceph%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%AF%B9%E8%B1%A1%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/PG%E6%A6%82%E5%BF%B5%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E8%AF%BB%E5%86%99%E8%BF%87%E7%A8%8B.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/raw%E5%92%8Cptr%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E6%A0%BC%E5%BC%8F.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%901.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%902.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%903.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%904.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/bucket%E9%80%89%E6%8B%A9%E7%AE%97%E6%B3%95.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/librados%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/aio.jpg">
+<meta property="article:published_time" content="2022-10-22T06:52:57.000Z">
+<meta property="article:modified_time" content="2024-04-25T11:37:32.143Z">
+<meta property="article:author" content="zztaki">
+<meta property="article:tag" content="Ceph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ceph%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E5%9B%BE.png">
+
+<link rel="canonical" href="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Ceph源码分析 | zztaki</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+	  <a target="_blank" rel="noopener" href="https://github.com/zztaki" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zztaki</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">fitness and bulking~</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-cv">
+
+    <a href="/CV/CV.pdf" rel="section"><i class="fa fa-user fa-fw"></i>CV</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Ceph源码分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-10-22 14:52:57" itemprop="dateCreated datePublished" datetime="2022-10-22T14:52:57+08:00">2022-10-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-25 19:37:32" itemprop="dateModified" datetime="2024-04-25T19:37:32+08:00">2024-04-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Ceph/" itemprop="url" rel="index"><span itemprop="name">Ceph</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>41k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1:09</span>
+            </span>
+            <div class="post-description">《Ceph源码分析》笔记</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>《Ceph源码分析》摘要</strong></p>
+<h1 id="Ceph整体架构"><a href="#Ceph整体架构" class="headerlink" title="Ceph整体架构"></a>Ceph整体架构</h1><h2 id="Ceph设计目标"><a href="#Ceph设计目标" class="headerlink" title="Ceph设计目标"></a>Ceph设计目标</h2><ol>
+<li>高可用性：Ceph使用数据多副本、纠删码提供数据冗余。</li>
+<li>高可扩展性<ul>
+<li>集群容量可以伸缩，可以任意添加和删除存储节点、存储设备。</li>
+<li>系统性能随集群的增加而线性增加。</li>
+</ul>
+</li>
+<li>大规模：Ceph存储系统的规模可以扩展到成千上万节点。</li>
+</ol>
+<h2 id="Ceph基本架构图"><a href="#Ceph基本架构图" class="headerlink" title="Ceph基本架构图"></a>Ceph基本架构图</h2><p>Ceph整体架构有三层</p>
+<ol>
+<li>最底层最核心的 RADOS 对象存储系统：RADOS（reliable, autonomous, distributed object store）是一个可靠的、自组织的、可自动修复、自我管理的分布式对象存储系统。其内部包括 ceph-osd 后台服务进程和 ceph-mon 监控进程。  </li>
+<li>中间层librados库：用于本地或远程通过网络访问RADOS对象存储系统。支持多种语言，如C&#x2F;C++、Java、Python等。</li>
+<li>最上层Ceph不同形式的存储接口实现<ul>
+<li>块存储结构。</li>
+<li>对象存储接口。</li>
+<li>文件系统接口。</li>
+</ul>
+</li>
+</ol>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/ceph%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E5%9B%BE.png" class="" title="Ceph基本架构图">
+
+<h2 id="Ceph客户端接口"><a href="#Ceph客户端接口" class="headerlink" title="Ceph客户端接口"></a>Ceph客户端接口</h2><h3 id="RBD"><a href="#RBD" class="headerlink" title="RBD"></a>RBD</h3><p>RBD（rados block device）通过 librbd 库对应用提供块存储，主要面向云平台的虚拟机提供虚拟磁盘。传统 SAN 就是块存储，通过 SCSI 或者 FC 接口给应用提供一个独立的 LUN 或者卷。RBD 类似于传统的 SAN 存储，都提供数据块级别的访问。  </p>
+<h3 id="CephFS"><a href="#CephFS" class="headerlink" title="CephFS"></a>CephFS</h3><p>CephFS 通过在 RADOS 基础之上增加了 MDS ( Metadata Server) 来提供文件存储。它提供了 libcephfs 库和标准的 P0SIX 文件接口。 CephFS 类似于传统的 NAS 存储，通过 NFS 或者 CIFS 协议提供文件系统或者文件目录服务。</p>
+<h3 id="RadosGW"><a href="#RadosGW" class="headerlink" title="RadosGW"></a>RadosGW</h3><p>（看不太明白</p>
+<h2 id="RADOS"><a href="#RADOS" class="headerlink" title="RADOS"></a>RADOS</h2><p>RADOS完成了一个存储系统的核心功能，包括以下部分：</p>
+<h3 id="Monitor"><a href="#Monitor" class="headerlink" title="Monitor"></a>Monitor</h3><p>Monitor模块为整个存储集群提供全局的配置和系统信息。</p>
+<ol>
+<li>它是一个独立部署的daemon进程，通过组成Monitor集群来保证自己的高可用性。</li>
+<li>通过Paxos算法实现自己数据的一致性。</li>
+<li>提供整个存储系统的节点信息等全局配置信息。</li>
+</ol>
+<p>Cluster Map保存了系统的全局信息，主要包括：</p>
+<ol>
+<li>Monitor Map<ul>
+<li>包括集群的fsid；</li>
+<li>所有Monitor的地址和端口；</li>
+<li>current epoch。</li>
+</ul>
+</li>
+<li>OSD Map：所有OSD的列表和OSD的状态等。</li>
+<li>MDS Map：所有的MDS的列表和状态。</li>
+</ol>
+<h3 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h3><p>这里所说的对象是指 RADOS 对象，要和 RadosGW 的 S3 或者 Swift 接口的对象存储区分开来。对象是数据存储的基本单元，一般默认 4MB 大小。下图是一个对象的示意图。</p>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%AF%B9%E8%B1%A1%E7%A4%BA%E6%84%8F%E5%9B%BE.png" class="" title="对象示意图">
+
+<p>一个对象由三个部分组成：</p>
+<ol>
+<li>对象标志ID；</li>
+<li>对象的数据，其在本地文件系统中对应一个文件，对象的数据就保存在文件中；</li>
+<li>对象的元数据，以key-value形式保存。</li>
+</ol>
+<h3 id="pool和PG的概念"><a href="#pool和PG的概念" class="headerlink" title="pool和PG的概念"></a>pool和PG的概念</h3><p>pool是一个抽象的存储池。它规定了数据冗余的类型以及对应的副本分布策略（副本类型和纠删码类型等）。一个pool由多个PG构成。</p>
+<p>PG（placement group）是一个对象的集合，该集合中的所有对象有相同的放置策略：对象的副本都分布在相同的OSD列表上。一个对象只能属于一个PG，一个PG对应于放置在其上的OSD列表。一个OSD上可以分布多个PG。</p>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/PG%E6%A6%82%E5%BF%B5%E7%A4%BA%E6%84%8F%E5%9B%BE.png" class="" title="PG概念示意图">
+
+<ol>
+<li>PG1和PG2都属于同一个pool，都是副本类型，且都是两副本；</li>
+<li>PG1和PG2里包含许多对象，PG1 上的所有对象，主从副本分布在 0SD1 和<br> 0SD2 上，PG2 上的所有对象的主从副本分布在0SD2 和 OSD3 上；</li>
+<li>一个对象只能属于一个PG，一个PG包含多个对象；</li>
+<li>一个 PG 的副本分布在对应的 OSD 列表中。在一个 OSD 上可以分布多个 PG。示例中 PG1 和 PG2 的从副本都分布在 0SD2 上。</li>
+</ol>
+<h3 id="对象寻址过程"><a href="#对象寻址过程" class="headerlink" title="对象寻址过程"></a>对象寻址过程</h3><ol>
+<li><p>对象到 PG 的映射：使用静态哈希算法得到对象的所属 PG。</p>
+<p> <code>pg_id = hash(object_id) % pg_num </code>；</p>
+</li>
+<li><p>PG 到 OSD 列表的映射：CRUSH 算法决定 PG 上对象的副本如何分布在 OSD 上。</p>
+</li>
+</ol>
+<h3 id="数据读写过程"><a href="#数据读写过程" class="headerlink" title="数据读写过程"></a>数据读写过程</h3><p>主 OSD 必须等待所有从 OSD 返回正确应答，才可以向客户端返回写操作正确的应答。</p>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E8%AF%BB%E5%86%99%E8%BF%87%E7%A8%8B.png" class="" title="读写过程">
+
+<h3 id="数据均衡"><a href="#数据均衡" class="headerlink" title="数据均衡"></a>数据均衡</h3><p>1</p>
+<h3 id="Peering"><a href="#Peering" class="headerlink" title="Peering"></a>Peering</h3><p>1</p>
+<h3 id="Recovery和Backfill"><a href="#Recovery和Backfill" class="headerlink" title="Recovery和Backfill"></a>Recovery和Backfill</h3><p>1</p>
+<h3 id="纠删码"><a href="#纠删码" class="headerlink" title="纠删码"></a>纠删码</h3><p>1</p>
+<h3 id="快照和克隆"><a href="#快照和克隆" class="headerlink" title="快照和克隆"></a>快照和克隆</h3><p>1</p>
+<h3 id="Cache-Tier"><a href="#Cache-Tier" class="headerlink" title="Cache Tier"></a>Cache Tier</h3><p>类 <strong>Objecter</strong> 负责请求是发给 <strong>Cache</strong> <strong>Tier</strong> 层，还是发给 <strong>Storage</strong> <strong>Tier</strong> 层。（这里对应的层是 SSD 或 HDD，而如果换成内存和持久层，是否需要改变）</p>
+
+
+<h3 id="Scrub"><a href="#Scrub" class="headerlink" title="Scrub"></a>Scrub</h3><p>1</p>
+<h3 id="本章小结"><a href="#本章小结" class="headerlink" title="本章小结"></a>本章小结</h3><p>1</p>
+<h1 id="Ceph通用模块"><a href="#Ceph通用模块" class="headerlink" title="Ceph通用模块"></a>Ceph通用模块</h1><p>Ceph 源代码通用库中的一些关键而又复杂的数据结构。大多定义于<code>src/common/</code>中</p>
+<ol>
+<li>Object 和 Buffer普遍使用；</li>
+<li>线程池 ThreadPool 可以提高消息处理的并发能力；</li>
+<li>Finisher 提供异步操作时来执行回调函数；</li>
+<li>Throttle 在系统的各个模块各个环节都能看到，用来限制系统的请求，避免瞬时大量请求对系统的冲击；</li>
+<li>SafteTimer 提供定时器，为超时和定时任务等提供了相应的机制。</li>
+</ol>
+<h2 id="Object"><a href="#Object" class="headerlink" title="Object"></a>Object</h2><p>对象 Object 默认为4MB大小的数据块。一个对象对应本地文件系统（RADOS）中的一个文件。在代码实现中，有 object、sobject、hobject、ghobject 等不同的类。大多位于<code>src/include/object.h</code>中。</p>
+<p>底层 Blob 大小为 64KB。</p>
+<h3 id="object-t"><a href="#object-t" class="headerlink" title="object_t"></a>object_t</h3><p>object_t 对应本地文件系统中的一个文件，name 就是对象名。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">object_t</span>&#123;</span><br><span class="line">	string name;</span><br><span class="line">	......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="file-object-t"><a href="#file-object-t" class="headerlink" title="file_object_t"></a>file_object_t</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">file_object_t</span> &#123;</span><br><span class="line">  <span class="type">uint64_t</span> ino, bno;</span><br><span class="line">  <span class="keyword">mutable</span> <span class="type">char</span> buf[<span class="number">34</span>];</span><br><span class="line"></span><br><span class="line">  <span class="built_in">file_object_t</span>(<span class="type">uint64_t</span> i=<span class="number">0</span>, <span class="type">uint64_t</span> b=<span class="number">0</span>) : <span class="built_in">ino</span>(i), <span class="built_in">bno</span>(b) &#123;</span><br><span class="line">    buf[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="type">const</span> <span class="type">char</span> *<span class="title">c_str</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!buf[<span class="number">0</span>])</span><br><span class="line">      <span class="built_in">snprintf</span>(buf, <span class="built_in">sizeof</span>(buf), <span class="string">&quot;%llx.%08llx&quot;</span>, (<span class="type">long</span> <span class="type">long</span> <span class="type">unsigned</span>)ino, (<span class="type">long</span> <span class="type">long</span> <span class="type">unsigned</span>)bno);</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">operator</span> <span class="title">object_t</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">object_t</span>(<span class="built_in">c_str</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="sobject-t"><a href="#sobject-t" class="headerlink" title="sobject_t"></a>sobject_t</h3><p>sobject_t 在 object_t 之上增加了 snapshot 信息，用于标识是否是快照对象。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">sobject_t</span> &#123;</span><br><span class="line">	<span class="type">object_t</span> oid;</span><br><span class="line">	<span class="type">snapid_t</span> snap; <span class="comment">// 快照对象的对应的快照序号；若不是快照对象（也就是head对象），snap字段则为CEPH_NOSNAP值</span></span><br><span class="line">	......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="hobject-t"><a href="#hobject-t" class="headerlink" title="hobject_t"></a>hobject_t</h3><p>hobject_t 是 hash object 的缩写。位于<code>src\common\hobject.h</code>中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">hobject_t</span> &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="type">object_t</span> oid;</span><br><span class="line">    <span class="type">snapid_t</span> snap;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    <span class="type">uint32_t</span> hash; <span class="comment">// hash和key不能同时设置，hash值一般设为pg的id值</span></span><br><span class="line">    <span class="type">bool</span> max;</span><br><span class="line">    <span class="type">uint32_t</span> nibblewise_key_cache;</span><br><span class="line">    <span class="type">uint32_t</span> hash_reverse_bits;</span><br><span class="line">	......</span><br><span class="line">	</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="type">int64_t</span> pool; <span class="comment">// 所在pool的id</span></span><br><span class="line">    std::string nspace; <span class="comment">// 一般为空，用于标识特殊的对象</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    std::string key; <span class="comment">// 对象的特殊标记</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ghobject-t"><a href="#ghobject-t" class="headerlink" title="ghobject_t"></a>ghobject_t</h3><p>在 hobject_t 基础上，添加 generation 和 shard_id 字段，用于纠删码模式下的PG。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">ghobject_t</span> &#123;</span><br><span class="line">    <span class="type">static</span> <span class="type">const</span> <span class="type">gen_t</span> NO_GEN = UINT64_MAX;</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> max = <span class="literal">false</span>;</span><br><span class="line">    <span class="type">shard_id_t</span> shard_id = <span class="type">shard_id_t</span>::NO_SHARD; <span class="comment">// 标识对象所在的OSD在纠删码类型的PG中的序号；如果在副本类型的PG中，那么字段就设置为NO_SHARD(-1)</span></span><br><span class="line">    <span class="type">hobject_t</span> hobj;</span><br><span class="line">    <span class="type">gen_t</span> generation = NO_GEN; <span class="comment">// 记录对象的版本号。当PG为纠删码类型时，写操作需要区别写前后两个版本的object，此时该字段保存对象的上一个版本，当写失败时，可以rollback到上一个版本</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>buffer 是一个命名空间，里面定义了 buffer 相关的数据结构，管理 ceph 的内存。</p>
+<h3 id="buffer-raw"><a href="#buffer-raw" class="headerlink" title="buffer::raw"></a>buffer::raw</h3><p>位于<code>src/include/buffer_raw.h</code>中，是一个基类，其子类完成buffer数据空间的分配。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ceph</span>::buffer::v15_2_0::raw&#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">	<span class="type">char</span> *data;  <span class="comment">// 数据指针</span></span><br><span class="line">	<span class="type">unsigned</span> len; <span class="comment">// 数据长度</span></span><br><span class="line">	</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	ceph::atomic&lt;<span class="type">unsigned</span>&gt; nref&#123;<span class="number">0</span>&#125;; <span class="comment">// 引用计数</span></span><br><span class="line">	std::aligned_storage&lt;<span class="built_in">sizeof</span>(ptr_node),<span class="built_in">alignof</span>(ptr_node)&gt;::type bptr_storage; <span class="comment">// 大小为sizeof(ptr_node)，alignof(ptr_node)对齐的类型。用于ptr_node的构造(new placement方式)，实际并未使用</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 指定数据段的校验值</span></span><br><span class="line">    std::pair&lt;<span class="type">size_t</span>, <span class="type">size_t</span>&gt; last_crc_offset &#123;std::numeric_limits&lt;<span class="type">size_t</span>&gt;::<span class="built_in">max</span>(), std::numeric_limits&lt;<span class="type">size_t</span>&gt;::<span class="built_in">max</span>()&#125;;</span><br><span class="line">    std::pair&lt;<span class="type">uint32_t</span>, <span class="type">uint32_t</span>&gt; last_crc_val;</span><br><span class="line">	<span class="keyword">mutable</span> ceph::spinlock crc_spinlock; </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下列类继承了<code>buffer::raw</code>，实现了data对应内存空间的申请，定义于<code>src/common/buffer.cc</code>中：</p>
+<ol>
+<li>class raw_combined：分配的对象与 data buffer 分配在一个 buffer 上，data 处于 buffer 的开头，object 在 buffer 尾；</li>
+<li>class raw_malloc：实现了用 malloc 函数分配内存空间的功能；</li>
+<li>class buffer::raw_posix_aligned：调用了函数 posix_memaligii 来申请内存地址对齐的内存空间；</li>
+<li>class raw_static：data buffer 使用 static buffer；</li>
+<li>class buffer::raw_hack_aligned：在系统不支持内存对齐申请的情况下自己实现了内存地址的对齐；</li>
+<li>class buffer::raw_char：使用了 C++ 的 new 操作符来申请内存空间； </li>
+<li>class buffer::raw_claimed_char：不负责释放资源，因此可以是局部变量。针对new创建的buffer，则需手动显示释放；</li>
+<li>class buffer::raw_claim_buffer：接收自定义删除器。</li>
+</ol>
+<h3 id="buffer-ptr"><a href="#buffer-ptr" class="headerlink" title="buffer::ptr"></a>buffer::ptr</h3><p>是对于 buffer::raw 的一个部分数据段，定义于<code>src/include/buffer.h</code>中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CEPH_BUFFER_API</span> ptr&#123;</span><br><span class="line">    raw *_raw;</span><br><span class="line">    <span class="type">unsigned</span> _off, _len; <span class="comment">// 起始偏移量，长度</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/raw%E5%92%8Cptr%E7%A4%BA%E6%84%8F%E5%9B%BE.png" class="" title="raw和ptr示意图">
+
+<h3 id="buffer-list"><a href="#buffer-list" class="headerlink" title="buffer::list"></a>buffer::list</h3><p>是多个buffer::ptr的列表，也就是多个内存数据段的列表，定义于<code>src/include/buffer.h</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CEPH_BUFFER_API</span> list&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">class</span> <span class="title class_">buffers_t</span>&#123; <span class="comment">// 底层单链表实现</span></span><br><span class="line">		ptr_hook _root;</span><br><span class="line">		ptr_hook *_tail;</span><br><span class="line">		......</span><br><span class="line">            </span><br><span class="line">        <span class="comment">// 添加到头部</span></span><br><span class="line">		<span class="function"><span class="type">void</span> <span class="title">push_front</span><span class="params">(reference item)</span> </span>&#123;</span><br><span class="line">            item.next = _root.next;</span><br><span class="line">            _root.next = &amp;item;</span><br><span class="line">            _tail = _tail == &amp;_root ? &amp;item : _tail;</span><br><span class="line">        &#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="type">buffers_t</span> _buffers; <span class="comment">// 自己的私有bits</span></span><br><span class="line">	<span class="type">unsigned</span> _len; <span class="comment">// 所有 ptr 的数据总长度</span></span><br><span class="line">	......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（list结构大改，还需要仔细阅读原书和源码</strong></p>
+<h2 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h2><p>ThreadPool定义于 <code>src/common/WorkQueue.h</code> 中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ThreadPool</span> : <span class="keyword">public</span> <span class="type">md_config_obs_t</span> &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">	CephContext *cct;</span><br><span class="line">  	std::string name; 						<span class="comment">// 线程名？</span></span><br><span class="line">  	std::string thread_name; </span><br><span class="line">  	std::string lockname; 					<span class="comment">// 锁名</span></span><br><span class="line">  	ceph::mutex _lock; 						<span class="comment">// 线程互斥锁，也是工作队列访问互斥的锁</span></span><br><span class="line">  	ceph::condition_variable _cond;			<span class="comment">// 锁对应的条件变量</span></span><br><span class="line">  	<span class="type">bool</span> _stop; 							<span class="comment">// 线程池是否停止工作的标志</span></span><br><span class="line">  	<span class="type">int</span> _pause; 							<span class="comment">// 暂停中止线程池的标志</span></span><br><span class="line">  	<span class="type">int</span> _draining;</span><br><span class="line"> 	ceph::condition_variable _wait_cond;</span><br><span class="line">    </span><br><span class="line">    std::vector&lt;WorkQueue_*&gt; work_queues; 	<span class="comment">// 工作队列[集和]</span></span><br><span class="line">    <span class="type">int</span> next_work_queue = <span class="number">0</span>;				<span class="comment">// 下一次访问的工作队列</span></span><br><span class="line">    </span><br><span class="line">    std::set&lt;WorkThread*&gt; _threads;			<span class="comment">// 线程池中的工作线程</span></span><br><span class="line">    std::list&lt;WorkThread*&gt; _old_threads;  	<span class="comment">// 等待进joined操作的线程</span></span><br><span class="line">  	<span class="type">int</span> processing;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一般情况下，一个工作队列对应一个类型的后台处理任务，一个线程池对应一个工作队列，专门用于处理该类型的任务。如果是后台任务，又不紧急，就可以将多个工作队列放置到一个线程池中，该线程池可以处理不同类型的任务。</p>
+<p>线程池的实现主要包括：</p>
+<ol>
+<li>线程池的启动过程；</li>
+<li>线程池对应的工作队列管理；</li>
+<li>线程池对应的执行函数如何执行任务。</li>
+</ol>
+<h3 id="线程池的启动"><a href="#线程池的启动" class="headerlink" title="线程池的启动"></a>线程池的启动</h3><p><code>ThreadPool::start()</code> 用来启动线程池，其在加锁的情况下，调用函数 <code>start_threads</code>，该函数检査当前线程数，如果小于配置的线程池，就创建新的工作线程。定义于 <code>src/common/WorkQueue.cc</code>。</p>
+<h3 id="工作队列"><a href="#工作队列" class="headerlink" title="工作队列"></a>工作队列</h3><p>工作队列（WorkQueue) 定义了线程池要处理的任务。</p>
+<ol>
+<li>任务类型在模板参数中指定；</li>
+<li>在构造函数里，就把自己加入到线程池的工作队列集合中；</li>
+<li>WorkQueue 实现了部分功能：进队列、出队列、加锁；</li>
+<li>部分功能需要使用者定义，如定义保存任务的容器，添加和删除的方法，以及如何处理任务的方法。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">WorkQueue</span> : <span class="keyword">public</span> WorkQueue_ &#123;</span><br><span class="line">    ThreadPool *pool;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Add a work item to the queue.</span></span><br><span class="line">    <span class="keyword">virtual</span> <span class="type">bool</span> _enqueue(T *) = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// Dequeue a previously submitted work item.</span></span><br><span class="line">    <span class="keyword">virtual</span> <span class="type">void</span> _dequeue(T *) = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// Dequeue a work item and return the original submitted pointer.</span></span><br><span class="line">    <span class="keyword">virtual</span> T *_dequeue() = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="comment">// Process a work item. Called from the worker threads.</span></span><br><span class="line">    <span class="keyword">virtual</span> <span class="type">void</span> _process(T *t, TPHandle &amp;) = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">WorkQueue</span>(std::string n,</span><br><span class="line">	    	ceph::timespan ti, ceph::timespan sti,</span><br><span class="line">	    	ThreadPool* p)</span><br><span class="line">      		: <span class="built_in">WorkQueue_</span>(std::<span class="built_in">move</span>(n), ti, sti), <span class="built_in">pool</span>(p) &#123;</span><br><span class="line">      	pool-&gt;<span class="built_in">add_work_queue</span>(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">queue</span><span class="params">(T *item)</span> </span>&#123; <span class="comment">// 进队列</span></span><br><span class="line">     	pool-&gt;_lock.<span class="built_in">lock</span>();</span><br><span class="line">     	<span class="type">bool</span> r = _enqueue(item);</span><br><span class="line">     	pool-&gt;_cond.<span class="built_in">notify_one</span>();</span><br><span class="line">     	pool-&gt;_lock.<span class="built_in">unlock</span>();</span><br><span class="line">    	<span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">dequeue</span><span class="params">(T *item)</span> </span>&#123; <span class="comment">// 出队列</span></span><br><span class="line">      	pool-&gt;_lock.<span class="built_in">lock</span>();</span><br><span class="line">      	_dequeue(item);</span><br><span class="line">      	pool-&gt;_lock.<span class="built_in">unlock</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">clear</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      	pool-&gt;_lock.<span class="built_in">lock</span>();</span><br><span class="line">      	_clear();</span><br><span class="line">      	pool-&gt;_lock.<span class="built_in">unlock</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123; pool-&gt;<span class="built_in">lock</span>(); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123; pool-&gt;<span class="built_in">unlock</span>(); &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程池的执行函数"><a href="#线程池的执行函数" class="headerlink" title="线程池的执行函数"></a>线程池的执行函数</h3><p><code>ThreadPool::worker</code> 定义于 <code>src/common/WorkQueue.cc</code> 中。</p>
+<ol>
+<li>首先检查_stop标志，确保线程池没有关闭；</li>
+<li>调用函数 <code>join_old_threads</code> 把旧的工作线程释放掉。检査如果线程数量大于配置的数量 _num_threads，就把当前线程从线程集合中删除，并加入_old_threads队列中，并退出循环；</li>
+<li>如果线程池没有中止（_pause）且work_queues不为空，就从next_work_queue开始，边理每一个工作队列，如果工作会裂不为空，就取出一个item，调用工作队列的处理函数做处理。</li>
+</ol>
+<h3 id="超时检查"><a href="#超时检查" class="headerlink" title="超时检查"></a>超时检查</h3><p>TPHandle是一个有意思的事情，定义于 <code>src/common/WorkerQueue.h</code> 中。每次线程函数执行时，都会设置一个 grace 超时时间，当线程执行超过该时间，就认为是 unhealthy 的状态。当执行时间超过 suicide_grace 时，OSD 就会产生断言而导致自杀，代码如下：  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ThreadPool</span>::TPHandle : <span class="keyword">public</span> HBHandle &#123;</span><br><span class="line">        <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">ThreadPool</span>;</span><br><span class="line">        CephContext *cct;				</span><br><span class="line">        ceph::heartbeat_handle_d *hb;	<span class="comment">// 心跳</span></span><br><span class="line">        ceph::timespan grace;			<span class="comment">// 超时</span></span><br><span class="line">        ceph::timespan suicide_grace;	<span class="comment">// 自杀的超时时间</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">TPHandle</span>(CephContext *cct, ceph::heartbeat_handle_d *hb,</span><br><span class="line">                 ceph::timespan grace, ceph::timespan suicide_grace)</span><br><span class="line">            : <span class="built_in">cct</span>(cct), <span class="built_in">hb</span>(hb), <span class="built_in">grace</span>(grace), <span class="built_in">suicide_grace</span>(suicide_grace) &#123;&#125;</span><br><span class="line">        <span class="function"><span class="type">void</span> <span class="title">reset_tp_timeout</span><span class="params">()</span> <span class="keyword">override</span> <span class="keyword">final</span></span>;</span><br><span class="line">        <span class="function"><span class="type">void</span> <span class="title">suspend_tp_timeout</span><span class="params">()</span> <span class="keyword">override</span> <span class="keyword">final</span></span>;</span><br><span class="line">    ......</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ShardedThreadPool"><a href="#ShardedThreadPool" class="headerlink" title="ShardedThreadPool"></a>ShardedThreadPool</h3><p>ThreadPool 实现的线程池，其每个线程都有机会处理工作队列的任意一个任务。这就会导致一个问题：如果任务之间有互斥性，那么正在处理该任务的两个线程有一个必须等待另一个处理完成后才能处理，从而导致线程的阻塞，性能下降。</p>
+<p>具体如何实现 Shard 方式，还需要使用者自己去实现。其基本的思想就是：每个线程对应一个任务队列，所有需要顺序执行的任务都放在同一个线程的任务队列里，全部由该线程执行。 定义于<code>src/common/WorkerQueue.h</code>中 </p>
+<h3 id="Finisher"><a href="#Finisher" class="headerlink" title="Finisher"></a>Finisher</h3><p>类Finisher用来完成回调函数Context的执行，其内部有一个FinisherThread线程来用于执行Context回调函数。定义于 <code>src/common/Finisher.h</code> 中。</p>
+<h3 id="Throttle"><a href="#Throttle" class="headerlink" title="Throttle"></a>Throttle</h3><p>类Throttle用来限制消费的资源数量（也常称为槽位 “slot”），当请求的 slot 数量达到max值时，请求就会被阻塞，直到有新的槽位释放出来，定义于<code>src/common/Throttle.h</code>中，代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Throttle</span> <span class="keyword">final</span> : <span class="keyword">public</span> ThrottleInterface &#123;</span><br><span class="line">  	CephContext *cct;</span><br><span class="line">  	<span class="type">const</span> std::string name;</span><br><span class="line">  	PerfCountersRef logger;</span><br><span class="line">  	std::atomic&lt;<span class="type">int64_t</span>&gt; count = &#123; <span class="number">0</span> &#125;, max = &#123; <span class="number">0</span> &#125;;  	<span class="comment">// 当前占用的slot数量和slot数量的最大值</span></span><br><span class="line">  	std::mutex lock;									<span class="comment">// 等待的锁</span></span><br><span class="line">  	std::list&lt;std::condition_variable&gt; conds;			<span class="comment">// 等待的条件变量</span></span><br><span class="line">    ......</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>, <span class="type">int64_t</span> m = <span class="number">0</span>)</span></span>;				<span class="comment">// 获取c个slot，如果m不为0值，则将max设置为m的值；成功获取c个slot后，就返回true，否则阻塞等待</span></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get_or_fail</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>)</span></span>;					<span class="comment">// 当获取不到c个slot时，直接返回false，不阻塞等待</span></span><br><span class="line">    <span class="function"><span class="type">int64_t</span> <span class="title">put</span><span class="params">(<span class="type">int64_t</span> c = <span class="number">1</span>)</span> <span class="keyword">override</span></span>;				<span class="comment">// 释放c个slot资源</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SafeTimer"><a href="#SafeTimer" class="headerlink" title="SafeTimer"></a>SafeTimer</h3><p>类SafeTimer实现了定时器的功能，定义于<code>src/common/Timer.h</code>中，代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Mutex</span>&gt; <span class="keyword">class</span> <span class="title class_">CommonSafeTimer</span> &#123;</span><br><span class="line">    CephContext *cct;</span><br><span class="line">    Mutex &amp;lock;</span><br><span class="line">    std::condition_variable_any cond;</span><br><span class="line">    <span class="type">bool</span> safe_callbacks;							<span class="comment">// 是否是safe_callbacks</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">CommonSafeTimerThread</span>&lt;Mutex&gt;;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">CommonSafeTimerThread</span>&lt;Mutex&gt; *thread;		<span class="comment">// 定时器执行线程</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">using</span> <span class="type">clock_t</span> = ceph::mono_clock;</span><br><span class="line">    <span class="keyword">using</span> <span class="type">scheduled_map_t</span> = std::multimap&lt;<span class="type">clock_t</span>::time_point, Context *&gt;;</span><br><span class="line">    <span class="type">scheduled_map_t</span> schedule;	<span class="comment">// 目标时间和定时任务执行函数Context</span></span><br><span class="line">    <span class="keyword">using</span> <span class="type">event_lookup_map_t</span> = std::map&lt;Context *, <span class="type">scheduled_map_t</span>::iterator&gt;;</span><br><span class="line">    <span class="type">event_lookup_map_t</span> events;	<span class="comment">// 定时任务&lt;--&gt;定时任务在schedule中的位置映射</span></span><br><span class="line">    <span class="type">bool</span> stopping;				<span class="comment">// 是否停止</span></span><br><span class="line">    ......</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 添加定时任务</span></span><br><span class="line">    <span class="function">Context *<span class="title">add_event_after</span><span class="params">(ceph::timespan duration, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_after</span><span class="params">(<span class="type">double</span> seconds, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_at</span><span class="params">(<span class="type">clock_t</span>::time_point when, Context *callback)</span></span>;</span><br><span class="line">    <span class="function">Context *<span class="title">add_event_at</span><span class="params">(ceph::real_clock::time_point when, Context *callback)</span></span>;</span><br><span class="line">    <span class="comment">// 取消定时任务</span></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">cancel_event</span><span class="params">(Context *callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">cancel_all_events</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 定时任务执行</span></span><br><span class="line">    <span class="comment">/* 循环检查schedule中的任务是否到期，由于schedule中是按照时间升序排列的，因此第一任务没有到期就终止循环；</span></span><br><span class="line"><span class="comment">       如果第一任务到期，则调用callback执行，需要注意如果是非safe_callbacks，则需要先获取lock再执行callback函数。*/</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">timer_thread</span><span class="params">()</span></span>; </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">using</span> SafeTimer = <span class="keyword">class</span> CommonSafeTimer&lt;ceph::mutex&gt;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Ceph网络通信"><a href="#Ceph网络通信" class="headerlink" title="Ceph网络通信"></a>Ceph网络通信</h1><p>本章介绍 Ceph 网络通信模块，这是客户端和服务器通信的底层模块，用来在客户端和服务器之间接收和发送请求。其实现功能比较清晰，是一个相对较独立的模块理解起来比较容易，所以首先介绍它。  </p>
+<h2 id="Ceph网络通信框架"><a href="#Ceph网络通信框架" class="headerlink" title="Ceph网络通信框架"></a>Ceph网络通信框架</h2><p>—个分布式存储系统需要一个稳定的底层网络通信模块，用于各节点之间的互联互通。对于一个网络通信系统，要求如下：</p>
+<ol>
+<li>高性能：带宽和延时；</li>
+<li>稳定可靠：数据不丢包，在网络中断时，实现重连等异常处理。</li>
+</ol>
+<p>网络通信模块的实现在源代码<code>src/msg</code>的目录下，其首先定义了一个网络通信的框架，三个子目录里分别对应：Simple、Async、XIO三种不同的实现方式。</p>
+<p>Simple 是比较简单，目前比较稳定的实现，系统默认的用于生产环境的方式。它最大的特点是：每一个网络链接，都会创建两个线程，一个专门用于接收，一个专门用于发送。这种模式实现比较简单，但是对于大规模的集群部署，大量的链接会产生大量的线程，会消耗 CPU 资源，影响性能。   </p>
+<p>Async 模式使用了基于事件的 I&#x2F;O 多路复用模式。这是目前网络通信中广泛采用的方式， 但是在 Ceph 中，官方宣称这种方式还处于试验阶段，不够稳定，还不能用于生产环境（📕中的Ceph是10.2.1老版本，<strong>新版本中似乎只有Async模式了</strong>）。</p>
+<p>XIO 方式使用了开源的网络通信库 accelio 来实现。这种方式需要依赖第三方的库 accelio 稳定性， 需要对 accelio 的使用方式以及代码实现都比较熟悉。目前也处于试验阶段。特别注意的是， 前两种方式只支持 TCP&#x2F;IP 协议，XIO 可以支持 Infiniband 网络。</p>
+<p>在 msg 目录下定义了网络通信的抽象框架，它完成了通信接口和具体实现的分离。在其下分别有 <code>msg/simple</code> 子目录、 <code>msg/Async</code> 子目录、 <code>msg/xio</code> 子目录，分别对应三种不同的实现。 </p>
+<h3 id="Message"><a href="#Message" class="headerlink" title="Message"></a>Message</h3><p>类Message是所有消息的基类，任何要发送的消息，都要继承该类，定义于<code>src/msg/Message.h</code>中，格式如下图所示。</p>
+<img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E6%A0%BC%E5%BC%8F.png" class="" title="消息发送格式">
+
+<p>其中，header是消息头，类似一个消息的信封（envelope），user_data是用于要发送的实际数据，footer是一个消息的结束标记，如下所示：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Message</span> : <span class="keyword">public</span> RefCountedObject &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    ceph_msg_header header; 	<span class="comment">// 消息头</span></span><br><span class="line">    ceph_msg_footer footer;		<span class="comment">// 消息尾</span></span><br><span class="line">    ceph::buffer::list payload; <span class="comment">// &quot;front&quot; unaligned blob</span></span><br><span class="line">    ceph::buffer::list middle;  <span class="comment">// &quot;middle&quot; unaligned blob</span></span><br><span class="line">    ceph::buffer::list data;	<span class="comment">// data payload (page-alignment will be preserved where possible)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 消息相关的时间戳</span></span><br><span class="line">    <span class="type">utime_t</span> recv_stamp;			<span class="comment">// 开始接收数据的时间戳</span></span><br><span class="line">    <span class="type">utime_t</span> dispatch_stamp;		<span class="comment">// dispatch的时间戳</span></span><br><span class="line">    <span class="type">utime_t</span> throttle_stamp;		<span class="comment">// 获取throttle的slot的时间戳</span></span><br><span class="line">    <span class="type">utime_t</span> recv_complete_stamp;<span class="comment">// 接收完成的时间戳</span></span><br><span class="line"></span><br><span class="line">    ConnectionFRef connection;	<span class="comment">// 网络连接类</span></span><br><span class="line"></span><br><span class="line">    <span class="type">uint32_t</span> magic = <span class="number">0</span>;			<span class="comment">// 消息的魔术字</span></span><br><span class="line">	</span><br><span class="line">    boost::intrusive::list_member_hook&lt;&gt; dispatch_q; <span class="comment">//boost::intrusive需要的字段</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面分别介绍其中的重要参数。</p>
+<p>ceph_msg_header 为消息头，它定义了消息传输相关的元数据，在<code>src/include/msgr.h</code>中：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">ceph_msg_header</span> &#123;</span><br><span class="line">	__le64 seq;       		<span class="comment">// 当前session内消息的唯一序号</span></span><br><span class="line">	__le64 tid;       		<span class="comment">// 消息的全局唯一id</span></span><br><span class="line">	__le16 type;      		<span class="comment">// 消息类型</span></span><br><span class="line">	__le16 priority;  		<span class="comment">// 优先级</span></span><br><span class="line">	__le16 version;   		<span class="comment">// 消息编码的版本</span></span><br><span class="line"></span><br><span class="line">	__le32 front_len;		<span class="comment">// payload的长度</span></span><br><span class="line">	__le32 middle_len;		<span class="comment">// middle的长度</span></span><br><span class="line">	__le32 data_len;  		<span class="comment">// data的长度</span></span><br><span class="line">	__le16 data_off;  		<span class="comment">// 对象的数据偏移量</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">struct</span> <span class="title class_">ceph_entity_name</span> src; 	<span class="comment">// 消息源</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 一些旧的代码，用于兼容，如果为0就忽略</span></span><br><span class="line">	__le16 compat_version;</span><br><span class="line">	__le16 reserved;</span><br><span class="line">	__le32 crc;       		<span class="comment">// 消息头的crc32c校验信息</span></span><br><span class="line">&#125; __attribute__ ((packed));</span><br></pre></td></tr></table></figure>
+
+<p>ceph_msg_footer 为消息的尾部， 附加了一些 crc 校验数据和消息结束标志：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">ceph_msg_footer</span> &#123;</span><br><span class="line">	__le32 front_crc, middle_crc, data_crc;</span><br><span class="line">                                <span class="comment">// 分别对应crc校验码</span></span><br><span class="line">	__le64  sig;				<span class="comment">// 消息的64为signature</span></span><br><span class="line">	__u8 flags;					<span class="comment">// 结束标志</span></span><br><span class="line">&#125; __attribute__ ((packed));</span><br></pre></td></tr></table></figure>
+
+<p>消息带的数据分别保存在 payload、 middle、 data 这三个 bufferlist 中。 payload —般保<br>存 Ceph 操作相关的元数据， middle 目前没有使用到， data—般为读写的数据。</p>
+<h3 id="Connection"><a href="#Connection" class="headerlink" title="Connection"></a>Connection</h3><p>类Connection对应端（port）对端的socket链接的封装。定义于<code>src/msg/Connection.h</code>中，其最重要的接口是可以发送消息：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Connection</span> : <span class="keyword">public</span> RefCountedObjectSafe &#123;</span><br><span class="line">    <span class="keyword">mutable</span> ceph::mutex lock = ceph::<span class="built_in">make_mutex</span>(<span class="string">&quot;Connection::lock&quot;</span>); <span class="comment">// 锁保护Connnection的所有字段</span></span><br><span class="line">    Messenger *msgr;								</span><br><span class="line">    RefCountedPtr priv;								<span class="comment">// 链接的私有数据</span></span><br><span class="line">    <span class="type">int</span> peer_type = <span class="number">-1</span>;								<span class="comment">// 链接的peer类型</span></span><br><span class="line">    <span class="type">int64_t</span> peer_id = <span class="number">-1</span>; 							<span class="comment">// [msgr2 only] the 0 of osd.0, 4567 or client.4567</span></span><br><span class="line">    safe_item_history&lt;<span class="type">entity_addrvec_t</span>&gt; peer_addrs; <span class="comment">// peer的地址（和📕中的类型不一样）</span></span><br><span class="line">    <span class="type">utime_t</span> last_keepalive, last_keepalive_ack;		<span class="comment">// 最后一次发送keepalive和最后一次接收keepalive的ACK的时间</span></span><br><span class="line">    <span class="type">bool</span> anon = <span class="literal">false</span>; 								<span class="comment">// &lt; anonymous outgoing connection</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">uint64_t</span> features = <span class="number">0</span>;							<span class="comment">// 一些feature的标志位</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">bool</span> is_loopback = <span class="literal">false</span>;</span><br><span class="line">    <span class="type">bool</span> failed = <span class="literal">false</span>; 							<span class="comment">// 当值为true时，该链接为lossy链接已经失效了</span></span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> rx_buffers_version = <span class="number">0</span>;						<span class="comment">// 接收缓冲区的版本</span></span><br><span class="line">    std::map&lt;<span class="type">ceph_tid_t</span>, std::pair&lt;ceph::buffer::list, <span class="type">int</span>&gt;&gt; rx_buffers; <span class="comment">// 接收缓冲区</span></span><br><span class="line">    												<span class="comment">// 消息的标识ceph_tid --&gt; (buffer, rx_buffers_version)的映射</span></span><br><span class="line">    ......</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">send_message</span><span class="params">(Message *m)</span> </span>= <span class="number">0</span>;		<span class="comment">// 最重要的功能是发消息的接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Dispatcher"><a href="#Dispatcher" class="headerlink" title="Dispatcher"></a>Dispatcher</h3><p>类Dispatcher是消息分发的接口，定义于<code>src/msg/Dispatcher.h</code>中，其分发消息的接口为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">ms_dispatch</span><span class="params">(Message *m)</span> </span>&#123; <span class="built_in">ceph_abort</span>(); &#125;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">ms_fast_dispatch</span><span class="params">(Message *m)</span> </span>&#123; <span class="built_in">ceph_abort</span>(); &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Messenger"><a href="#Messenger" class="headerlink" title="Messenger"></a>Messenger</h3><p>Messenger 是整个网络抽象模块，定义了网络模块的基本 API 接口。网络模块对外提供的基本功能，就是能在节点之间发送和接受消息。Messenger定义于<code>src/msg/Messenger.h</code>中。</p>
+<p>向一个节点发送消息的命令如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">send_to</span><span class="params">(Message *m, <span class="type">int</span> type, <span class="type">const</span> <span class="type">entity_addrvec_t</span> &amp;addr)</span> </span>= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>注册一个Dispatcher用来分发消息的命令如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">add_dispatcher_head</span><span class="params">(Dispatcher *d)</span> </span>&#123;</span><br><span class="line">        <span class="type">bool</span> first = dispatchers.<span class="built_in">empty</span>();</span><br><span class="line">        dispatchers.<span class="built_in">push_front</span>(d);</span><br><span class="line">        <span class="keyword">if</span> (d-&gt;<span class="built_in">ms_can_fast_dispatch_any</span>())</span><br><span class="line">            fast_dispatchers.<span class="built_in">push_front</span>(d);</span><br><span class="line">        <span class="keyword">if</span> (first)</span><br><span class="line">            <span class="built_in">ready</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="网络连接的策略"><a href="#网络连接的策略" class="headerlink" title="网络连接的策略"></a>网络连接的策略</h3><p>Policy定义了Messenger处理Connection的一些策略，位于<code>/src/msg/Policy.h</code>中：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A Policy describes the rules of a Connection. Is there a limit on how</span></span><br><span class="line"><span class="comment"> * much data this Connection can have locally? When the underlying connection</span></span><br><span class="line"><span class="comment"> * experiences an error, does the Connection disappear? Can this Messenger</span></span><br><span class="line"><span class="comment"> * re-establish the underlying connection?</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ThrottleType</span>&gt; <span class="keyword">struct</span> <span class="title class_">Policy</span> &#123;</span><br><span class="line">    <span class="type">bool</span> lossy; 	<span class="comment">// 如果为 true, 当该连接出现错误时就删除</span></span><br><span class="line">    <span class="type">bool</span> server; 	<span class="comment">// 如果为 true, 为服务端，都是被动连接</span></span><br><span class="line">    <span class="type">bool</span> standby;	<span class="comment">// 如果为 true, 该连接处于等待状态</span></span><br><span class="line">    <span class="type">bool</span> resetcheck;<span class="comment">// 如果为 true, 该连接出错后重连</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Server: register lossy client connections.</span></span><br><span class="line">    <span class="type">bool</span> register_lossy_clients = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// The net result of this is that a given client can only have one</span></span><br><span class="line">    <span class="comment">// open connection with the server.  If a new connection is made,</span></span><br><span class="line">    <span class="comment">// the old (registered) one is closed by the messenger during the accept</span></span><br><span class="line">    <span class="comment">// process.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  The throttler is used to limit how much data is held by Messages from</span></span><br><span class="line"><span class="comment">     *  the associated Connection(s). When reading in a new Message, the</span></span><br><span class="line"><span class="comment">     * Messenger will call throttler-&gt;throttle() for the size of the new</span></span><br><span class="line"><span class="comment">     * Message.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="comment">// 该 connection 相关的流控操作</span></span><br><span class="line">    ThrottleType *throttler_bytes;</span><br><span class="line">    ThrottleType *throttler_messages;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 本地端的一些feature标志</span></span><br><span class="line">    <span class="type">static</span> <span class="keyword">constexpr</span> <span class="type">uint64_t</span> features_supported&#123;CEPH_FEATURES_SUPPORTED_DEFAULT&#125;;</span><br><span class="line">    <span class="comment">// 远程端需要的一些 feature 标志</span></span><br><span class="line">	<span class="type">uint64_t</span> features_required;</span><br><span class="line">    ......</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="网络模块的使用"><a href="#网络模块的使用" class="headerlink" title="网络模块的使用"></a>网络模块的使用</h3><p>通过下面最基本的服务器和客户端的实例程序，了解如何调用网络通信模块提供的接口来完成收发请求消息的功能。相关代码位于<code>/src/test/msgr/test_msgr.cc</code>中。</p>
+<ol>
+<li><p>Server程序分析：</p>
+<ul>
+<li><p>调用Messenger的函数create创建一个Messenger实例：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Messenger *server_msgr2 = Messenger::<span class="built_in">create</span>(g_ceph_context, <span class="built_in">string</span>(<span class="built_in">GetParam</span>()), <span class="type">entity_name_t</span>::<span class="built_in">OSD</span>(<span class="number">0</span>), <span class="string">&quot;server&quot;</span>, <span class="built_in">getpid</span>());</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置Messenger属性：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_msgr2-&gt;<span class="built_in">set_auth_client</span>(&amp;dummy_auth);</span><br><span class="line">server_msgr2-&gt;<span class="built_in">set_auth_server</span>(&amp;dummy_auth);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对于server，需要bind服务端地址：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bind_addr.<span class="built_in">parse</span>(<span class="string">&quot;v2:127.0.0.1:16801&quot;</span>);</span><br><span class="line">server_msgr2-&gt;<span class="built_in">bind</span>(bind_addr);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建Dispatcher，并添加到Messenger：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MarkdownDispatcher <span class="title">srv_dispatcher</span><span class="params">(<span class="literal">true</span>)</span></span>;</span><br><span class="line">server_msgr2-&gt;<span class="built_in">add_dispatcher_head</span>(&amp;srv_dispatcher);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动Messenger：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_msgr2-&gt;<span class="built_in">start</span>();</span><br><span class="line">server_msgr2-&gt;<span class="built_in">wait</span>();  <span class="comment">// 📕中说本函数必须等start完成才能调用(源代码似乎是等待1000s)</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>Client程序分析</p>
+<ul>
+<li><p>调用Messenger的函数create创建一个Messenger实例：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">client_msgr = Messenger::<span class="built_in">create</span>(g_ceph_context, <span class="built_in">string</span>(<span class="built_in">GetParam</span>()),</span><br><span class="line">                                <span class="type">entity_name_t</span>::<span class="built_in">CLIENT</span>(<span class="number">-1</span>), <span class="string">&quot;client&quot;</span>, <span class="built_in">getpid</span>());</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置相关策略：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">client_msgr-&gt;<span class="built_in">set_default_policy</span>(Messenger::Policy::<span class="built_in">lossy_client</span>(<span class="number">0</span>));</span><br><span class="line">client_msgr-&gt;<span class="built_in">set_auth_client</span>(&amp;dummy_auth);</span><br><span class="line">client_msgr-&gt;<span class="built_in">set_auth_server</span>(&amp;dummy_auth);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建Dispatcher并添加，用于接收消息：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MarkdownDispatcher <span class="title">cli_dispatcher</span><span class="params">(<span class="literal">false</span>)</span></span>;</span><br><span class="line">client_msgr-&gt;<span class="built_in">add_dispatcher_head</span>(&amp;cli_dispatcher);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动消息：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">client_msgr-&gt;<span class="built_in">start</span>();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>下面开始发送请求，先获取目标Server的链接：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ConnectionRef conn2 = client_msgr-&gt;<span class="built_in">connect_to</span>(</span><br><span class="line">            server_msgr2-&gt;<span class="built_in">get_mytype</span>(), server_msgr2-&gt;<span class="built_in">get_myaddrs</span>());</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过 Connection 来发送请求消息 ：</p>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m = <span class="keyword">new</span> <span class="built_in">MPing</span>();</span><br><span class="line"><span class="built_in">ASSERT_EQ</span>(conn2-&gt;<span class="built_in">send_message</span>(m), <span class="number">0</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<h2 id="Async实现"><a href="#Async实现" class="headerlink" title="Async实现"></a>Async实现</h2><p>📕中讲述的是Simple实现，但现在Async网络通信模型成为了Ceph默认的通信方式。参考了<a target="_blank" rel="noopener" href="https://blog.csdn.net/bandaoyu/article/details/111962161">bandaoyu的博客</a>。</p>
+<h3 id="基本类"><a href="#基本类" class="headerlink" title="基本类"></a>基本类</h3><ol>
+<li><p>NetHandler：NetHandler封装了Socket的基本功能。定义于<code>src/msg/async/net_handler.h</code>中。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> ceph &#123;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NetHandler</span> &#123;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">generic_connect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr,</span></span></span><br><span class="line"><span class="params"><span class="function">                        <span class="type">const</span> <span class="type">entity_addr_t</span> &amp;bind_addr, <span class="type">bool</span> nonblock)</span></span>;</span><br><span class="line"></span><br><span class="line">    CephContext *cct;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">create_socket</span><span class="params">(<span class="type">int</span> domain, <span class="type">bool</span> reuse_addr = <span class="literal">false</span>)</span></span>; <span class="comment">// 创建socket</span></span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">NetHandler</span><span class="params">(CephContext *c)</span> : cct(c) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">set_nonblock</span><span class="params">(<span class="type">int</span> sd)</span></span>;								<span class="comment">// 设置socket为非阻塞</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">set_socket_options</span><span class="params">(<span class="type">int</span> sd, <span class="type">bool</span> nodelay, <span class="type">int</span> size)</span></span>; <span class="comment">// 设置socket的选项：nodelay, buffer size</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">connect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr, <span class="type">const</span> <span class="type">entity_addr_t</span> &amp;bind_addr)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Try to reconnect the socket.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @return    0         success</span></span><br><span class="line"><span class="comment">     *            &gt; 0       just break, and wait for event</span></span><br><span class="line"><span class="comment">     *            &lt; 0       need to goto fail</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">reconnect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr, <span class="type">int</span> sd)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">nonblock_connect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr, 		<span class="comment">// 非阻塞connect</span></span></span></span><br><span class="line"><span class="params"><span class="function">                         <span class="type">const</span> <span class="type">entity_addr_t</span> &amp;bind_addr)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">set_priority</span><span class="params">(<span class="type">int</span> sd, <span class="type">int</span> priority, <span class="type">int</span> domain)</span></span>;	<span class="comment">// 设置优先级</span></span><br><span class="line">&#125;;</span><br><span class="line">&#125; <span class="comment">// namespace ceph</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Worker：Worker类是工作线程的抽象接口，同时添加了listen和connect接口用于服务端和客户端的网络处理。其内部创建一个EventCenter类，该类保存相关处理的事件。定义于<code>src/msg/async/Stack.h</code>中。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Worker</span> &#123;</span><br><span class="line">	std::atomic_uint references;</span><br><span class="line">    EventCenter center;	<span class="comment">// 事件处理中心，处理该center的所有的事件</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// server端</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">listen</span><span class="params">(<span class="type">entity_addr_t</span> &amp;addr, <span class="type">unsigned</span> addr_slot,</span></span></span><br><span class="line"><span class="params"><span class="function">                       <span class="type">const</span> SocketOptions &amp;opts, ServerSocket *)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// client主动连接</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">connect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr, <span class="type">const</span> SocketOptions &amp;opts,</span></span></span><br><span class="line"><span class="params"><span class="function">                        ConnectedSocket *socket)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>PosixWorker：PosixWorker实现了Worker接口，定义于<code>src/msg/async/PosixStack.h</code>中。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PosixWorker</span> : <span class="keyword">public</span> Worker &#123;</span><br><span class="line">    ceph::NetHandler net;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">initialize</span><span class="params">()</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">PosixWorker</span>(CephContext *c, <span class="type">unsigned</span> i) : <span class="built_in">Worker</span>(c, i), <span class="built_in">net</span>(c) &#123;&#125;</span><br><span class="line">    <span class="comment">// 实现了Server端的sock功能：</span></span><br><span class="line">    <span class="comment">// 底层调用NetHandler的功能，实现了socket的bind，listen等操作，最后返回ServerSocket对象</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">listen</span><span class="params">(<span class="type">entity_addr_t</span> &amp;sa, <span class="type">unsigned</span> addr_slot, <span class="type">const</span> SocketOptions &amp;opt,</span></span></span><br><span class="line"><span class="params"><span class="function">               ServerSocket *socks)</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="comment">// 实现了主动连接请求。返回ConnectedSocket对象。</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">connect</span><span class="params">(<span class="type">const</span> <span class="type">entity_addr_t</span> &amp;addr, <span class="type">const</span> SocketOptions &amp;opts,</span></span></span><br><span class="line"><span class="params"><span class="function">                ConnectedSocket *socket)</span> <span class="keyword">override</span></span>;</span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>NetworkStack：是网络协议栈的接口，定义于<code>src/msg/async/Stack.h</code>中。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">NetworkStack</span> &#123;</span><br><span class="line">    ceph::spinlock pool_spin;		</span><br><span class="line">    <span class="type">bool</span> started = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    CephContext *cct;</span><br><span class="line">    std::vector&lt;Worker *&gt; workers;	<span class="comment">// worker工作队列</span></span><br><span class="line">    ......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>PosixNetwork：实现了linux的tcp&#x2F;ip协议接口，定义于<code>src/msg/async/PosixStack.h</code>中。DPDKStack实现了DPDK的接口，RDMAStack实现了IB的接口。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PosixNetworkStack</span> : <span class="keyword">public</span> NetworkStack &#123;</span><br><span class="line">    std::vector&lt;std::thread&gt; threads;	<span class="comment">// 线程池</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Worker *<span class="title">create_worker</span><span class="params">(CephContext *c, <span class="type">unsigned</span> worker_id)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">PosixWorker</span>(c, worker_id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">PosixNetworkStack</span><span class="params">(CephContext *c)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">spawn_worker</span><span class="params">(std::function&lt;<span class="type">void</span>()&gt; &amp;&amp;func)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        threads.<span class="built_in">emplace_back</span>(std::<span class="built_in">move</span>(func));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">join_worker</span><span class="params">(<span class="type">unsigned</span> i)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="built_in">ceph_assert</span>(threads.<span class="built_in">size</span>() &gt; i &amp;&amp; threads[i].<span class="built_in">joinable</span>());</span><br><span class="line">        threads[i].<span class="built_in">join</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p> Worker可以理解为工作者线程，其对应一个thread线程。为了兼容其它协议的设计，对应线程定义在了PosixNetworkStack类里。</p>
+<p> 通过上述分析可知，一个Worker对应一个线程，同时对应一个 事件处理中心EventCenter类。</p>
+</li>
+<li><p>EventDriver：是一个抽象接口，定义了添加事件监听，删除事件监听，获取触发的事件的接口。定义于<code>src/msg/async/Event.h</code>中。</p>
+ <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * EventDriver is a wrap of event mechanisms depends on different OS.</span></span><br><span class="line"><span class="comment"> * For example, Linux will use epoll(2), BSD will use kqueue(2) and select will</span></span><br><span class="line"><span class="comment"> * be used for worst condition.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">EventDriver</span> &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">EventDriver</span>() &#123;&#125; <span class="comment">// we want a virtual destructor!!!</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">init</span><span class="params">(EventCenter *center, <span class="type">int</span> nevent)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">add_event</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cur_mask, <span class="type">int</span> mask)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">del_event</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cur_mask, <span class="type">int</span> del_mask)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">event_wait</span><span class="params">(std::vector&lt;FiredFileEvent&gt; &amp;fired_events,</span></span></span><br><span class="line"><span class="params"><span class="function">                           <span class="keyword">struct</span> timeval *tp)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">resize_events</span><span class="params">(<span class="type">int</span> newsize)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">need_wakeup</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p> 针对不同的IO多路复用机制，实现了不同的类。SelectDriver实现了select的方式；EpollDriver实现了epoll的网络事件处理方式；KqueueDriver是FreeBSD实现kqueue事件处理模型。</p>
+</li>
+<li><p>EventCenter：主要保存事件（包括fileevent，timeevent和外部事件）和处理实践的相关函数。定义于<code>src/msg/async/Event.h</code>中。</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<h1 id="CRUSH-数据分布算法"><a href="#CRUSH-数据分布算法" class="headerlink" title="CRUSH 数据分布算法"></a>CRUSH 数据分布算法</h1><p> 相比一致性哈希的优势：</p>
+<ol>
+<li>新增一个 OSD，只会有部分其它 OSD 上的数据迁移至新增盘；减少一个 OSD，只有该 OSD 上的数据会迁移至其他盘；</li>
+<li>保存多副本时，一致性哈希只能返回一个副本，而 CRUSH 可以获取多个副本。</li>
+</ol>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2> <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%901.png" class="" title="crush例子1">
+
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%902.png" class="" title="crush例子2">
+
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%903.png" class="" title="crush例子3">
+
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/crush%E4%BE%8B%E5%AD%904.png" class="" title="crush例子4">
+
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><p> 位于 <code>src/crush/crush.h</code> 中。</p>
+<h3 id="crush-map"><a href="#crush-map" class="headerlink" title="crush_map"></a>crush_map</h3><p> 结构 crush_map 定义了静态的所有 Cluster Map 的 bucket。bucket 为动态申请的二维数组，保存了所有的 bucket 结构。rules 定义了所有的 crush_rule 结构：</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** @ingroup API</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A crush map define a hierarchy of crush_bucket that end with leaves</span></span><br><span class="line"><span class="comment"> * (buckets and leaves are called items) and a set of crush_rule to</span></span><br><span class="line"><span class="comment"> * map an integer to items with the crush_do_rule() function.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">crush_map</span> &#123;</span><br><span class="line">        <span class="comment">/*! An array of crush_bucket pointers of size __max_buckets__.</span></span><br><span class="line"><span class="comment">         * An element of the array may be NULL if the bucket was removed with</span></span><br><span class="line"><span class="comment">         * crush_remove_bucket(). The buckets must be added with crush_add_bucket().</span></span><br><span class="line"><span class="comment">         * The bucket found at __buckets[i]__ must have a crush_bucket.id == -1-i.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">	<span class="keyword">struct</span> <span class="title class_">crush_bucket</span> **buckets;</span><br><span class="line">        <span class="comment">/*! An array of crush_rule pointers of size __max_rules__.</span></span><br><span class="line"><span class="comment">         * An element of the array may be NULL if the rule was removed (there is</span></span><br><span class="line"><span class="comment">         * no API to do so but there may be one in the future). The rules must be added</span></span><br><span class="line"><span class="comment">         * with crush_add_rule().</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">	<span class="keyword">struct</span> <span class="title class_">crush_rule</span> **rules;</span><br><span class="line">	......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="crush-bucket"><a href="#crush-bucket" class="headerlink" title="crush_bucket"></a>crush_bucket</h3><p> 结构 crush_bucket 用于保存 Bucket 相关的信息。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** @ingroup API</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A bucket contains __size__ __items__ which are either positive</span></span><br><span class="line"><span class="comment"> * numbers or negative numbers that reference other buckets and is</span></span><br><span class="line"><span class="comment"> * uniquely identified with __id__ which is a negative number.  The</span></span><br><span class="line"><span class="comment"> * __weight__ of a bucket is the cumulative weight of all its</span></span><br><span class="line"><span class="comment"> * children.  A bucket is assigned a ::crush_algorithm that is used by</span></span><br><span class="line"><span class="comment"> * crush_do_rule() to draw an item depending on its weight.  A bucket</span></span><br><span class="line"><span class="comment"> * can be assigned a strictly positive (&gt; 0) __type__ defined by the</span></span><br><span class="line"><span class="comment"> * caller. The __type__ can be used by crush_do_rule(), when it is</span></span><br><span class="line"><span class="comment"> * given as an argument of a rule step.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A pointer to crush_bucket can safely be cast into the following</span></span><br><span class="line"><span class="comment"> * structure, depending on the value of __alg__:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * - __alg__ == ::CRUSH_BUCKET_UNIFORM cast to crush_bucket_uniform</span></span><br><span class="line"><span class="comment"> * - __alg__ == ::CRUSH_BUCKET_LIST cast to crush_bucket_list</span></span><br><span class="line"><span class="comment"> * - __alg__ == ::CRUSH_BUCKET_STRAW2 cast to crush_bucket_straw2</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The weight of each item depends on the algorithm and the</span></span><br><span class="line"><span class="comment"> * information about it is available in the corresponding structure</span></span><br><span class="line"><span class="comment"> * (crush_bucket_uniform, crush_bucket_list or crush_bucket_straw2).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * See crush_map for more information on how __id__ is used</span></span><br><span class="line"><span class="comment"> * to reference the bucket.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">crush_bucket</span> &#123;</span><br><span class="line">	__s32 id;        <span class="comment">/* bucket 的 id，一般为负值 */</span></span><br><span class="line">	__u16 type;      <span class="comment">/* 类型，如果是0，就是 OSD */</span></span><br><span class="line">	__u8 alg;        <span class="comment">/* bucket 的选择算法 */</span></span><br><span class="line">        <span class="comment">/*! @cond INTERNAL */</span></span><br><span class="line">	__u8 hash;       <span class="comment">/* bucket 的 hash 函数 */</span></span><br><span class="line">	<span class="comment">/*! @endcond */</span></span><br><span class="line">	__u32 weight;    <span class="comment">/* bucket 的权重 */</span></span><br><span class="line">	__u32 size;      <span class="comment">/* bucket 下的 item 的数量 */</span></span><br><span class="line">    __s32 *items;    <span class="comment">// 子 bucket 在 crush__bucket 结构 buckets 数组的下标，</span></span><br><span class="line">    				 <span class="comment">// 这里特别要注意的是，其子 item 的 curshjbucket 结构体都</span></span><br><span class="line">    				 <span class="comment">// 统一保存在 crush map 结构中的 buckets 数组中 ，这里只保存其在数组中的下标</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="crush-rule"><a href="#crush-rule" class="headerlink" title="crush_rule"></a>crush_rule</h3> <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">crush_rule</span> &#123;</span><br><span class="line">	__u32 len;								<span class="comment">// steps 的数组的长度</span></span><br><span class="line">	__u8 __unused_was_rule_mask_ruleset;    <span class="comment">// ruleset 的编号</span></span><br><span class="line">	__u8 type;								<span class="comment">// 类型</span></span><br><span class="line">	__u8 deprecated_min_size;				<span class="comment">// 最小 size</span></span><br><span class="line">	__u8 deprecated_max_size;				<span class="comment">// 最大 size</span></span><br><span class="line">	<span class="keyword">struct</span> <span class="title class_">crush_rule_step</span> steps[<span class="number">0</span>];  		<span class="comment">// 操作步</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * CRUSH uses user-defined &quot;rules&quot; to describe how inputs should be</span></span><br><span class="line"><span class="comment"> * mapped to devices.  A rule consists of sequence of steps to perform</span></span><br><span class="line"><span class="comment"> * to generate the set of output devices.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">crush_rule_step</span> &#123;</span><br><span class="line">	__u32 op;      <span class="comment">// step 操作步的操作码</span></span><br><span class="line">    </span><br><span class="line">	__s32 arg1;    <span class="comment">// 如果是 take, 参数就是选择的 bucket 的 id 号</span></span><br><span class="line">    			   <span class="comment">// 如果是 select, 就是选择的数量</span></span><br><span class="line">	__s32 arg2;    <span class="comment">// 如果是 select, 是选择的类型</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h2><h3 id="crush-do-rule"><a href="#crush-do-rule" class="headerlink" title="crush_do_rule"></a>crush_do_rule</h3><p> 函数 <code>crush_do_rule</code> 根据 step 的数量，循环调用相关的函数选择 bucket。如果是深度优先，就调用函数 <code>crush_choose_firstn</code>（多副本模式），如果是广度优先，就调用函数 <code>crush_choose_indep</code> （纠删码模式）来选择。</p>
+<h3 id="cursh-choose-firstn"><a href="#cursh-choose-firstn" class="headerlink" title="cursh_choose_firstn"></a>cursh_choose_firstn</h3><p> 函数调用 <code>crush_bucket_choose</code> 选择需要的副本数，并对选择出来的 OSD 做了相关的冲突检査，如果冲突或者失效或者过载，继续选择新的 OSD。</p>
+<h3 id="bucket-算法"><a href="#bucket-算法" class="headerlink" title="bucket 算法"></a>bucket 算法</h3><p> Bucket 随机选择算法解决了如何从 Bucket 中选择出需要的子 item 问题。</p>
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/bucket%E9%80%89%E6%8B%A9%E7%AE%97%E6%B3%95.png" class="" title="bucket选择算法">
+
+<h1 id="Ceph-客户端"><a href="#Ceph-客户端" class="headerlink" title="Ceph 客户端"></a>Ceph 客户端</h1><h2 id="Librados"><a href="#Librados" class="headerlink" title="Librados"></a>Librados</h2><p> Librados 是 RADOS 对象存储系统访问的接口库，它提供了 pool 的创建、删除、对象的创建、删除、读写等基本操作接口。</p>
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/librados%E6%9E%B6%E6%9E%84%E5%9B%BE.png" class="" title="librados架构图">
+
+<p> 在最上层是类 RadosClient，它是 Librados 的核心管理类，处理整个 RADOS 系统层面以及 pool 层面的管理。类 Ioctxlmpl 实现单个 pool 层的对象读写等操作。OSDC 模块实现了请求的封装和通过网络模块发送请求的逻辑，其核心类 Objecter 完成对象的地址计算、消息的发送等工作。</p>
+<h3 id="RadosClient"><a href="#RadosClient" class="headerlink" title="RadosClient"></a>RadosClient</h3><p> 位于 <code>src/librados/RadosClient.h</code> 中。</p>
+<h3 id="IoCtxImpl"><a href="#IoCtxImpl" class="headerlink" title="IoCtxImpl"></a>IoCtxImpl</h3><p> 位于 <code>src/librados/IoCtxImpl.h</code> 中。</p>
+<p> 一个 pool 对应一个 IoCtxImpl 对象，可以在该 pool 里创建，删除对象，完成对象数据读写等各种操作。</p>
+<ol>
+<li>将请求封装成 <code>ObjectOperation</code> 类；</li>
+<li>再添加 pool 的地址信息，封装成 <code>Objecter::Op</code> 对象；</li>
+<li>调用函数 <code>objecter-&gt;op_submit</code> 发送给相应的 OSD，当操作完成后，调用相应的回调函数通知。</li>
+</ol>
+<h2 id="OSDC"><a href="#OSDC" class="headerlink" title="OSDC"></a>OSDC</h2><p> OSDC 是客户端比较底层的模块，其核心在于封装操作数据，<strong>计算对象的地址</strong>，发送请求和处理超时。</p>
+<h3 id="ObjectOperation"><a href="#ObjectOperation" class="headerlink" title="ObjectOperation"></a>ObjectOperation</h3><p> 位于 <code>src/osdc/Objecter.h</code> 中。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">ObjectOperation</span> &#123;</span><br><span class="line">  osdc_opvec ops;    <span class="comment">// 多个操作</span></span><br><span class="line">  <span class="type">int</span> flags = <span class="number">0</span>;     <span class="comment">// 操作的标志</span></span><br><span class="line">  <span class="type">int</span> priority = <span class="number">0</span>;	 <span class="comment">// 优先级</span></span><br><span class="line"></span><br><span class="line">  boost::container::small_vector&lt;ceph::buffer::list*, osdc_opvec_len&gt; out_bl;  <span class="comment">// 每个操作对应的输出缓存区队列</span></span><br><span class="line"></span><br><span class="line">  boost::container::small_vector&lt;fu2::unique_function&lt;<span class="built_in">void</span>(boost::system::error_code, <span class="type">int</span>,</span><br><span class="line">			      <span class="type">const</span> ceph::buffer::list&amp; bl) &amp;&amp;&gt;, osdc_opvec_len&gt; out_handler; <span class="comment">// 每个操作对应的回调函数队列</span></span><br><span class="line">  boost::container::small_vector&lt;<span class="type">int</span>*, osdc_opvec_len&gt; out_rval;	<span class="comment">// 每个操作对应的操作结果队列</span></span><br><span class="line">  boost::container::small_vector&lt;boost::system::error_code*, osdc_opvec_len&gt; out_ec;  <span class="comment">// 每个操作对应的操作错误码</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 每个操作是一个 OSDOp 类型，定义于 <code>src/osd/osd_types.h</code> 中。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">OSDOp</span> &#123;</span><br><span class="line">  ceph_osd_op op;						<span class="comment">// 每个 ceph_osd_op 封装一个操作的操作码和相关的输人和输出参数</span></span><br><span class="line">  <span class="type">sobject_t</span> soid;						<span class="comment">// 操作对象</span></span><br><span class="line"></span><br><span class="line">  ceph::buffer::list indata, outdata;	<span class="comment">// 输入和输出的 bufferlist</span></span><br><span class="line">  <span class="type">errorcode32_t</span> rval = <span class="number">0</span>;				<span class="comment">// 操作结果</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="op-target"><a href="#op-target" class="headerlink" title="op_target"></a>op_target</h3><p> 封装在 <code>Objecter</code> 类内部。</p>
+<p> 结构 op_target 封装了对象所在的 PG，以及 PG 对应的 OSD 列表等地址信息:</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">op_target_t</span> &#123;</span><br><span class="line">    <span class="type">int</span> flags = <span class="number">0</span>;				<span class="comment">// 标志</span></span><br><span class="line"></span><br><span class="line">    <span class="type">epoch_t</span> epoch = <span class="number">0</span>;  		<span class="comment">///&lt; latest epoch we calculated the mapping</span></span><br><span class="line"></span><br><span class="line">    <span class="type">object_t</span> base_oid;			<span class="comment">// 操作的对象</span></span><br><span class="line">    <span class="type">object_locator_t</span> base_oloc;	<span class="comment">// 对象的 pool 信息</span></span><br><span class="line">    <span class="type">object_t</span> target_oid;		<span class="comment">// 最终操作的目标对象</span></span><br><span class="line">    <span class="type">object_locator_t</span> target_oloc; <span class="comment">// 最终目标对象的 pool 信息</span></span><br><span class="line">    <span class="comment">// 在这里因为由 cache tier 的存在，导致最终操作的目标和 pool 不同</span></span><br><span class="line"> 	......   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Op"><a href="#Op" class="headerlink" title="Op"></a>Op</h3><p> 封装在 <code>Objecter</code> 类内部。</p>
+<p> 结构 Op 封装了完成一个操作的相关上下文信息，包括 target 地址信息、链接信息等：</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Op</span> : <span class="keyword">public</span> RefCountedObject &#123;</span><br><span class="line">    OSDSession *session = <span class="literal">nullptr</span>;	<span class="comment">// OSD 相关 session 信息</span></span><br><span class="line">    <span class="type">int</span> incarnation = <span class="number">0</span>;			<span class="comment">// 引用次数</span></span><br><span class="line"></span><br><span class="line">    <span class="type">op_target_t</span> target;				<span class="comment">// 地址信息</span></span><br><span class="line"></span><br><span class="line">    ConnectionRef con = <span class="literal">nullptr</span>;  <span class="comment">// for rx buffer only</span></span><br><span class="line">    <span class="type">uint64_t</span> features = CEPH_FEATURES_SUPPORTED_DEFAULT; <span class="comment">// explicitly specified op features</span></span><br><span class="line"></span><br><span class="line">    osdc_opvec ops;					<span class="comment">// 对应多个操作的封装</span></span><br><span class="line"></span><br><span class="line">    <span class="type">snapid_t</span> snapid = CEPH_NOSNAP;	<span class="comment">// 快照 id</span></span><br><span class="line">    SnapContext snapc;				<span class="comment">// pool 层级的快照信息</span></span><br><span class="line">    ceph::real_time mtime;</span><br><span class="line"></span><br><span class="line">    ceph::buffer::list *outbl = <span class="literal">nullptr</span>;	<span class="comment">// 输出的 bufferlist </span></span><br><span class="line">    boost::container::small_vector&lt;ceph::buffer::list*, osdc_opvec_len&gt; out_bl; <span class="comment">// 每个操作对应的 bufferlist</span></span><br><span class="line">    boost::container::small_vector&lt;</span><br><span class="line">      fu2::unique_function&lt;<span class="built_in">void</span>(boost::system::error_code, <span class="type">int</span>,</span><br><span class="line">				<span class="type">const</span> ceph::buffer::list&amp; bl) &amp;&amp;&gt;,</span><br><span class="line">      osdc_opvec_len&gt; out_handler;		<span class="comment">// 每个操作对应的回调函数</span></span><br><span class="line">    boost::container::small_vector&lt;<span class="type">int</span>*, osdc_opvec_len&gt; out_rval; <span class="comment">// 每个操作对应的输出结果</span></span><br><span class="line">    boost::container::small_vector&lt;boost::system::error_code*,</span><br><span class="line">				   osdc_opvec_len&gt; out_ec;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Striper"><a href="#Striper" class="headerlink" title="Striper"></a>Striper</h3><p> 先不管。</p>
+<h3 id="ObjectCacher"><a href="#ObjectCacher" class="headerlink" title="ObjectCacher"></a>ObjectCacher</h3><p> 位于 <code>src/osdc/ObjectCacher.h</code> 中。</p>
+<p> **有机会在这块修改缓存策略，同时关注一下 <code>src/client/Client.cc</code> 中的 <code>Client::_read_async</code>**。</p>
+<h2 id="客户端写操作"><a href="#客户端写操作" class="headerlink" title="客户端写操作"></a>客户端写操作</h2><p> 结合原书和代码看。</p>
+<p> IoCtxImpl 调用函数 <code>objecter-&gt;op_submit(Op *op)</code> 发送给相应的 OSD 步骤中，非常关键的是：<strong>使用 <code>_calc_target</code> 函数计算对象的目标 OSD</strong>。</p>
+<ol>
+<li>根据 t-&gt;base_oloc.pool 的 pool 信息，获取 pg_pool_t 对象；</li>
+<li>检査 cache tier，如果是读操作，并且有读缓存，就设置 target_oloc.pool 为该 pool 的 read tier；如果是写操作类似；</li>
+<li>调用函数 osdmap-&gt;object_locator_to_pg 获取目标对象所在的 PG；</li>
+<li>调用函数 osdmap-&gt;pg_to_up_acting_osds，通过 CRUSH 算分，获取该 PG 对应的OSD 列表；</li>
+<li>如果是写操作，target 的 OSD 就设置为主 OSD; 如果是读操作，如果设置了 CEPH_OSD_FLAG_BALANCE_READS 标志，就随机选择一个副本读取。如果设置了 CEPH_OSD_FLAG_LOCALIZE_READS 标志，就尽可能选择本地副本读取。</li>
+</ol>
+<h2 id="Cls"><a href="#Cls" class="headerlink" title="Cls"></a>Cls</h2><p> Cls 是 Ceph 的一个模块扩展，它允许用户自定义对象的操作接口和实现方法，为用户提供了一种比较方便的接口扩展方式。目前 rbd 和 lock 等模块都使用了这种机制。</p>
+<h1 id="Ceph-数据读写"><a href="#Ceph-数据读写" class="headerlink" title="Ceph 数据读写"></a>Ceph 数据读写</h1><h2 id="OSD-相关数据结构"><a href="#OSD-相关数据结构" class="headerlink" title="OSD 相关数据结构"></a>OSD 相关数据结构</h2><h3 id="pool"><a href="#pool" class="headerlink" title="pool"></a>pool</h3><p> 位于 <code>src/osd/osd_types.h</code> 中。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">pg_pool_t</span>&#123;</span><br><span class="line">  <span class="keyword">enum</span> &#123;</span><br><span class="line">    TYPE_REPLICATED = <span class="number">1</span>,     <span class="comment">// replication</span></span><br><span class="line">    <span class="comment">//TYPE_RAID4 = 2,   // raid4 (never implemented)</span></span><br><span class="line">    TYPE_ERASURE = <span class="number">3</span>,      <span class="comment">// erasure-coded</span></span><br><span class="line">  &#125;;   </span><br><span class="line">  <span class="type">utime_t</span> create_time;</span><br><span class="line">  <span class="type">uint64_t</span> flags = <span class="number">0</span>;           <span class="comment">///&lt; FLAG_*</span></span><br><span class="line">  __u8 type = <span class="number">0</span>;                <span class="comment">/// replication 或 ErasureCode</span></span><br><span class="line">  __u8 size = <span class="number">0</span>, min_size = <span class="number">0</span>;  <span class="comment">/// 副本数目和最少有效副本数目</span></span><br><span class="line">  __u8 crush_rule = <span class="number">0</span>;          <span class="comment">/// Pool 对应的 crush 规则号</span></span><br><span class="line">  __u8 object_hash = <span class="number">0</span>;         <span class="comment">/// 通过对象名映射到 PG 的 hash 函数。</span></span><br><span class="line">  <span class="type">pg_autoscale_mode_t</span> pg_autoscale_mode = <span class="type">pg_autoscale_mode_t</span>::UNKNOWN;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  __u32 pg_num = <span class="number">0</span>, pgp_num = <span class="number">0</span>;  <span class="comment">/// Pool 里 PG 的数量 和 PGP 的值。</span></span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="PG"><a href="#PG" class="headerlink" title="PG"></a>PG</h3><p> 位于 <code>src/osd/osd_types.h</code> 中。</p>
+<p> pg_t 只是一个 PG 的静态描述信息，</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">pg_t</span> &#123;</span><br><span class="line">  <span class="type">uint64_t</span> m_pool; <span class="comment">// pg 所在的 pool</span></span><br><span class="line">  <span class="type">uint32_t</span> m_seed; <span class="comment">// pg 的序号</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> spg_t 在 pg_t 的基础上，加了一个 shard_id 字段，代表了该 PG 所在的 OSD 在对应的 OSD 列表中的序号。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">spg_t</span> &#123;</span><br><span class="line">  <span class="type">pg_t</span> pgid;</span><br><span class="line">  <span class="type">shard_id_t</span> shard;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="OSDMap"><a href="#OSDMap" class="headerlink" title="OSDMap"></a>OSDMap</h3><p> 位于 <code>src/osd/OSDMap.h</code> 中。</p>
+<p> 定义了 ceph 整个集群的全局信息，它由 Monitor 实现管理，并以全量或者增量的方式向整个集群扩散。每一个 epoch 对应的 OSDMap 都需要持久化保存在 meta 下对应对象的 omap 属性中。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">OSDMap</span> &#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="comment">// 系统相关信息</span></span><br><span class="line">  uuid_d fsid;</span><br><span class="line">  <span class="type">epoch_t</span> epoch;        <span class="comment">// what epoch of the osd cluster descriptor is this</span></span><br><span class="line">  <span class="type">utime_t</span> created, modified; <span class="comment">// epoch start time</span></span><br><span class="line">  <span class="type">int32_t</span> pool_max;     <span class="comment">// the largest pool num, ever</span></span><br><span class="line">  <span class="type">uint32_t</span> flags;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// OSD 相关信息</span></span><br><span class="line">  <span class="type">int</span> num_osd;         <span class="comment">// not saved; see calc_num_osds</span></span><br><span class="line">  <span class="type">int</span> num_up_osd;      <span class="comment">// not saved; see calc_num_osds</span></span><br><span class="line">  <span class="type">int</span> num_in_osd;      <span class="comment">// not saved; see calc_num_osds</span></span><br><span class="line">  <span class="type">int32_t</span> max_osd;</span><br><span class="line">  std::vector&lt;<span class="type">uint32_t</span>&gt; osd_state;</span><br><span class="line">  std::shared_ptr&lt;addrs_s&gt; osd_addrs;</span><br><span class="line">  mempool::osdmap::vector&lt;__u32&gt;   osd_weight;   <span class="comment">// 16.16 fixed point, 0x10000 = &quot;in&quot;, 0 = &quot;out&quot;</span></span><br><span class="line">  mempool::osdmap::vector&lt;<span class="type">osd_info_t</span>&gt; osd_info;</span><br><span class="line">  std::shared_ptr&lt; mempool::osdmap::vector&lt;uuid_d&gt; &gt; osd_uuid;</span><br><span class="line">  mempool::osdmap::vector&lt;<span class="type">osd_xinfo_t</span>&gt; osd_xinfo;</span><br><span class="line">    </span><br><span class="line">  <span class="type">entity_addrvec_t</span> _blank_addrvec;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// PG 相关信息</span></span><br><span class="line">  std::shared_ptr&lt;PGTempMap&gt; pg_temp;  <span class="comment">// temp pg mapping (e.g. while we rebuild)</span></span><br><span class="line">  std::shared_ptr&lt; mempool::osdmap::map&lt;<span class="type">pg_t</span>,<span class="type">int32_t</span> &gt; &gt; primary_temp;  <span class="comment">// temp primary mapping (e.g. while we rebuild)</span></span><br><span class="line">  std::shared_ptr&lt; mempool::osdmap::vector&lt;__u32&gt; &gt; osd_primary_affinity; <span class="comment">///&lt; 16.16 fixed point, 0x10000 = baseline</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// pool 相关信息</span></span><br><span class="line">  mempool::osdmap::map&lt;<span class="type">int64_t</span>,<span class="type">pg_pool_t</span>&gt; pools;</span><br><span class="line">  mempool::osdmap::map&lt;<span class="type">int64_t</span>,std::string&gt; pool_name;</span><br><span class="line">  mempool::osdmap::map&lt;std::string, std::map&lt;std::string,std::string&gt;&gt; erasure_code_profiles;</span><br><span class="line">  mempool::osdmap::map&lt;std::string,<span class="type">int64_t</span>, std::less&lt;&gt;&gt; name_pool;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// crush 相关信息</span></span><br><span class="line">  std::shared_ptr&lt;CrushWrapper&gt; crush;       <span class="comment">// hierarchical map</span></span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="object-info-t"><a href="#object-info-t" class="headerlink" title="object_info_t"></a>object_info_t</h3><p> 位于 <code>src/osd/osd_types.h</code> 中。</p>
+<p> 结构 object_info_t 保存了一个对象的元数据信息和访问信息。其做为对象的一个属性，持久化保存在对象 xattr 中，对应的 key 为  OI_ATTR (”_”），value 就是 oject_info_t 的 encode 后的数据。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">object_info_t</span> &#123;</span><br><span class="line">  <span class="type">hobject_t</span> soid; <span class="comment">// 对应的对象</span></span><br><span class="line">  <span class="type">eversion_t</span> version, prior_version; <span class="comment">// 对象的当前版本，前一个版本</span></span><br><span class="line">  <span class="type">version_t</span> user_version; <span class="comment">// 用户操作的版本</span></span><br><span class="line">  <span class="type">osd_reqid_t</span> last_reqid; <span class="comment">// 最后请求的请求 id</span></span><br><span class="line"></span><br><span class="line">  <span class="type">uint64_t</span> size; <span class="comment">// 对象的大小</span></span><br><span class="line">  <span class="type">utime_t</span> mtime; <span class="comment">// 修改的时间</span></span><br><span class="line">  <span class="type">utime_t</span> local_mtime; <span class="comment">// 修改的本地时间</span></span><br><span class="line">    </span><br><span class="line">  <span class="comment">// note: these are currently encoded into a total 16 bits; see</span></span><br><span class="line">  <span class="comment">// encode()/decode() for the weirdness.</span></span><br><span class="line">  <span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;</span><br><span class="line">    FLAG_LOST        = <span class="number">1</span>&lt;&lt;<span class="number">0</span>,</span><br><span class="line">    FLAG_WHITEOUT    = <span class="number">1</span>&lt;&lt;<span class="number">1</span>, <span class="comment">// object logically does not exist</span></span><br><span class="line">    FLAG_DIRTY       = <span class="number">1</span>&lt;&lt;<span class="number">2</span>, <span class="comment">// object has been modified since last flushed or undirtied</span></span><br><span class="line">    FLAG_OMAP        = <span class="number">1</span>&lt;&lt;<span class="number">3</span>, <span class="comment">// has (or may have) some/any omap data</span></span><br><span class="line">    FLAG_DATA_DIGEST = <span class="number">1</span>&lt;&lt;<span class="number">4</span>, <span class="comment">// has data crc</span></span><br><span class="line">    FLAG_OMAP_DIGEST = <span class="number">1</span>&lt;&lt;<span class="number">5</span>, <span class="comment">// has omap crc</span></span><br><span class="line">    FLAG_CACHE_PIN   = <span class="number">1</span>&lt;&lt;<span class="number">6</span>, <span class="comment">// pin the object in cache tier</span></span><br><span class="line">    FLAG_MANIFEST    = <span class="number">1</span>&lt;&lt;<span class="number">7</span>, <span class="comment">// has manifest</span></span><br><span class="line">    FLAG_USES_TMAP   = <span class="number">1</span>&lt;&lt;<span class="number">8</span>, <span class="comment">// deprecated; no longer used</span></span><br><span class="line">    FLAG_REDIRECT_HAS_REFERENCE = <span class="number">1</span>&lt;&lt;<span class="number">9</span>, <span class="comment">// has reference</span></span><br><span class="line">  &#125; <span class="type">flag_t</span>;</span><br><span class="line"></span><br><span class="line">  <span class="type">flag_t</span> flags;</span><br><span class="line">    </span><br><span class="line">  <span class="type">uint64_t</span> truncate_seq, truncate_size;</span><br><span class="line">  std::map&lt;std::pair&lt;<span class="type">uint64_t</span>, <span class="type">entity_name_t</span>&gt;, <span class="type">watch_info_t</span>&gt; watchers;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// opportunistic checksums; may or may not be present</span></span><br><span class="line">  __u32 data_digest;  <span class="comment">///&lt; data crc32c</span></span><br><span class="line">  __u32 omap_digest;  <span class="comment">///&lt; omap crc32c</span></span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ObjectState"><a href="#ObjectState" class="headerlink" title="ObjectState"></a>ObjectState</h3><p> 位于 <code>src/osd/object_state.h</code> 中。</p>
+<p> 在 object_info_t 的基础上，添加一个 exists 字段，用来标记对象是否存在。object_info_t 可能是从缓存的 attrs[OI_ATTR] 中获取的，并不能确定对象是否存在。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">ObjectState</span> &#123;</span><br><span class="line">  <span class="type">object_info_t</span> oi;</span><br><span class="line">  <span class="type">bool</span> exists;         <span class="comment">///&lt; the stored object exists (i.e., we will remember the object_info_t)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SnapSetContext"><a href="#SnapSetContext" class="headerlink" title="SnapSetContext"></a>SnapSetContext</h3><p> 位于 <code>src/osd/osd_internal_types.h</code> 中。</p>
+<p> SnapSetContext 保存了快照的相关信息，即 SnapSet 的上下文信息。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">SnapSetContext</span> &#123;</span><br><span class="line">  <span class="type">hobject_t</span> oid;   <span class="comment">// 对象</span></span><br><span class="line">  SnapSet snapset; <span class="comment">// SnapSet 对象快照相关的记录</span></span><br><span class="line">  <span class="type">int</span> ref;		   <span class="comment">// 本结构的引用计数</span></span><br><span class="line">  <span class="type">bool</span> registered : <span class="number">1</span>; <span class="comment">// 是否在 SnapSet Cache 中记录</span></span><br><span class="line">  <span class="type">bool</span> exists : <span class="number">1</span>;     <span class="comment">// snapset 是否存在</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">explicit</span> <span class="title">SnapSetContext</span><span class="params">(<span class="type">const</span> <span class="type">hobject_t</span>&amp; o)</span> :</span></span><br><span class="line"><span class="function">    oid(o), ref(<span class="number">0</span>), registered(false), exists(true) &#123;</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="读写流程"><a href="#读写流程" class="headerlink" title="读写流程"></a>读写流程</h2><p> OSD 服务端收到消息后，分三个阶段进行读写。</p>
+<h3 id="接收请求"><a href="#接收请求" class="headerlink" title="接收请求"></a>接收请求</h3><p> 读写请求都是从 <code>void OSD::ms_fast_dispatch(Message *m)</code> 开始，</p>
+<h1 id="本地对象存储"><a href="#本地对象存储" class="headerlink" title="本地对象存储"></a>本地对象存储</h1><p> RADOS 本地对象存储基于本地文件系统实现，默认的本地文件系统为 XFS（现已经是 bluestore），对应到本地文件系统里，一个对象就是一个固定大小的文件。对象所属的 PG 会作为文件目录，当一个 PG 内（注： 这里应该是目录内）所包含的文件超过一定程度时（在目录内文件太多会造成文件系统的 lookup 性能损耗），相应的目录会进行分裂。</p>
+<p> RADOS 保存数据有三种方式：object data、object xattr、object omap。data 是保存对象的数据，xattr 是保存对象的扩展属性，这要求支持对象存储的本地文件系统（一般是 XFS）支持扩展属性。如果要设置的对象的 key&#x2F;value 因为操作系统限制，不能存储在文件的扩展属性中，还存在另外一种方式保存 omap， omap 是 object map 的简称，是将元数据保存在本地文件系统之外的独立 key-value 存储系统中，在使用 filestore 时是 leveldb，在使用 bluestore 时是 rocksdb。</p>
+<p> 对象如何在本地文件系统中组织的代码实现在 <code>src/os</code> 中。本章将介绍在单个 OSD 上数据如何写入磁盘中。</p>
+<h2 id="ObjectStore-对象存储接口"><a href="#ObjectStore-对象存储接口" class="headerlink" title="ObjectStore 对象存储接口"></a>ObjectStore 对象存储接口</h2><p> 位于 <code>src/os/ObjectStore.h</code> 中。</p>
+<p> 所有的对象存储引擎都必须继承和实现 ObjectStore 定义的接口。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ol>
+<li>create 创建 ObjectStore 实例；</li>
+<li>mkfs 创建 ObjectStore 相关的系统信息；</li>
+<li>mount 加载 ObjectStore 相关的系统信息；</li>
+<li>statfs 获取 ObjectStore 相关的系统信息。</li>
+</ol>
+<h3 id="获取属性"><a href="#获取属性" class="headerlink" title="获取属性"></a>获取属性</h3><ol>
+<li>getattr 获取对象的一个 xattr；（****）</li>
+<li>omap_get 获取对象的 omap 信息。</li>
+</ol>
+<h2 id="omap"><a href="#omap" class="headerlink" title="omap"></a>omap</h2><p> omap 就是 object map 的简称，是一些键值对，保存在本地文件系统之外的独立的 key-value 存储系统中，例如 leveldb、rockdb 等。xattrs 保存一些比较小而经常访问的信息。omap 保存一些大而不是经常访问的数据。</p>
+<p> 位于 <code>src/os/ObjectMap.h</code> 的 ObjectMap 类定义了 omap 的抽象接口。</p>
+<p> omap 在 leveldb 中的存储分两步，保存（1）”hobject_seq” + ghobject_key(oid) -&gt; header 的键值对，header 中包含对象在 leveldb 中的唯一表示 seq；（2）”USER” + header_key(header-&gt;seq) + “AXATTR” + key -&gt; value (omap 的值)。</p>
+<h3 id="部分代码实现分析"><a href="#部分代码实现分析" class="headerlink" title="部分代码实现分析"></a>部分代码实现分析</h3><ol>
+<li>lookup_create_map_header：获取对象的 header。<ul>
+<li>首先在 caches 里查找，caches 缺失则调用底层 KeyValueDB 的 db-&gt;get() 查找；</li>
+<li>上述查找成功直接返回，否则调用 _generate_new_header 来设置 header 并更新 omap 状态，再调用 set_map_header 把新 header 设置到 leveldb 和 caches 中。</li>
+</ul>
+</li>
+<li>get_attrs：获取对象的属性。<ul>
+<li>lookup_map_header 获取对象的 header；</li>
+<li>db-&gt;get 获取具体属性。</li>
+</ul>
+</li>
+</ol>
+<h2 id="BlueStore"><a href="#BlueStore" class="headerlink" title="BlueStore"></a>BlueStore</h2><p> 速通，对于关注的缓存部分以及 IO 流程着重了解，其余粗略扫描。 </p>
+<h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/91015613">架构设计</a></h3><p> FileStore 与 BlueStore 的对比：</p>
+<ol>
+<li>FileStore 先写 <code>Journal</code>，再写文件系统，会有一倍写放大，而文件系统一般都是日志型文件系统（xfs、ext系列），也会写 <code>Journal</code>，因此维护了两份日志；同时 FileStore 没有针对 SSD 进行优化。</li>
+<li><code>BlueStore</code>选择绕过文件系统，直接接管裸设备，直接进行对象数据 IO 操作，同时元数据存放在<code>RocksDB</code>，大大缩短了整个对象存储的IO路径。<code>BlueStore</code>可以理解为一个支持<code>ACID</code>事物型的本地日志文件系统。</li>
+</ol>
+<p> BlueStore 在减少写日志开销上的努力：</p>
+<ol>
+<li>针对大范围的覆盖写，只在其前后非磁盘块大小对齐的部分使用 <code>Journal</code>，即 <code>RMW</code>，其他部分直接重定向写 <code>COW</code> 即可。<ul>
+<li><code>RMW (Read-Modify-Write)</code>：指当覆盖写发生时，如果本次改写的内容不足一个 <code>BlockSize</code>，那么需要先将对应的块读上来，然后在内存中将原内容和待修改内容 <code>Merge</code>，最后将新的块写到原来的位置。但是 <code>RMW</code> 也带来了两个问题：<strong>一是</strong>需要额外的读开销；**二是 **<code>RMW</code> 不是原子操作，如果磁盘中途掉电，会有数据损坏的风险。为此需要引入 <code>Journal</code>，先将待更新数据写入 <code>Journal</code>，然后再更新数据，最后再删除<code>Journal</code>对应的空间；</li>
+<li><code>COW (Copy-On-Write)</code>：指当覆盖写发生时，不是更新磁盘对应位置已有的内容，而是新分配一块空间，写入本次更新的内容，然后更新对应的地址指针（<strong>rocksdb “原子”更新元数据？</strong>），最后释放原有数据对应的磁盘空间。理论上 <code>COW</code> 可以解决 <code>RMW</code> 的两个问题，但是也带来了其他的问题：（1）<code>COW </code>机制破坏了数据在磁盘分布的物理连续性。经过多次 <code>COW</code> 后，顺序读将会便会随机读。（2）针对小于块大小的覆盖写采用 <code>COW</code> 会得不偿失。<strong>是因为</strong>：（1）将新的内容写入新的块后，原有的块仍然保留部分有效内容，不能释放无效空间，而且再次读的时候需要将两个块读出来做 <code>Merge</code> 操作，才能返回最终需要的数据，将大大影响读性能；（2）存储系统一般元数据越多，功能越丰富，元数据越少，功能越简单。而且任何操作必然涉及元数据，所以元数据是系统中的热点数据。<code>COW</code> 涉及空间重分配和地址重定向，将会引入更多的元数据，进而导致系统元数据无法全部缓存在内存里面，性能会大打折扣。</li>
+</ul>
+</li>
+<li>基于以上设计理念，<code>BlueStore</code> 的写策略综合运用了 <code>COW</code> 和 <code>RMW</code> 策略。<strong>非覆盖写</strong>直接分配空间写入即可（<strong>新分配一块空间，写入内容，然后“原子”写入元数据？</strong>）；<strong>块大小对齐的覆盖写</strong>采用 <code>COW</code> 策略；<strong>小于块大小的覆盖写</strong>采用 <code>RMW</code> 策略。</li>
+<li>rocksdb 基于为其量身定做的本地文件系统 blueFS，blueFS 向块设备写入元数据时，需要先写日志，再写元数据（WAL），为加速这一过程，将 .log 和 .sst 分开存储，.log 使用速度更快的存储介质；在引入BlueFS后，BlueStore将所有存储空间从逻辑上分了3个层次：<ul>
+<li>**慢速空间(Block)**：存储对象数据，可以使用 <code>HDD</code>，由<code>BlueStore</code>管理。</li>
+<li>**高速空间(DB)**：存储 <code>RocksDB</code> 的 <code>sst</code> 文件，可以使用 <code>SSD</code>，由 <code>BlueFS</code> 管理。</li>
+<li>**超高速空间(WAL)**：存储 <code>RocksDB</code> 的 <code>log</code> 文件，可以使用 <code>NVME</code>，由 <code>BlueFS </code>管理。</li>
+</ul>
+</li>
+</ol>
+<p> BlueStore 读写流程概览：</p>
+<ol>
+<li>读取数据时，先从 RocksDB 找到对应的磁盘空间，然后通过 <code>BlockDevice</code> 读出数据；</li>
+<li>处理写请求时会进入事物的状态机，简单流程就是先写数据，然后再原子的写入对象元数据和分配结果元数据。写入数据如果是对齐写入，则最终会调用 <code>do_write_big</code>；如果是非对齐写，最终会调用 <code>do_write_small</code>。</li>
+</ol>
+<h3 id="BitMap-分配器"><a href="#BitMap-分配器" class="headerlink" title="BitMap 分配器"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/91018497">BitMap 分配器</a></h3><h3 id="Stupid-分配器"><a href="#Stupid-分配器" class="headerlink" title="Stupid 分配器"></a>Stupid 分配器</h3><h3 id="BlockDevice"><a href="#BlockDevice" class="headerlink" title="BlockDevice"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/91020703">BlockDevice</a></h3><p> 设备的空间管理以及使用由 BlueFS 和 BlueStore 决定，BlockDevice 仅仅提供同步 IO 和异步 IO 的操作接口。</p>
+<p> <strong>BlueStore 通过 libaio 实现异步 IO，这也是默认的 IO 模式。</strong></p>
+ <img src="/2022/10/22/Ceph%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/aio.jpg" class="" title="aio">
+<p> AIO 的读写实际是在 IOContext 结构体的成员变量 pending_aios 中追加了一个和 libaio 相关的 aio_t 结构。</p>
+<p> 写：调用 <code>io_prep_pwritev</code> 将写的数据放入buf中，此时还在内存，没有写入磁盘。</p>
+<p> 读：调用 <code>io_prep_pread</code> ，并开辟一块block对齐的内存，准备读数据，还没有从磁盘读。</p>
+<p> 提交：准备完读写之后，就需要调用 <code>aio_submit</code> 提交准备的 IO 了。</p>
+<p> IO 提交后就可以返回了，BlueStore 起了一个单独的线程检查 IO 的完成情况，当真正完成的时候，执行回调函数通知调用方。</p>
+<h3 id="FreelistManager"><a href="#FreelistManager" class="headerlink" title="FreelistManager"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/91025247">FreelistManager</a></h3><h3 id="blueStore-中的对象-IO"><a href="#blueStore-中的对象-IO" class="headerlink" title="blueStore 中的对象 IO"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/92397191">blueStore 中的对象 IO</a></h3><ol>
+<li><p>Onode：<strong>对象元数据在内存中的数据结构</strong>；</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Onode</span>&#123;</span><br><span class="line">    Collection *c;  <span class="comment">// Onode 所属 PG</span></span><br><span class="line">    <span class="type">ghobject_t</span> oid; <span class="comment">// 对象</span></span><br><span class="line">    mempool::bluestore_cache_meta::string key; <span class="comment">// key under PREFIX_OBJ where we are stored</span></span><br><span class="line">    <span class="type">bluestore_onode_t</span> onode;  <span class="comment">// onode 磁盘数据结构</span></span><br><span class="line">    <span class="type">bool</span> exists;              <span class="comment">// true if object logically exists</span></span><br><span class="line">    <span class="type">bool</span> cached;              <span class="comment">// Onode is logically in the cache</span></span><br><span class="line">                              <span class="comment">// (it can be pinned and hence physically out</span></span><br><span class="line">                              <span class="comment">// of it at the moment though)</span></span><br><span class="line">    ExtentMap extent_map;     <span class="comment">// 有序的Extent逻辑空间集合，持久化在RocksDB。lexetnt---&gt;blob</span></span><br><span class="line">    std::shared_ptr&lt;<span class="type">int64_t</span>&gt; cache_age_bin;  <span class="comment">///&lt; cache age bin</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bluestore_onode：<strong>对象元数据在磁盘中的数据结构</strong>；</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// onode: per-object metadata</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bluestore_onode_t</span> &#123;</span><br><span class="line">    <span class="type">uint64_t</span> nid = <span class="number">0</span>;                    <span class="comment">///&lt; numeric id (locally unique)</span></span><br><span class="line">  	<span class="type">uint64_t</span> size = <span class="number">0</span>;                   <span class="comment">///&lt; object size</span></span><br><span class="line">  	<span class="comment">// mempool to be assigned to buffer::ptr manually，对象扩展属性</span></span><br><span class="line">  	std::map&lt;mempool::bluestore_cache_meta::string, ceph::buffer::ptr&gt; attrs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>PExtent：<strong>对应一段连续的磁盘空间</strong>；offset 和 length 都是块大小对齐。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">bluestore_pextent_t</span> &#123;</span><br><span class="line">    <span class="type">uint64_t</span> offset = <span class="number">0</span>; <span class="comment">// 磁盘上的物理偏移</span></span><br><span class="line">    <span class="type">uint32_t</span> length = <span class="number">0</span>; <span class="comment">// 数据段的长度</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>LExtent：Extent 是对象内的基本数据管理单元，数据压缩、数据校验、数据共享等功能都是基于 Extent 粒度实现的。这里的Extent 是对象内的，并不是磁盘内的，所以称为 lextent，和磁盘内的 pextent 以示区分。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Extent</span> &#123;</span><br><span class="line">    <span class="type">uint32_t</span> logical_offset = <span class="number">0</span>; <span class="comment">// 对象内逻辑偏移，不需要块对齐。</span></span><br><span class="line">    <span class="type">uint32_t</span> length = <span class="number">0</span>; <span class="comment">// 逻辑段长度，不需要块对齐。</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 当logical_offset是块对齐时，blob_offset始终为0；</span></span><br><span class="line">    <span class="comment">// 不是块对齐时，将逻辑段内的数据通过Blob映射到磁盘物理段会产生物理段内的偏移称为blob_offset。</span></span><br><span class="line">    <span class="type">uint32_t</span> blob_offset = <span class="number">0</span>;</span><br><span class="line">    BlobRef  blob;                    <span class="comment">///&lt; the blob with our data</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>blob：Blob 包含磁盘上物理段的集合，即 <code>bluestore_pextent_t</code> 的集合。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Blob</span> &#123;</span><br><span class="line">    <span class="comment">// reference count</span></span><br><span class="line">    std::atomic_int nref = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">mutable</span> <span class="type">bluestore_blob_t</span> blob;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bluestore_blob_t</span> &#123;</span><br><span class="line">    PExtentVector extents;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/92396291">Cache</a></h3><ol>
+<li><p>数据结构：</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A generic Cache Shard</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">CacheShard</span> &#123;</span><br><span class="line">    PerfCounters *logger; <span class="comment">// 统计缓存命中率等信息</span></span><br><span class="line">    ceph::recursive_mutex lock = &#123;ceph::<span class="built_in">make_recursive_mutex</span>(<span class="string">&quot;BlueStore::CacheShard::lock&quot;</span>) &#125;;</span><br><span class="line"> 	std::atomic&lt;<span class="type">uint64_t</span>&gt; max = &#123;<span class="number">0</span>&#125;; <span class="comment">// 对于onode，为最大缓存对象数；对于buffer，为最大缓存大小</span></span><br><span class="line">    std::atomic&lt;<span class="type">uint64_t</span>&gt; num = &#123;<span class="number">0</span>&#125;; <span class="comment">// 现有缓存的对象数</span></span><br><span class="line">    boost::circular_buffer&lt;std::shared_ptr&lt;<span class="type">int64_t</span>&gt;&gt; age_bins;  </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A Generic onode Cache Shard</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">OnodeCacheShard</span> : <span class="keyword">public</span> CacheShard &#123;</span><br><span class="line">    std::array&lt;std::pair&lt;<span class="type">ghobject_t</span>, ceph::mono_clock::time_point&gt;, 64&gt; dumped_onodes;</span><br><span class="line">	......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A Generic buffer Cache Shard</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">BufferCacheShard</span> : <span class="keyword">public</span> CacheShard &#123;</span><br><span class="line">    std::atomic&lt;<span class="type">uint64_t</span>&gt; num_extents = &#123;<span class="number">0</span>&#125;;  <span class="comment">// 当前缓存的extent数</span></span><br><span class="line">    std::atomic&lt;<span class="type">uint64_t</span>&gt; num_blobs = &#123;<span class="number">0</span>&#125;;    <span class="comment">// 当前缓存的blob数</span></span><br><span class="line">    <span class="type">uint64_t</span> buffer_bytes = <span class="number">0</span>; <span class="comment">// buffer缓存数据总大小</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// LruOnodeCacheShard</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">LruOnodeCacheShard</span> : <span class="keyword">public</span> BlueStore::OnodeCacheShard &#123;</span><br><span class="line">    <span class="type">list_t</span> lru;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// LruBufferCacheShard</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">LruBufferCacheShard</span> : <span class="keyword">public</span> BlueStore::BufferCacheShard &#123;</span><br><span class="line"> 	<span class="type">list_t</span> lru;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">TwoQBufferCacheShard</span> : <span class="keyword">public</span> BlueStore::BufferCacheShard &#123;</span><br><span class="line">  	<span class="type">list_t</span> hot;      <span class="comment">///&lt; &quot;Am&quot; hot buffers</span></span><br><span class="line">  	<span class="type">list_t</span> warm_in;  <span class="comment">///&lt; &quot;A1in&quot; newly warm buffers</span></span><br><span class="line">  	<span class="type">list_t</span> warm_out; <span class="comment">///&lt; &quot;A1out&quot; empty buffers we&#x27;ve evicted</span></span><br><span class="line"></span><br><span class="line">  	<span class="keyword">enum</span> &#123;</span><br><span class="line">    	BUFFER_NEW = <span class="number">0</span>,</span><br><span class="line">    	BUFFER_WARM_IN,   <span class="comment">///&lt; in warm_in</span></span><br><span class="line">    	BUFFER_WARM_OUT,  <span class="comment">///&lt; in warm_out</span></span><br><span class="line">    	BUFFER_HOT,       <span class="comment">///&lt; in hot</span></span><br><span class="line">    	BUFFER_TYPE_MAX</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="type">uint64_t</span> list_bytes[BUFFER_TYPE_MAX] = &#123;<span class="number">0</span>&#125;; <span class="comment">//&lt; bytes per type</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 由于缓存的绝大部分操作都要加锁而且Onode使用一个链表，为了更高的性能，需要对Cache进行分片，</p>
+</li>
+<li><p>初始化</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">BlueStore::<span class="built_in">BlueStore</span>(CephContext *cct, <span class="type">const</span> string&amp; path)</span><br><span class="line">    : <span class="built_in">ObjectStore</span>(cct, path),</span><br><span class="line">&#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="built_in">set_cache_shards</span>(<span class="number">1</span>); <span class="comment">// 初始化cache</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BlueStore::set_cache_shards</span><span class="params">(<span class="type">unsigned</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  	<span class="type">size_t</span> oold = onode_cache_shards.<span class="built_in">size</span>();</span><br><span class="line">  	<span class="type">size_t</span> bold = buffer_cache_shards.<span class="built_in">size</span>();</span><br><span class="line">  	<span class="built_in">ceph_assert</span>(num &gt;= oold &amp;&amp; num &gt;= bold);</span><br><span class="line">  	onode_cache_shards.<span class="built_in">resize</span>(num);</span><br><span class="line">  	buffer_cache_shards.<span class="built_in">resize</span>(num);</span><br><span class="line">  	<span class="keyword">for</span> (<span class="type">unsigned</span> i = oold; i &lt; num; ++i) &#123;</span><br><span class="line">  	  	onode_cache_shards[i] = </span><br><span class="line">  	      	OnodeCacheShard::<span class="built_in">create</span>(cct, cct-&gt;_conf-&gt;bluestore_cache_type,logger);</span><br><span class="line">  	&#125;</span><br><span class="line">  	<span class="keyword">for</span> (<span class="type">unsigned</span> i = bold; i &lt; num; ++i) &#123;</span><br><span class="line">   		buffer_cache_shards[i] = </span><br><span class="line">        	BufferCacheShard::<span class="built_in">create</span>(cct, cct-&gt;_conf-&gt;bluestore_cache_type,logger);</span><br><span class="line">  	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// OnodeCacheShard</span></span><br><span class="line">BlueStore::OnodeCacheShard *BlueStore::OnodeCacheShard::<span class="built_in">create</span>(</span><br><span class="line">    CephContext* cct,</span><br><span class="line">    string type,</span><br><span class="line">    PerfCounters *logger)</span><br><span class="line">&#123;</span><br><span class="line"> 	 BlueStore::OnodeCacheShard *c = <span class="literal">nullptr</span>;</span><br><span class="line">  	<span class="comment">// Currently we only implement an LRU cache for onodes</span></span><br><span class="line">  	c = <span class="keyword">new</span> <span class="built_in">LruOnodeCacheShard</span>(cct);</span><br><span class="line">  	c-&gt;logger = logger;</span><br><span class="line">  	<span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// BuferCacheShard</span></span><br><span class="line">BlueStore::BufferCacheShard *BlueStore::BufferCacheShard::<span class="built_in">create</span>(</span><br><span class="line">    CephContext* cct,</span><br><span class="line">    string type,</span><br><span class="line">    PerfCounters *logger)</span><br><span class="line">&#123;</span><br><span class="line">  	BufferCacheShard *c = <span class="literal">nullptr</span>;</span><br><span class="line">  	<span class="keyword">if</span> (type == <span class="string">&quot;lru&quot;</span>)</span><br><span class="line">  		c = <span class="keyword">new</span> <span class="built_in">LruBufferCacheShard</span>(cct);</span><br><span class="line">  	<span class="keyword">else</span> <span class="keyword">if</span> (type == <span class="string">&quot;2q&quot;</span>)</span><br><span class="line">    	c = <span class="keyword">new</span> <span class="built_in">TwoQBufferCacheShard</span>(cct);</span><br><span class="line">  	<span class="keyword">else</span></span><br><span class="line">    	<span class="built_in">ceph_abort_msg</span>(<span class="string">&quot;unrecognized cache type&quot;</span>);</span><br><span class="line">  	c-&gt;logger = logger;</span><br><span class="line">  	<span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">size_t</span> <span class="title">OSD::get_num_cache_shards</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  	<span class="keyword">return</span> cct-&gt;_conf.<span class="built_in">get_val</span>&lt;Option::<span class="type">size_t</span>&gt;(<span class="string">&quot;osd_num_cache_shards&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>元数据</p>
+<p> BlueStore主要的元数据有两种类型：Collection、Onode；其中Collection常驻内存，缓存的便是Onode了。</p>
+<ul>
+<li><p><strong>Collocation对应PG在BlueStore中的内存数据结构，Cnode对应PG在BlueStore中的磁盘数据结构。</strong>在创建 pg 的时候，会将 pg 的元信息存在 kv 中；在osd上电的时候，会创建collection，并从kv加载所有collection信息，同时会指定该 PG 内对象的数据和元数据缓存到哪个 buffercache 和 onodecache，参见函数 _open_collections。</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Collection</span> : <span class="keyword">public</span> CollectionImpl &#123;</span><br><span class="line">    BlueStore *store;</span><br><span class="line">    OpSequencerRef osr;  		<span class="comment">// 每个PG有一个osr，在BlueStore层面保证读写事物的顺序性和并发性。</span></span><br><span class="line">    BufferCacheShard *cache;    <span class="comment">// &lt; our cache shard</span></span><br><span class="line">    <span class="type">bluestore_cnode_t</span> cnode;	<span class="comment">// pg的磁盘结构</span></span><br><span class="line">    ceph::shared_mutex lock =</span><br><span class="line">      ceph::<span class="built_in">make_shared_mutex</span>(<span class="string">&quot;BlueStore::Collection::lock&quot;</span>, <span class="literal">true</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> exists;</span><br><span class="line"></span><br><span class="line">    SharedBlobSet shared_blob_set;      <span class="comment">///&lt; open SharedBlobs</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// cache onodes on a per-collection basis to avoid lock contention.</span></span><br><span class="line">    OnodeSpace onode_space;</span><br><span class="line">	......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// PG的磁盘数据结构</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bluestore_cnode_t</span> &#123;</span><br><span class="line">    <span class="type">uint32_t</span> bits;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">OnodeSpace</span> &#123;</span><br><span class="line">    OnodeCacheShard *cache;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">/// forward lookups</span></span><br><span class="line">    mempool::bluestore_cache_meta::unordered_map&lt;<span class="type">ghobject_t</span>,OnodeRef&gt; onode_map;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>每个对象对应一个Onode数据结构，而Object是属于PG的，所以Onode也属于PG，为了方便针对PG的操作(删除Collection时，不需要完整遍历Cache中的Onode队列来逐个检查与被删除Collection的关系)，引入了中间结构OnodeSpace使用一个map来记录Collection和Onode的映射关系。单个BlueStore上面有海量的Onode，不一定能够全部缓存在内存里面，只能最大程度的缓存Onode信息在内存。</p>
+</li>
+</ul>
+</li>
+<li><p>数据：对象的数据使用<code>BufferSpace</code>来管理。作为一个二级索引。</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">BufferSpace</span> &#123;</span><br><span class="line">    <span class="comment">// buffer map</span></span><br><span class="line">    mempool::bluestore_cache_meta::map&lt;<span class="type">uint32_t</span>, std::unique_ptr&lt;Buffer&gt;&gt; buffer_map;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// we use a bare intrusive list here instead of std::map because</span></span><br><span class="line">    <span class="comment">// it uses less memory and we expect this to be very small (very</span></span><br><span class="line">    <span class="comment">// few IOs in flight to the same Blob at the same time).</span></span><br><span class="line">    <span class="comment">// 包含脏数据的缓存队列</span></span><br><span class="line">    <span class="type">state_list_t</span> writing;   <span class="comment">///&lt; writing buffers, sorted by seq, ascending</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 当数据写完时，会根据标记决定是否缓存。<code>BlueStore::BufferSpace::_finish_write</code>；当读取完成时，也会根据标记决定是否缓存。<code>bluestore_default_buffered_read</code>、<code>BlueStore::_do_read</code>。（<strong>这里和缓存准入有关系吗？</strong>）</p>
+</li>
+<li><p>Trim：BlueStore的元数据和数据都是使用内存池管理的，后台有内存池线程监控内存的使用情况，超过内存使用的限制便会做trim，丢弃一部分缓存的元数据和数据。（<strong>缓存分配方案也需要重点关注这一块！！！</strong>）</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *BlueStore::MempoolThread::<span class="built_in">entry</span>() &#123;</span><br><span class="line">	......   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="Ceph-自动分层"><a href="#Ceph-自动分层" class="headerlink" title="Ceph 自动分层"></a>Ceph 自动分层</h1></li>
+</ol>
+<p>​		</p>
+<p><a target="_blank" rel="noopener" href="https://item.jd.com/12072602.html">Ceph源码分析</a></p>
+<p><a target="_blank" rel="noopener" href="https://shimingyah.github.io/tags/#Ceph-ref">shimingyah个人博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/column/c_1175452658096476160">鱼香肉丝没有鱼</a></p>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Ceph/" rel="tag"># Ceph</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">Ceph整体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Ceph%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="nav-number">1.1.</span> <span class="nav-text">Ceph设计目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ceph%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">Ceph基本架构图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ceph%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.3.</span> <span class="nav-text">Ceph客户端接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RBD"><span class="nav-number">1.3.1.</span> <span class="nav-text">RBD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CephFS"><span class="nav-number">1.3.2.</span> <span class="nav-text">CephFS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RadosGW"><span class="nav-number">1.3.3.</span> <span class="nav-text">RadosGW</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RADOS"><span class="nav-number">1.4.</span> <span class="nav-text">RADOS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Monitor"><span class="nav-number">1.4.1.</span> <span class="nav-text">Monitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8"><span class="nav-number">1.4.2.</span> <span class="nav-text">对象存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pool%E5%92%8CPG%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">1.4.3.</span> <span class="nav-text">pool和PG的概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E5%AF%BB%E5%9D%80%E8%BF%87%E7%A8%8B"><span class="nav-number">1.4.4.</span> <span class="nav-text">对象寻址过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99%E8%BF%87%E7%A8%8B"><span class="nav-number">1.4.5.</span> <span class="nav-text">数据读写过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%9D%87%E8%A1%A1"><span class="nav-number">1.4.6.</span> <span class="nav-text">数据均衡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Peering"><span class="nav-number">1.4.7.</span> <span class="nav-text">Peering</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recovery%E5%92%8CBackfill"><span class="nav-number">1.4.8.</span> <span class="nav-text">Recovery和Backfill</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%A0%E5%88%A0%E7%A0%81"><span class="nav-number">1.4.9.</span> <span class="nav-text">纠删码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7%E5%92%8C%E5%85%8B%E9%9A%86"><span class="nav-number">1.4.10.</span> <span class="nav-text">快照和克隆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cache-Tier"><span class="nav-number">1.4.11.</span> <span class="nav-text">Cache Tier</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scrub"><span class="nav-number">1.4.12.</span> <span class="nav-text">Scrub</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E7%AB%A0%E5%B0%8F%E7%BB%93"><span class="nav-number">1.4.13.</span> <span class="nav-text">本章小结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph%E9%80%9A%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="nav-number">2.</span> <span class="nav-text">Ceph通用模块</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Object"><span class="nav-number">2.1.</span> <span class="nav-text">Object</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#object-t"><span class="nav-number">2.1.1.</span> <span class="nav-text">object_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#file-object-t"><span class="nav-number">2.1.2.</span> <span class="nav-text">file_object_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sobject-t"><span class="nav-number">2.1.3.</span> <span class="nav-text">sobject_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hobject-t"><span class="nav-number">2.1.4.</span> <span class="nav-text">hobject_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ghobject-t"><span class="nav-number">2.1.5.</span> <span class="nav-text">ghobject_t</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Buffer"><span class="nav-number">2.2.</span> <span class="nav-text">Buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#buffer-raw"><span class="nav-number">2.2.1.</span> <span class="nav-text">buffer::raw</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#buffer-ptr"><span class="nav-number">2.2.2.</span> <span class="nav-text">buffer::ptr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#buffer-list"><span class="nav-number">2.2.3.</span> <span class="nav-text">buffer::list</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">2.3.</span> <span class="nav-text">线程池</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%90%AF%E5%8A%A8"><span class="nav-number">2.3.1.</span> <span class="nav-text">线程池的启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E9%98%9F%E5%88%97"><span class="nav-number">2.3.2.</span> <span class="nav-text">工作队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E6%89%A7%E8%A1%8C%E5%87%BD%E6%95%B0"><span class="nav-number">2.3.3.</span> <span class="nav-text">线程池的执行函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B6%85%E6%97%B6%E6%A3%80%E6%9F%A5"><span class="nav-number">2.3.4.</span> <span class="nav-text">超时检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ShardedThreadPool"><span class="nav-number">2.3.5.</span> <span class="nav-text">ShardedThreadPool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finisher"><span class="nav-number">2.3.6.</span> <span class="nav-text">Finisher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Throttle"><span class="nav-number">2.3.7.</span> <span class="nav-text">Throttle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SafeTimer"><span class="nav-number">2.3.8.</span> <span class="nav-text">SafeTimer</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1"><span class="nav-number">3.</span> <span class="nav-text">Ceph网络通信</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Ceph%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6"><span class="nav-number">3.1.</span> <span class="nav-text">Ceph网络通信框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Message"><span class="nav-number">3.1.1.</span> <span class="nav-text">Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Connection"><span class="nav-number">3.1.2.</span> <span class="nav-text">Connection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dispatcher"><span class="nav-number">3.1.3.</span> <span class="nav-text">Dispatcher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Messenger"><span class="nav-number">3.1.4.</span> <span class="nav-text">Messenger</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5%E7%9A%84%E7%AD%96%E7%95%A5"><span class="nav-number">3.1.5.</span> <span class="nav-text">网络连接的策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9D%97%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">3.1.6.</span> <span class="nav-text">网络模块的使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Async%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.2.</span> <span class="nav-text">Async实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E7%B1%BB"><span class="nav-number">3.2.1.</span> <span class="nav-text">基本类</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CRUSH-%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E7%AE%97%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">CRUSH 数据分布算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90"><span class="nav-number">4.1.</span> <span class="nav-text">例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">4.2.</span> <span class="nav-text">数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#crush-map"><span class="nav-number">4.2.1.</span> <span class="nav-text">crush_map</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#crush-bucket"><span class="nav-number">4.2.2.</span> <span class="nav-text">crush_bucket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#crush-rule"><span class="nav-number">4.2.3.</span> <span class="nav-text">crush_rule</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%B3%95"><span class="nav-number">4.3.</span> <span class="nav-text">算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#crush-do-rule"><span class="nav-number">4.3.1.</span> <span class="nav-text">crush_do_rule</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cursh-choose-firstn"><span class="nav-number">4.3.2.</span> <span class="nav-text">cursh_choose_firstn</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bucket-%E7%AE%97%E6%B3%95"><span class="nav-number">4.3.3.</span> <span class="nav-text">bucket 算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph-%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">5.</span> <span class="nav-text">Ceph 客户端</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Librados"><span class="nav-number">5.1.</span> <span class="nav-text">Librados</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RadosClient"><span class="nav-number">5.1.1.</span> <span class="nav-text">RadosClient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IoCtxImpl"><span class="nav-number">5.1.2.</span> <span class="nav-text">IoCtxImpl</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OSDC"><span class="nav-number">5.2.</span> <span class="nav-text">OSDC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ObjectOperation"><span class="nav-number">5.2.1.</span> <span class="nav-text">ObjectOperation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#op-target"><span class="nav-number">5.2.2.</span> <span class="nav-text">op_target</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Op"><span class="nav-number">5.2.3.</span> <span class="nav-text">Op</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Striper"><span class="nav-number">5.2.4.</span> <span class="nav-text">Striper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ObjectCacher"><span class="nav-number">5.2.5.</span> <span class="nav-text">ObjectCacher</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%86%99%E6%93%8D%E4%BD%9C"><span class="nav-number">5.3.</span> <span class="nav-text">客户端写操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cls"><span class="nav-number">5.4.</span> <span class="nav-text">Cls</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph-%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99"><span class="nav-number">6.</span> <span class="nav-text">Ceph 数据读写</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#OSD-%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">6.1.</span> <span class="nav-text">OSD 相关数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pool"><span class="nav-number">6.1.1.</span> <span class="nav-text">pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PG"><span class="nav-number">6.1.2.</span> <span class="nav-text">PG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OSDMap"><span class="nav-number">6.1.3.</span> <span class="nav-text">OSDMap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#object-info-t"><span class="nav-number">6.1.4.</span> <span class="nav-text">object_info_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ObjectState"><span class="nav-number">6.1.5.</span> <span class="nav-text">ObjectState</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SnapSetContext"><span class="nav-number">6.1.6.</span> <span class="nav-text">SnapSetContext</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B"><span class="nav-number">6.2.</span> <span class="nav-text">读写流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E8%AF%B7%E6%B1%82"><span class="nav-number">6.2.1.</span> <span class="nav-text">接收请求</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8"><span class="nav-number">7.</span> <span class="nav-text">本地对象存储</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ObjectStore-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8E%A5%E5%8F%A3"><span class="nav-number">7.1.</span> <span class="nav-text">ObjectStore 对象存储接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">7.1.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%B1%9E%E6%80%A7"><span class="nav-number">7.1.2.</span> <span class="nav-text">获取属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#omap"><span class="nav-number">7.2.</span> <span class="nav-text">omap</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%83%A8%E5%88%86%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90"><span class="nav-number">7.2.1.</span> <span class="nav-text">部分代码实现分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BlueStore"><span class="nav-number">7.3.</span> <span class="nav-text">BlueStore</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">7.3.1.</span> <span class="nav-text">架构设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BitMap-%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">7.3.2.</span> <span class="nav-text">BitMap 分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Stupid-%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">7.3.3.</span> <span class="nav-text">Stupid 分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BlockDevice"><span class="nav-number">7.3.4.</span> <span class="nav-text">BlockDevice</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FreelistManager"><span class="nav-number">7.3.5.</span> <span class="nav-text">FreelistManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blueStore-%E4%B8%AD%E7%9A%84%E5%AF%B9%E8%B1%A1-IO"><span class="nav-number">7.3.6.</span> <span class="nav-text">blueStore 中的对象 IO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cache"><span class="nav-number">7.3.7.</span> <span class="nav-text">Cache</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ceph-%E8%87%AA%E5%8A%A8%E5%88%86%E5%B1%82"><span class="nav-number">8.</span> <span class="nav-text">Ceph 自动分层</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zztaki</p>
+  <div class="site-description" itemprop="description">fitness</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zztaki</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">82k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:17</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+

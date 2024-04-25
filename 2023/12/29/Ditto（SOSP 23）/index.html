@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Ditto（SOSP 23）论文阅读">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ditto（SOSP 23）">
+<meta property="og:url" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/index.html">
+<meta property="og:site_name" content="zztaki">
+<meta property="og:description" content="Ditto（SOSP 23）论文阅读">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/different_application_client_affect_hit.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/concurrent_number_affect_hit.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/memory_resize_challenge.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/overview.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/sample_friendly_hash_table.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/lightweight_history.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/logic_fifo.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/history_insert_evict.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/lazy_weight_update.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/elasticity.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/efficiency.jpg">
+<meta property="og:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/more_cores_on_MN.jpg">
+<meta property="article:published_time" content="2023-12-29T04:52:57.000Z">
+<meta property="article:modified_time" content="2024-04-25T11:37:32.187Z">
+<meta property="article:author" content="zztaki">
+<meta property="article:tag" content="Cache">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="内存分离">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg">
+
+<link rel="canonical" href="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Ditto（SOSP 23） | zztaki</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+	  <a target="_blank" rel="noopener" href="https://github.com/zztaki" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zztaki</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">fitness and bulking~</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-cv">
+
+    <a href="/CV/CV.pdf" rel="section"><i class="fa fa-user fa-fw"></i>CV</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Ditto（SOSP 23）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-12-29 12:52:57" itemprop="dateCreated datePublished" datetime="2023-12-29T12:52:57+08:00">2023-12-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-25 19:37:32" itemprop="dateModified" datetime="2024-04-25T19:37:32+08:00">2024-04-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Cache/" itemprop="url" rel="index"><span itemprop="name">Cache</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>7.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>13 mins.</span>
+            </span>
+            <div class="post-description">Ditto（SOSP 23）论文阅读</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>内存缓存系统是云服务的重要组成部分。然而，由于服务器上 CPU 和内存的耦合，现有缓存系统无法以资源有效和快速的方式调整资源。</p>
+<p>作者建议将内存缓存系统移植到分离内存（DM）架构中以应对上述问题。但是，在分离内存上构建弹性缓存系统具有挑战：对远程内存的访问绕过了远程缓存服务器上的 CPU，会阻碍缓存算法（promotion 和 demotion）的执行；此外，计算和内存资源的弹性变化（并发客户端数量的改变，缓存容量的改变）会影响数据的访问模式，从而影响缓存算法的命中率。</p>
+<p>作者设计了 Ditto，第一个分离内存上的缓存系统，（1）提出以客户端为中心的缓存框架，仅依赖于远程内存访问，就可以在分离内存的计算池中高效地执行不同的缓存算法；（2）采用分布式自适应缓存机制（类 Cacheus）动态选择合适的缓存算法。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>内存缓存系统广泛应用于云服务中，以提高吞吐量和降低延迟。然而，由于云服务请求负载的动态变化和突发性，弹性（根据负载变化调整计算和内存资源的能力）对于内存缓存系统至关重要。</p>
+<p>然而现有的缓存系统构建和部署在将 CPU 和内存紧耦合的单体服务器上，这将导致动态资源调整上存在两个问题：（1）由于 CPU 和内存必须作为大规模集群上的固定大小虚拟机一起添加或减少，资源利用率收到影响（服务可能只想添加更多内存或 CPU 核心来增加缓存容量或请求吞吐量）；（2）调整资源需要进行长时间的数据迁移，导致资源调整的速度太慢，无法应对请求量的爆发；（<strong>现有问题：资源利用率低，资源分配调整速度慢</strong>）</p>
+<p>DM 有机会解决上述问题。它将单台服务器上的 CPU 和内存解耦为独立的计算和内存池，并使用高速互连技术（RDMA 和 CXL）将计算池和内存池互相连接。因此，CPU 和内存可以根据应用需求独立调整，从而提高资源利用率；此外，由于数据被计算池中的所有 CPU 核心共享，因此可以大大降低数据迁移的频率（只有在特殊情况才需要迁移）。</p>
+<p>但要在 DM 上实现缓存系统，必须解决两个挑战：</p>
+<ol>
+<li>绕过远程缓存服务器上的 CPU 后会阻碍缓存算法的执行。缓存算法通过各自的考量指标维护缓存对象的驱逐优先级，一旦数据访问改变了对象的热度，现有缓存算法<strong>依赖缓存服务器上的 CPU 监视对象热度并维护缓存队列数据结构。</strong>然而，在 DM 上的缓存系统中，计算池里的应用程序客户端在访问对象时将绕过内存池中的 CPU，导致在数据路径上无法更新请求对象的热度；此外如何高效地选择驱逐对象也是一个问题，缓存数据结构只能通过额外的高开销 RDMA 操作进行对象提升和降级，而这些数据结构在高并发场景下又会存在大量锁竞争。</li>
+<li>调整资源会影响缓存命中率。缓存命中率和工作负载的访问模式、缓存大小有关。在 DM 上，这两个属性都会随着动态资源的调整而变化。数据访问模式随着并发客户端数量（即计算资源）的变化而变化，缓存大小随着分配的内存空间（即内存资源）的变化而变化。因此，最大化命中率的最佳缓存算法会随着资源设置而动态变化。具有固定缓存算法的缓存系统无法适应 DM 的这些动态特征，并可能导致命中率较低。</li>
+</ol>
+<p>作者首先提出带有分布式热度监控、基于采样驱逐功能的以客户端为中心的缓存框架…使用 MAB 动态选择驱逐算法…</p>
+<p>贡献：</p>
+<ol>
+<li>讨论在 DM 上构建缓存系统的优势和挑战；</li>
+<li>提出以客户端为中心的缓存框架，不同的缓存算法可以被灵活地集成并高效地在 DM 上执行；提出一个采样友好地哈希表和频率计数缓存以提高框架效率；</li>
+<li>提出分布式自适应缓存，根据动态资源变化和数据访问模式改变选择最佳缓存算法；并通过轻量级驱逐历史和懒惰权重更新机制使得策略在 DM 上高效执行；</li>
+<li>合成+真实工作负载测试 Ditto 的性能。</li>
+</ol>
+<h1 id="Background-and-Motivation"><a href="#Background-and-Motivation" class="headerlink" title="Background and Motivation"></a>Background and Motivation</h1><h2 id="单体服务器上的缓存系统问题"><a href="#单体服务器上的缓存系统问题" class="headerlink" title="单体服务器上的缓存系统问题"></a>单体服务器上的缓存系统问题</h2><ol>
+<li>资源利用率低。单体服务器上现有的缓存服务的资源（例如 AWS 的 ElastiCache）被以固定大小的虚拟机粒度（1个 CPU，2GB DRAM）进行分配。然而，应用程序有时可能只需要 CPU 或者内存，导致资源利用率低。</li>
+<li>资源调整速度慢。现有内存缓存系统将数据分片到多个虚拟机，以利用更多的 CPU 和内存资源。然而，当新虚拟机添加到缓存集群后，缓存数据必须重新分片和迁移，将造成一定程度的性能下降；而在虚拟机回收时，又因为迁移将导致资源回收延迟。</li>
+</ol>
+<h2 id="分离内存"><a href="#分离内存" class="headerlink" title="分离内存"></a>分离内存</h2><p>分离内存被提出以降低总成本和改善云数据中心应用程序的弹性。它将单体服务器的计算和内存资源解耦为独立的计算和内存池，计算池中包含计算节点，具有丰富的 CPU 核心和少量用作运行时缓存的 DRAM，而内存池则具有足够的内存节点和计算能力较弱的控制器（1-2 个 CPU 核心）来执行管理任务（网络连接和内存管理）。<strong>计算节点和内存节点通过高带宽、微秒级延迟的 CPU 旁路互连（RDMA 和 CXL）连接，</strong>保证内存访问的性能要求。计算节点可以通过控制器提供的 ALLOC 和 FREE 接口来分配和释放内存池中可变大小的内存块。</p>
+<p>DM 解耦了计算和内存资源后，它们就可以以更细的粒度单独分配，并根据应用程序需求分配准确数量的资源，实现高资源利用率的目标；其次，因为内存池中的缓存数据可以被计算池中的所有计算节点访问，所以它可以大大降低数据迁移的频率，无需在扩容或缩容内存时进行数据迁，大大降低数据迁移成本，使得资源调整迅速生效。</p>
+<h1 id="Challenges"><a href="#Challenges" class="headerlink" title="Challenges"></a>Challenges</h1><h2 id="在-DM-上执行缓存算法"><a href="#在-DM-上执行缓存算法" class="headerlink" title="在 DM 上执行缓存算法"></a>在 DM 上执行缓存算法</h2><p>现有缓存算法都是为以服务器为中心的缓存系统设计的，所有数据都是被服务端的 CPU 访问和驱逐，这种设计模式无法应用于 DM，因为（1）DM 上的缓存系统是以客户端为中心的，所有客户端都是以 CPU 旁路的形式直接访问和驱逐数据的；（2）内存池上的计算能力太弱，难以在数据路径上执行缓存算法。这将导致两个问题。</p>
+<p>首先是如何在客户端为中心的环境下评估缓存对象的热度。现有缓存算法通过监视和统计所有数据访问来评估对象热度。由于单体缓存服务器上的 CPU 访问所有数据，所以可以在以服务器为中心的缓存系统上轻松实现监控。但是对于 DM，无法在内存池或客户端上监控缓存对象的访问，因为（1）RDMA 绕过了内存池中的 CPU，（2）<strong>计算池中的各个客户端不知道全局数据访问。</strong></p>
+<p>其次是如何在客户端高效地选择驱逐对象。DM 上的缓存数据结构必须由计算池中的客户端进行维护，导致需要多个 RTT 完成数据获取和缓存数据结构更新操作，导致维护缓存数据结构效率低，并且还可能存在大量的锁冲突。微秒级的锁延迟和多次锁失败导致的网络争用将严重成为缓存系统吞吐量的瓶颈。</p>
+<p>左图说明，由于额外的 RDMA 操作，导致 KVC 和 KVC-S 的吞吐率和延迟性能较差，右图说明由于锁竞争，它们的吞吐量差。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/execute_cache_algo_on_dm_challenge.jpg" class="" title="execute_cache_algo_on_dm_challenge">
+
+<h2 id="动态资源变化影响命中率"><a href="#动态资源变化影响命中率" class="headerlink" title="动态资源变化影响命中率"></a>动态资源变化影响命中率</h2><p>缓存命中率与数据访问模式、缓存大小密切相关。当动态调整计算和内存资源时，这两者都会受到影响。此时，具有固定缓存算法的缓存系统无法适应，可能导致命中率较低。</p>
+<ol>
+<li><p>改变计算资源影响命中率；</p>
+<p> 在 DM 的缓存系统上，应用程序在计算池中执行多个客户端线程去并发访问内存池中的缓存数据，缓存对象的访问模式将是所有应用程序访问模式的混合。</p>
+<p> 当计算资源变化时，一个应用程序的客户端线程数量也将变化，会改变访问模式的整体组合，并以两种方式影响单个缓存算法的命中率。</p>
+<ul>
+<li><p>首先，一个应用程序的数据访问占比随着其客户端线程的数量而变化；下图显示，随着 LRU 友好应用程序的客户端线程数占比增加，其命中率增高。（占比低时命中率低，应该是由于其它应用程序挤占了命中机会）</p>
+  <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/different_application_client_affect_hit.jpg" class="" title="different_application_client_affect_hit">
+</li>
+<li><p>其次，客户端的并发执行改变了工作负载的原始访问模式。左图坐标（0.25, 0.5）表示，使用 LRU 算法，在 50% 的工作负载上，它们相对命中率变化高于 0.25，即并发执行存在不确定性，同一工作负载命中率可能不稳定；右图显示，对于同一个应用程序，计算资源的变化将导致最优缓存算法改变。</p>
+  <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/concurrent_number_affect_hit.jpg" class="" title="concurrent_number_affect_hit"></li>
+</ul>
+</li>
+<li><p>改变内存资源影响命中率；</p>
+<p> 对于同一工作负载，改变内存资源会影响命中率，甚至于改变其访问模式（比如从搅拌变成 LFU 友好型）。</p>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/memory_resize_challenge.jpg" class="" title="memory_resize_challenge"></li>
+</ol>
+<h1 id="Design"><a href="#Design" class="headerlink" title="Design"></a>Design</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>每个应用程序拥有一个本地 Ditto 客户端作为子进程，而每个 Ditto 客户端有多个线程，可以通过增加或删除分配给 Ditto 的线程数和 CPU 核心数来自由扩展计算资源。</p>
+<p>Ditto 客户端通过使用单边 RDMA 动作执行 get 或 set 操作。get 操作将使用一次 RDMA_READ 获取缓存对象在哈希表中的地址，再使用一次 RDMA_READ 从这个地址中获取对象的实际数据；set 操作需要通过一个 RDMA_READ 获取哈希表中的一个合适槽，一个 RDMA_WRITE 将新对象写入到内存池，一个 RDMA_CAS 原子修改槽中的指针。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/overview.jpg" class="" title="overview">
+
+<h2 id="以客户端为中心的缓存框架"><a href="#以客户端为中心的缓存框架" class="headerlink" title="以客户端为中心的缓存框架"></a>以客户端为中心的缓存框架</h2><p>以客户端为中心的缓存框架可以解决在 DM 上执行缓存算法时评估对象热度和选择驱逐对象的挑战。</p>
+<p>首先，Ditto 将每个对象与记录其全局访问信息（例如访问时间戳、频率等）的元数据相关联，在每次客户端执行 get 或 set 操作后，元数据同样由具有单边 RDMA 动作的客户端进行更新。在客户端，Ditto 提供了两个接口来继承缓存算法，分别是优先级接口（<code>double priority(Metadata)</code>）和元数据更新接口（<code>void update(Metadata &amp;)</code>）。优先级函数将对象的元数据映射到指示其热度的实际值，元数据更新函数在数据重用时更新元数据信息（频率、新近度等等）。通过实现这两个接口可以轻松集成多种缓存算法。</p>
+<p>其次，为了有效选择驱逐对象，Ditto 客户端对内存池中的缓存对象进行采样，并对采样对象应用优先级函数进行评估，驱逐优先级最低的对象。如此一来，就避免了维护缓存数据结构的昂贵开销。（<strong>一般的缓存算法往往需要一个哈希表和一个链表，MAB 使得需要 N 个哈希表和 N 个链表，而此时降低精确度，使用采样技术，又变成只需一个哈希表了，缓存对象的优先级顺序不再需要维护，只需通过 RDMA 更新其访问信息即可</strong>）</p>
+<p>为了有效在 DM 上执行此框架，<strong>Ditto 提出一个采样友好的哈希表和一个频率计数器缓存，以减少在 DM 上采样和记录访问信息的开销</strong>。</p>
+<h3 id="采样友好哈希表"><a href="#采样友好哈希表" class="headerlink" title="采样友好哈希表"></a>采样友好哈希表</h3><p>采样友好哈希表有助于减少 DM 上的采样和更新访问信息的开销，这是因为在 DM 上采样需要进行多次 RDMA_READ 操作，延迟很高；此外，更新访问信息也会影响整体吞吐量，因为额外的 RDMA 操作会消耗内存池中 RNIC  的有限消息速率。</p>
+<p>Ditto 将广泛使用的元数据与哈希索引中的槽存储在一起，同时保留其它不广泛的元数据（高级缓存算法需要）扩展功能。如此一来，通过直接获取哈希表中具有随机偏移量的连续槽，仅用一次 RDMA_READ 便可以进行采样（？）；其次，根据对象的更新频率组织它们的访问信息，从而减少更新对象元数据的 RDMA 操作数量，组织良好的访问信息可以使用单个 RDMA_WRITE 更新多个访问信息。</p>
+<ol>
+<li><p>哈希表结构</p>
+<p> 哈希表有多个桶，每个桶有多个槽，每个槽由两个部分组成，即原子部分和元数据部分。原子部分长度为 8 个字节，包含指向对象的指针，加速对象搜索的指纹和对象大小信息。在插入、更新或删除对象时使用 RDMA_CAS 进行原子修改；元数据部分记录了大多数缓存算法所需的访问信息，此外，还为分布式自适应缓存方案记录了一个附加的哈希字段（后续介绍）。</p>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/sample_friendly_hash_table.jpg" class="" title="sample_friendly_hash_table">
+</li>
+<li><p>访问信息组织</p>
+<p> 首先，Ditto 通过区分本地信息和全局信息来减少必须包含在元数据中的访问信息数量。全局信息需要由所有客户端协作维护，因此必须包含在元数据中；而本地信息（比如延迟和成本）可以由分布式客户端在本地决定，无需包含在内。全局信息又可以分为有状态信息和无状态信息，无状态信息（比如插入时间和新近度）通过覆盖旧值进行更新，而有状态信息（比如频率）根据其旧值进行更新。</p>
+<p> Ditto 通过将无状态信息组织在一起，使用单个 RDMA_WRITE 进行更新；使用 RDMA_FAA 更新有状态信息。</p>
+</li>
+</ol>
+<h3 id="频率计数器缓存"><a href="#频率计数器缓存" class="headerlink" title="频率计数器缓存"></a>频率计数器缓存</h3><p>使用客户端频率计数器（FC）缓存进一步减少更新元数据的开销。对于采样友好的哈希表，更新元数据仍然需要两个 RDMA 操作，即更新无状态信息的 RDMA_WRITE 和更新有状态信息的 RDMA_FAA，这些 RDMA 操作会消耗 RNIC 的效率速率，从而限制 Ditto 的正太吞吐量；此外，由于 RNIC 内部锁的争用，在 DM 上执行 RDMA_FAA 的成本很高。FC 缓存旨在减少元数据更新时的 RDMA_FAA 数量。</p>
+<p>短时间内多个写入指令可能会针对同一内存区域，FC 缓存则是作为写 buffer，吸收短时间内对同一区域的写操作，将其转换为单个内存写操作，以节省内存带宽。具体来说，<strong>FC 缓存条目包含对象 ID，哈希表中槽的地址以及计数器增量值</strong>。每次访问对象时，其对频率计数器的更新都会缓冲在 FC 缓存中，对象在内存池哈希表中实际的频率计数器更新会被推迟，直到缓存条目被驱逐。</p>
+<p>缓存条目在两种情况会被驱逐：缓存容量不足，FIFO 驱逐；计数器增量大于阈值 t。在条目被驱逐时，根据记录的槽地址将缓冲的计数器值增加相应的值。如此一来，RDMA_FAA 的操作数最多减少至了 1&#x2F;t。</p>
+<h2 id="分布式自适应缓存"><a href="#分布式自适应缓存" class="headerlink" title="分布式自适应缓存"></a>分布式自适应缓存</h2><p>Ditto 提出一个分布式自适应缓存机制来适应工作负载变化和动态资源配置。</p>
+<p>在 DM 上实现自适应缓存，必须解决两个挑战。首先，由于访问远程数据结构开销较高，维护全局 FIFO 逐出历史的成本很高；其次，由于客户端需要同步获取更新的权重，在分布式客户端上管理专家权重开销很大。</p>
+<p>为了解决上述挑战，Ditto 将驱逐历史条目嵌入到具有轻量级逐出历史的哈希表中，以避免在 DM 上维护额外的 FIFO 队列；Ditto 提出一种懒惰权重更新方案，以避免客户端之间昂贵的同步开销。</p>
+<h3 id="轻量级驱逐历史"><a href="#轻量级驱逐历史" class="headerlink" title="轻量级驱逐历史"></a>轻量级驱逐历史</h3><p><strong>重用</strong>采样友好哈希表的槽来存储和索引历史条目，从而无需分配额外的空间和为历史条目构建额外的哈希索引；提出一种具有懒惰驱逐方案的逻辑 FIFO 队列，以有效地实现对历史条目的 FIFO 替换，从而无需维护额外的 FIFO 队列。</p>
+<ol>
+<li><p>嵌入历史条目</p>
+<p> size 域 0xFF 指代这是个驱逐历史条目，pointer 域不再存储对象的地址，而是一个历史 ID；insert_ts 域则是改为存储专家位图，指示先前是哪些专家决定驱逐该对象；hash 域记录被驱逐对象 ID 的哈希值，以检查驱逐历史中是否包含缓存缺失的对象。</p>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/lightweight_history.jpg" class="" title="lightweight_history">
+</li>
+<li><p>逻辑 FIFO 队列</p>
+<p> 有一个 6 字节的全局循环计数器为新的历史条目生成历史 ID，所有客户端都知道它的地址。</p>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/logic_fifo.jpg" class="" title="logic_fifo">
+
+<ul>
+<li>驱逐历史条目插入：当客户端决定从缓存中逐出对象时，客户端将首先通过在全局历史计数器上执行 RDMA_FAA 来获取历史 ID，并使计数器自动加一，然后发送 RDMA_CAS 以原子方式将驱逐对象的大小和指针分别修改为 0XFF 和获取的历史 ID，再使用 RDMA_WRITE 将专家位图异步写入槽元数据部分的 insert_ts 字段；</li>
+<li>懒惰历史条目驱逐：在客户端实行过期检查，如果全局历史计数器值为 v1，历史 ID 为 v2，并且 FIFO 历史大小为 L。当 v1 &gt; v2，则当 (v1 + 2^48^ - v2) mod 2^48^ &gt; L 时条目将无效。然而，实际的历史条目驱逐发生在有新的缓存对象（还是新的历史条目？）将要插入时，过期的槽被认为是空的，从而做到透明地驱逐历史条目。</li>
+<li>遗憾收集：遗憾被定义为客户端发现缓存中缺失的对象包含在驱逐历史中。客户端搜索对象时，会计算对象 ID 的哈希值，根据哈希值定位到一个桶，并迭代匹配桶中的槽，看看指向的对象是否与目标具有相同的对象 ID。在此过程中，客户但还会匹配桶中遇到的历史条目的哈希值，如果尚未找到对象但历史条目具有匹配的哈希值，则可以收集遗憾。</li>
+</ul>
+ <img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/history_insert_evict.jpg" class="" title="history_insert_evict"></li>
+</ol>
+<h3 id="懒惰专家权重更新"><a href="#懒惰专家权重更新" class="headerlink" title="懒惰专家权重更新"></a>懒惰专家权重更新</h3><p>当客户端发现遗憾时，需要降低决定驱逐该对象的专家的权重。然而，由于 DM 上高同步开销，更新和使用分布式客户端的专家权重会产生不可忽略的开销。懒惰权重更新方案的思想是让客户端在本地批处理遗憾并将权重更新懒惰地卸载到内存节点地控制器上，这样旧减少了更新权重的频率，避免了同步的开销，同时，由于更新不频繁，内存节点的弱控制器也不会成为瓶颈。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/lazy_weight_update.jpg" class="" title="lazy_weight_update">
+
+<p>上图展示了懒惰权重更新方案的流程。每个客户端在本地维护专家权重以做出驱逐决策，当客户端发现遗憾时，它根据历史条目中的专家位图将惩罚应用于本地专家权重，惩罚被记录在惩罚 buffer 中。当缓冲的惩罚超过阈值时，客户端通过基于 RDMA 的 RPC 请求将所有惩罚发送到保存专家权重的内存节点的控制器。在受到客户端的惩罚后，内存节点的控制器首先将惩罚应用于全局专家权重，然后将更新后的全局权重回复给所有客户端。</p>
+<p>为了减少通过网络传输惩罚的带宽消耗，Ditto 利用指数函数的属性（指数相加）压缩惩罚，从而使得惩罚列表变成单个值。</p>
+<p>尽管本地客户端的专家权重并不总和全局权重同步，但是作者说这个并没有影响 Ditto 的适应性。</p>
+<h2 id="Discussions"><a href="#Discussions" class="headerlink" title="Discussions"></a>Discussions</h2><p><strong>元数据扩展。</strong>如果有额外元数据（没有存储在哈希表中），执行 Get 和 Set 操作后，需要额外的 RDMA_WRITE 来异步更新额外元数据；在缓存驱逐时，需要额外的 RDMA_READ 获取额外元数据一同输入到优先级函数中。</p>
+<p><strong>元数据开销。</strong>每个历史条目占 40 字节，历史条目总数和缓存对象的最大数量相等；对于每个缓存对象，在哈希表中需要占据 40 字节；对于每个专家，需要一个 4 字节浮点数。</p>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><p><strong>mark：如何将 trace 分发到多个客户端？</strong></p>
+<p>缓存驱逐时的采样大小：5（和 Redis 一样）；</p>
+<p>历史记录大小：Cache Capacity（和 LeCaR 一样）；</p>
+<p>FC Cache 的阈值：10，FC Cache 的容量：10 MB（实验结果评估）；</p>
+<p>MAB 学习率：0.1，本地 100 次的权重更新再传输给全局权重。</p>
+<h2 id="弹性"><a href="#弹性" class="headerlink" title="弹性"></a>弹性</h2><p>基于 DM 的缓存系统 Ditto 相比于基于传统单体服务器的 Redis 来说，资源利用率以及资源切换时的调整速度都更好。</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/elasticity.jpg" class="" title="elasticity">
+
+<h2 id="效率"><a href="#效率" class="headerlink" title="效率"></a>效率</h2><p>为了评估 Ditto 在 DM 上可以高效执行缓存算法，作者在 YCSB 基准上评估了其与 Shard-LRU，CliqueMap 的吞吐量和尾延迟。Ditto 的性能瓶颈仅在 RNIC 的传输速率上；而 Shard-LRU 会随着客户端数量的增加，远程锁争用成为瓶颈；CliqueMap 的瓶颈则在于内存池的计算能力</p>
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/efficiency.jpg" class="" title="efficiency">
+
+<img src="/2023/12/29/Ditto%EF%BC%88SOSP%2023%EF%BC%89/more_cores_on_MN.jpg" class="" title="more_cores_on_MN">
+
+<h2 id="适应性"><a href="#适应性" class="headerlink" title="适应性"></a>适应性</h2><h3 id="适应不同的真实工作负载"><a href="#适应不同的真实工作负载" class="headerlink" title="适应不同的真实工作负载"></a>适应不同的真实工作负载</h3><p>MAB 集成多种缓存算法，使得可以根据不同的访问模式切换最合适的缓存算法，能够适应大部分工作负载。</p>
+<h3 id="适应动态资源调整"><a href="#适应动态资源调整" class="headerlink" title="适应动态资源调整"></a>适应动态资源调整</h3><p>计算资源变化（客户端数量改变）和内存资源变化（缓存大小改变），Ditto 都能够很好地适应。</p>
+<h2 id="灵活性"><a href="#灵活性" class="headerlink" title="灵活性"></a>灵活性</h2><p>只需少量的额外代码，就可以集成多种缓存算法。</p>
+<h2 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h2><p>Design 部分各自的技术对于吞吐量的提升。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文提出了 Ditto，第一个基于内存分离架构的缓存系统，可以实现更好的弹性。</p>
+<p>Ditto 解决了在 DM 上构建缓存系统的挑战，即<strong>执行现有以服务器为中心的缓存算法并处理动态变化的资源和数据访问模式导致的低命中率</strong>。具体地说，它通过提出一种以客户端为中心的缓存框架，以有效地在 DM 上执行缓存算法；提出一种分布式自适应缓存方案来适应资源和工作负载的变化。</p>
+<p>实验结果表明，Ditto 有效地适应了 DM 上的资源和工作负载变化，并且在 YCSB 合成工作负载上优于单片服务器上最先进的缓存系统高达 9 倍，在现实世界的键值跟踪上优于最先进的缓存系统 3.6 倍。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cache/" rel="tag"># Cache</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag"># 论文阅读</a>
+              <a href="/tags/%E5%86%85%E5%AD%98%E5%88%86%E7%A6%BB/" rel="tag"># 内存分离</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/27/Demystifying_CXL_Memory%EF%BC%88MICRO%2023%EF%BC%89/" rel="prev" title="Demystifying CXL Memory（MICRO 23）">
+      <i class="fa fa-chevron-left"></i> Demystifying CXL Memory（MICRO 23）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/01/18/NHC%EF%BC%88FAST%2021%EF%BC%89/" rel="next" title="NHC（FAST 21）">
+      NHC（FAST 21） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background-and-Motivation"><span class="nav-number">2.</span> <span class="nav-text">Background and Motivation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BD%93%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">单体服务器上的缓存系统问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%A6%BB%E5%86%85%E5%AD%98"><span class="nav-number">2.2.</span> <span class="nav-text">分离内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Challenges"><span class="nav-number">3.</span> <span class="nav-text">Challenges</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-DM-%E4%B8%8A%E6%89%A7%E8%A1%8C%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">在 DM 上执行缓存算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E5%8F%98%E5%8C%96%E5%BD%B1%E5%93%8D%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="nav-number">3.2.</span> <span class="nav-text">动态资源变化影响命中率</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">4.</span> <span class="nav-text">Design</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">4.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A5%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6"><span class="nav-number">4.2.</span> <span class="nav-text">以客户端为中心的缓存框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%87%E6%A0%B7%E5%8F%8B%E5%A5%BD%E5%93%88%E5%B8%8C%E8%A1%A8"><span class="nav-number">4.2.1.</span> <span class="nav-text">采样友好哈希表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%91%E7%8E%87%E8%AE%A1%E6%95%B0%E5%99%A8%E7%BC%93%E5%AD%98"><span class="nav-number">4.2.2.</span> <span class="nav-text">频率计数器缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%87%AA%E9%80%82%E5%BA%94%E7%BC%93%E5%AD%98"><span class="nav-number">4.3.</span> <span class="nav-text">分布式自适应缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%A9%B1%E9%80%90%E5%8E%86%E5%8F%B2"><span class="nav-number">4.3.1.</span> <span class="nav-text">轻量级驱逐历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%83%B0%E4%B8%93%E5%AE%B6%E6%9D%83%E9%87%8D%E6%9B%B4%E6%96%B0"><span class="nav-number">4.3.2.</span> <span class="nav-text">懒惰专家权重更新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Discussions"><span class="nav-number">4.4.</span> <span class="nav-text">Discussions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">5.</span> <span class="nav-text">Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%B9%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">弹性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%88%E7%8E%87"><span class="nav-number">5.2.</span> <span class="nav-text">效率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E6%80%A7"><span class="nav-number">5.3.</span> <span class="nav-text">适应性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E4%B8%8D%E5%90%8C%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD"><span class="nav-number">5.3.1.</span> <span class="nav-text">适应不同的真实工作负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E5%BA%94%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E8%B0%83%E6%95%B4"><span class="nav-number">5.3.2.</span> <span class="nav-text">适应动态资源调整</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%81%B5%E6%B4%BB%E6%80%A7"><span class="nav-number">5.4.</span> <span class="nav-text">灵活性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C"><span class="nav-number">5.5.</span> <span class="nav-text">消融实验</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zztaki</p>
+  <div class="site-description" itemprop="description">fitness</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zztaki</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">82k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:17</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+

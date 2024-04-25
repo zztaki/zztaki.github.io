@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Hawkeye (ISCA 16) 论文阅读">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hawkeye (ISCA 16)">
+<meta property="og:url" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/index.html">
+<meta property="og:site_name" content="zztaki">
+<meta property="og:description" content="Hawkeye (ISCA 16) 论文阅读">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/overview.jpg">
+<meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_example.jpg">
+<meta property="og:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/OPTgen_illustrate.jpg">
+<meta property="article:published_time" content="2023-09-10T07:41:28.000Z">
+<meta property="article:modified_time" content="2024-04-25T11:37:32.217Z">
+<meta property="article:author" content="zztaki">
+<meta property="article:tag" content="Cache">
+<meta property="article:tag" content="ML">
+<meta property="article:tag" content="论文阅读">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/09/10/Hawkeye-ISCA-16/overview.jpg">
+
+<link rel="canonical" href="http://example.com/2023/09/10/Hawkeye-ISCA-16/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Hawkeye (ISCA 16) | zztaki</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+	  <a target="_blank" rel="noopener" href="https://github.com/zztaki" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zztaki</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">fitness and bulking~</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-cv">
+
+    <a href="/CV/CV.pdf" rel="section"><i class="fa fa-user fa-fw"></i>CV</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/09/10/Hawkeye-ISCA-16/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zztaki">
+      <meta itemprop="description" content="fitness">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zztaki">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hawkeye (ISCA 16)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-09-10 15:41:28" itemprop="dateCreated datePublished" datetime="2023-09-10T15:41:28+08:00">2023-09-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-25 19:37:32" itemprop="dateModified" datetime="2024-04-25T19:37:32+08:00">2024-04-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Cache/" itemprop="url" rel="index"><span itemprop="name">Cache</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+            <div class="post-description">Hawkeye (ISCA 16) 论文阅读</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在片上缓存场景下，将 OPT 缓存替换算法应用于过去的访问请求，从中学习以指导未来的缓存替换决策。</p>
+<p>“<strong>If past behavior is a good predictor of future behavior, then our replacement policy will approach the behavior of Belady’s algorithm.</strong>“</p>
+<h1 id="Hawkeye"><a href="#Hawkeye" class="headerlink" title="Hawkeye"></a>Hawkeye</h1><h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><img src="/2023/09/10/Hawkeye-ISCA-16/overview.jpg" class="" title="overview">
+
+<p>OPTgen 使用过去的访问记录，模拟 OPT 行为以产生训练数据；</p>
+<p>Hawkeye Predictor 对新插入对象进行分类：缓存友好和缓存厌恶。</p>
+<h2 id="OPTgen"><a href="#OPTgen" class="headerlink" title="OPTgen"></a>OPTgen</h2><p>三个定义</p>
+<ol>
+<li>usage interval：从对某数据的引用 X 开始，到下次对相同数据的引用 X’ 的长度；</li>
+<li>liveness interval：在 OPT 策略下，缓存行在缓存中的驻留时间段；</li>
+<li>occupancy vector：记录每个时刻使用的缓存容量。</li>
+</ol>
+<p>如果在 X 的 usage interval 过程中，任何时刻其它对象的 liveness intervals 重叠数目达到了缓存容量，则在下一次的引用 X’ 时，该数据缺失；否则，该数据命中。（对于 Belady 的理解，最直观的是在缓存驱逐决策过程中，驱逐从此时开始，缓存空间中前向重用距离最大的对象，<strong>而这里给了一个全新的视角，某个对象引用的 usage interval 过程中，其它对象的 liveness intervals 最大重叠数达到了缓存容量，这意味着在此最大重叠时刻，该对象的前向重用距离就已经是最大的了，这从缓存驱逐决策的视角转化为了对象下次重用时是否命中的判断</strong>）。</p>
+<p>对于下图所示，X 第一次引用时的 usage interval 为 6，重用距离为 3，但是，在 liveness interval 过程中，其它对象的 liveness intervals 最大重叠数仅为 1，因此，在第一次引用时，OPT 的判断为 X 下次引用将命中。</p>
+<img src="/2023/09/10/Hawkeye-ISCA-16/OPTgen_example.jpg" class="">
+
+<p>对于下面的访问 trace，OPT 策略使得缓存命中数为 4（<strong>实际上这是带准入的 OPT——当缓存容量满时，如若当前缺失对象的前向重用距离大于缓存中的所有对象，则不会准入，这比不关心准入的一般 OPT 命中率更高</strong>），其中，occupancy vector 的使用方式如下</p>
+<ol>
+<li>最近引用的条目对应值为 0；（如果不考虑准入，则条目初始值为 1）</li>
+<li>某对象的首次引用不会对 occupancy vector 的其他值造成影响，这反映出 OPT 只能基于对象的下次重用做出判断；</li>
+<li>如果对象不是首次引用，OPTgen 将检查该对象对应 usage interval 过程中是否每个引用在 occupancy vector 中的值（等于 liveness intervals  重叠数）都小于缓存容量。如果是，则 OPT 在该对象上次引用时会将其加入缓存，此次访问命中，并且将 usage interval 过程中每个引用在 occupancy vector 中的值加 1；否则，此次访问缺失，无需更新其它引用在 occupancy vector 的值。</li>
+</ol>
+<img src="/2023/09/10/Hawkeye-ISCA-16/OPTgen_illustrate.jpg" class="" title="OPTgen_illustrate">
+
+<h2 id="Hawkeye-Predictor"><a href="#Hawkeye-Predictor" class="headerlink" title="Hawkeye Predictor"></a>Hawkeye Predictor</h2><p>“为何可以做预测” 基于这样一个事实：给定执行 load 命令的 PC，OPT 所做出的决策是相似的。文中提到，90.4% 的 load PC，在 OPT 看来有相同的缓存行为（缓存友好和缓存厌恶）。</p>
+<p>文中提到，预测器有 8K 个条目，并使用 13-bit 的 hashed PC 进行索引，每个条目有一个 3-bit 计数器。如果 OPTgen 确定 X 在 OPT 策略下将是缓存命中，则增大上次访问 X 的 PC 对应条目的计数器，否则，减小计数器。</p>
+<p>对于每次访问，预测器都通过当前的 load 指令 PC 进行索引，对应条目的 3-bit 计数器的高位标识其加载的数据是否缓存友好。</p>
+<h2 id="Replacement"><a href="#Replacement" class="headerlink" title="Replacement"></a>Replacement</h2><p>在缓存替换时，Hawkeye 总体目标是先驱逐缓存厌恶对象，如果没有，则驱逐最久没有访问的缓存友好行（LRU），并减小其在预测器中的对应计数器。</p>
+<p>进一步，作者将 Hawkeye 与 RRIP 结合，使用一个 3-bit 的计数器来标志驱逐优先级，具体做法是</p>
+<ol>
+<li>RRIP 计数器值越大，驱逐优先级越高；</li>
+<li>在每次缓存访问时，Hawkeye 也测其生成一个二进制预测来指示该对象是否缓存友好，如果缓存友好，则赋予其 RRIP&#x3D;0，同时，如果该对象不在缓存，还会增加其它 RRIP&lt;6 的缓存对象的 RRIP 计数器（有点像 CLOCK）；如果缓存厌恶，则赋予其 RRIP&#x3D;7；</li>
+<li>在缓存替换时，任何 RRIP&#x3D;7（缓存厌恶）对象都会被选为驱逐候选者，而如果没有，则驱逐 RRIP 值最大的对象（LRU）。</li>
+</ol>
+<p>以上确保了缓存厌恶对象会首先被驱逐（因为缓存友好对象的 RRIP 计数器最多增长到6）。</p>
+<h1 id="与-LRB-的异同"><a href="#与-LRB-的异同" class="headerlink" title="与 LRB 的异同"></a>与 LRB 的异同</h1><p>相同点</p>
+<ol>
+<li>Hawkeye 使用了 8X 缓存容量的时间窗口，LRB 使用了 2X 缓存容量的时间窗口，它们本质上都是希望从过去的时间窗口内探寻对象的缓存行为；</li>
+<li>在进行驱逐决策时，Hawkeye 驱逐 RRIP 值最大的对象，该值是否为7标识了是否为缓存厌恶，小于7时，其大小则反映了对象的新近度；LRB 驱逐缓存对象中重用距离预测值最大的对象。</li>
+</ol>
+<p>不同点</p>
+<ol>
+<li>Hawkeye 将 OPT 的决策看成一个二分类问题，并使用精彩的 liveness intervals 重叠数来非常准确地模拟出了 OPT 的行为，考虑了前向重用距离和缓存的需求（重叠数）；LRB 将 OPT 决策看成一个回归问题，在时间窗口中简单地使用引用距离来作为标签进行训练；</li>
+<li>Hawkeye 应用于片上缓存，特征仅为加载指令的 PC 值，标签为在 OPT 策略下是否缓存命中；LRB 应用于 CDN 缓存，特征非常多，包括指数衰减新近度、频率、对象大小等等，标签为引用距离，而对于引用距离大于时间窗口（2X 缓存大小）的对象，引用距离即 2X 缓存大小。</li>
+</ol>
+<h1 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h1><p>对于学习缓存，Hawkeye 和 LRB 这两篇不同应用场景下的缓存替换经典工作揭示了学习缓存过程中非常重要的几个问题</p>
+<ol>
+<li>如何建模缓存问题？（这两个工作都是缓存替换，因此这里就是建模缓存替换问题，它们都是将问题建模成从 OPT 算法中学习驱逐的对应关系，Hawkeye 驱逐过去在 OPT 策略下不会缓存命中的对象，LRB 驱逐过去在 OPT 策略下引用距离过大的对象）</li>
+<li>如何获取训练数据？（使用和缓存大小长度相关的时间窗口捕获历史 trace）</li>
+<li>特征和标签是什么？（PC，OPT 策略下是否缓存命中）以及（新近度、频率、对象大小等特征，重用距离）</li>
+<li>如何决定驱逐对象？（使用预测器对缓存对象进行预测，驱逐优先级最高的对象，<strong>对于缓存替换，这一步开销太大了</strong>）</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cache/" rel="tag"># Cache</a>
+              <a href="/tags/ML/" rel="tag"># ML</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag"># 论文阅读</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/12/TinyLFU%20(TOS%2017)/" rel="prev" title="TinyLFU (TOS 17)">
+      <i class="fa fa-chevron-left"></i> TinyLFU (TOS 17)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/11/10/%E5%AD%98%E5%82%A8%E7%A1%AC%E4%BB%B6/" rel="next" title="HDD 和 SSD">
+      HDD 和 SSD <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hawkeye"><span class="nav-number">1.</span> <span class="nav-text">Hawkeye</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">1.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OPTgen"><span class="nav-number">1.2.</span> <span class="nav-text">OPTgen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hawkeye-Predictor"><span class="nav-number">1.3.</span> <span class="nav-text">Hawkeye Predictor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replacement"><span class="nav-number">1.4.</span> <span class="nav-text">Replacement</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8E-LRB-%E7%9A%84%E5%BC%82%E5%90%8C"><span class="nav-number">2.</span> <span class="nav-text">与 LRB 的异同</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%B6%E8%8E%B7"><span class="nav-number">3.</span> <span class="nav-text">收获</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zztaki</p>
+  <div class="site-description" itemprop="description">fitness</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zztaki</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">82k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:17</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
