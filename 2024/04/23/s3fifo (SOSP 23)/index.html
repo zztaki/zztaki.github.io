@@ -30,8 +30,12 @@
 <meta property="og:description" content="S3fifo (SOSP 23) 论文阅读">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2024/04/23/s3fifo%20(SOSP%2023)/arch.png">
+<meta property="og:image" content="http://example.com/2024/04/23/s3fifo%20(SOSP%2023)/efficiency.png">
+<meta property="og:image" content="http://example.com/2024/04/23/s3fifo%20(SOSP%2023)/efficiency_datasets.png">
+<meta property="og:image" content="http://example.com/2024/04/23/s3fifo%20(SOSP%2023)/throughput.png">
+<meta property="og:image" content="http://example.com/2024/04/23/s3fifo%20(SOSP%2023)/flash_friendly.png">
 <meta property="article:published_time" content="2024-04-23T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-04-27T15:49:52.770Z">
+<meta property="article:modified_time" content="2024-04-28T06:34:13.903Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="Cache">
 <meta property="article:tag" content="论文阅读">
@@ -231,7 +235,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-04-27 23:49:52" itemprop="dateModified" datetime="2024-04-27T23:49:52+08:00">2024-04-27</time>
+                <time title="Modified: 2024-04-28 14:34:13" itemprop="dateModified" datetime="2024-04-28T14:34:13+08:00">2024-04-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -256,14 +260,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>2.4k</span>
+              <span>2.7k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>4 mins.</span>
+              <span>5 mins.</span>
             </span>
             <div class="post-description">S3fifo (SOSP 23) 论文阅读</div>
 
@@ -290,7 +294,7 @@
 <p> 针对以上两个问题，现有方案往往牺牲效率而提高吞吐和可扩展性，比如使用 CLOCK 或者 FIFO。</p>
 </li>
 <li><p>仅使用 FIFO 队列，能否实现高效率呢？</p>
-<p> 缓存工作集往往呈现 28 定律，大部分数据是零重用对象（6594 个 trace 中的中位数一次性访问对象比率为 26%，sequences that comprise 10% of the unique objects in each trace, the median one-hit-wonder ratio skyrockets to **72%**），对这些数据进行快速降级（2Q，ARC，S3LRU），而对其他重用数据，进行懒惰提升（CLOCK）。</p>
+<p> 缓存工作集往往呈现 28 定律，大部分数据是零重用对象（6594 个 trace 中的中位数一次性访问对象比率为 26%，sequences that comprise 10% of the unique objects in each trace, the median one-hit-wonder ratio skyrockets to 72%），对这些数据进行快速降级提高缓存命中率（2Q，ARC，S3LRU），而对其他重用数据，进行懒惰提升提高可扩展性（CLOCK）。</p>
 </li>
 <li><p>原型系统 cachelib 上，S3FIFO 在吞吐和可扩展性上，远远优于 LRU。</p>
 </li>
@@ -311,15 +315,42 @@
 </ul>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, AtomicDListHook&lt;T&gt; T::*HookPtr&gt;</span><br><span class="line">T* AtomicDList&lt;T, HookPtr&gt;::<span class="built_in">removeTail</span>() <span class="keyword">noexcept</span> &#123;</span><br><span class="line">  T* tail = tail_.<span class="built_in">load</span>();</span><br><span class="line">  <span class="keyword">if</span> (tail == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    <span class="comment">// empty list</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  T* prev = <span class="built_in">getPrev</span>(*tail);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if tail has not changed, the prev is correct</span></span><br><span class="line">  <span class="keyword">while</span> (!tail_.<span class="built_in">compare_exchange_weak</span>(tail, prev)) &#123;</span><br><span class="line">    prev = <span class="built_in">getPrev</span>(*tail);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if the tail was also the head</span></span><br><span class="line">  <span class="keyword">if</span> (head_ == tail) &#123;</span><br><span class="line">    T* oldHead = tail;</span><br><span class="line">    head_.<span class="built_in">compare_exchange_weak</span>(oldHead, <span class="literal">nullptr</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">setNext</span>(*tail, <span class="literal">nullptr</span>);</span><br><span class="line">  <span class="built_in">setPrev</span>(*tail, <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">  size_--;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> tail;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ol>
-<p>FIFO 的缓存插入和缓存驱逐仅操作链表头部或尾部，CAS 可以保证原子；而如果 unlink 链表中间，无法保证原子，必须加写锁。因此，S3FIFO 具有简单（代码量少），速度快（无显式缓存提升），可扩展性高（无锁）</p>
-<p>问题：</p>
+<p>FIFO 的缓存插入和缓存驱逐仅操作链表头部或尾部，CAS 可以保证原子；而如果 unlink 链表中间，无法保证原子，必须加写锁。因此，S3FIFO 具有简单（代码量少），速度快（无显式缓存提升），可扩展性高（无锁）。</p>
+<h1 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h1><ol>
+<li><p>效率：命中率</p>
+<img src="/2024/04/23/s3fifo%20(SOSP%2023)/efficiency.png" class="" title="efficiency">
+
+<img src="/2024/04/23/s3fifo%20(SOSP%2023)/efficiency_datasets.png" class="" title="efficiency_datasets">
+</li>
+<li><p>性能：吞吐量</p>
+<p>在单核 CPU 上，S3FIFO 只需更少的缓存队列维护操作，吞吐比 LRU 更高；在多核 CPU 上，S3FIFO  在缓存命中或缓存缺失过程中无需加锁，可扩展性更高，吞吐基本随核心数增加而线性增加。</p>
+<img src="/2024/04/23/s3fifo%20(SOSP%2023)/throughput.png" class="" title="throughput">
+</li>
+<li><p>闪存友好</p>
+<p>对于 DRAM + SSD 的缓存部署，S3FIFO 可以将队列 S 维护的缓存数据放置在 DRAM，而队列 M 维护的缓存数据放置在 SSD，队列 S 的快速降级可以减少 SSD 缓存的写入流量。</p>
+<img src="/2024/04/23/s3fifo%20(SOSP%2023)/flash_friendly.png" class="" title="flash_friendly">
+
+<p>（可能因为 wiki 数据集 size 分布太广泛，左图结果有点不太合理；而右图结果相对较为合理）</p>
+</li>
+</ol>
+<h1 id="Discussion"><a href="#Discussion" class="headerlink" title="Discussion"></a>Discussion</h1><ol>
+<li><p>为什么 S3FIFO 有效？</p>
+<ul>
+<li>类似于 ARC + S3LRU，能够快速降级零重用对象，抵抗扫描工作负载；</li>
+<li>S3FIFO 的降级速度是可控的，队列 S 越长，降级越慢，可人为控制；而 ARC 可能由于缓存容量太小，对象的平均重用时间较长，导致热链 ghost 命中过多而冷链过短，间接导致降级速度过快；WTinyLFU 会由于热链对象过热导致冷链始终降级；</li>
+</ul>
+</li>
+<li><p>S3FIFO 自适应后怎么样？</p>
+<p>效果一般，大多数情况下不如 S3FIFO-10%。</p>
+<ul>
+<li>过去不代表未来；</li>
+<li>自适应的调整粒度难以 one-for-all（1个，2个，…）；</li>
+</ul>
+</li>
+</ol>
+<p>个人理解：</p>
 <ol>
-<li><p>现有快速降级算法为什么不好？</p>
-<p>无法保证在被删除之前在缓存中停留的最短和最长时间。作者发现这些算法有时驱逐太快或太慢，而且它们的复杂性使得很难推断其行为。</p>
-<p><strong>不具备说服力，S3FIFO 也有这个问题</strong>。</p>
-</li>
-<li><p>S3FIFO 对比 LRU 有更高的可扩展性，在缓存命中时无需加锁，但是我认为缓存驱逐时仍然需要加锁，同时由于 FIFO-reinsertion，可能具有更长的尾延时（3-&gt;0）</p>
-</li>
+<li>由于队列 M 的 FIFO-reinsertion，可能具有更长的尾延时（3-&gt;0）。（CLOCK）</li>
 </ol>
 
     </div>
@@ -405,7 +436,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">2.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">2.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Design"><span class="nav-number">3.</span> <span class="nav-text">Design</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Evaluation"><span class="nav-number">4.</span> <span class="nav-text">Evaluation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Discussion"><span class="nav-number">5.</span> <span class="nav-text">Discussion</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -469,13 +500,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">84k</span>
+    <span title="Symbols count total">85k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:20</span>
+    <span title="Reading time total">2:21</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
