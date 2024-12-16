@@ -30,8 +30,9 @@
 <meta property="og:description" content="Mini-LSM 项目">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/full_overview.svg">
+<meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week1-overview.svg">
 <meta property="article:published_time" content="2024-12-12T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-12-14T08:44:08.866Z">
+<meta property="article:modified_time" content="2024-12-16T14:54:19.747Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="存储">
 <meta property="article:tag" content="LSM">
@@ -232,7 +233,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-12-14 16:44:08" itemprop="dateModified" datetime="2024-12-14T16:44:08+08:00">2024-12-14</time>
+                <time title="Modified: 2024-12-16 22:54:19" itemprop="dateModified" datetime="2024-12-16T22:54:19+08:00">2024-12-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,14 +258,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.2k</span>
+              <span>2.6k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>2 mins.</span>
+              <span>4 mins.</span>
             </span>
             <div class="post-description">Mini-LSM 项目</div>
 
@@ -277,9 +278,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <img src="/2024/12/12/MiniLSM/full_overview.svg" class="" title="full_overview">
+        <h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><img src="/2024/12/12/MiniLSM/full_overview.svg" class="" title="full_overview">
 
-<h1 id="Week1：Mini-LSM"><a href="#Week1：Mini-LSM" class="headerlink" title="Week1：Mini-LSM"></a>Week1：Mini-LSM</h1><h2 id="Memtable"><a href="#Memtable" class="headerlink" title="Memtable"></a>Memtable</h2><h3 id="tasks"><a href="#tasks" class="headerlink" title="tasks"></a>tasks</h3><ol>
+<h1 id="Week1：Mini-LSM"><a href="#Week1：Mini-LSM" class="headerlink" title="Week1：Mini-LSM"></a>Week1：Mini-LSM</h1><img src="/2024/12/12/MiniLSM/week1-overview.svg" class="" title="week1-overview">
+
+<h2 id="Memtable"><a href="#Memtable" class="headerlink" title="Memtable"></a>Memtable</h2><h3 id="tasks"><a href="#tasks" class="headerlink" title="tasks"></a>tasks</h3><ol>
 <li>基于现有的无锁 SkipList，实现 memtable 的 get 和 put 接口；</li>
 <li>为 LsmStorageInner 实现 get、put 和 delete 接口，只需考虑将请求分派到当前 memtable；</li>
 <li>当 memtable 大小达到阈值时，需冻结成 immutable memtable，并创建新的 memtable；</li>
@@ -309,6 +312,42 @@
 </li>
 <li><p>冻结 memtable 后，是否有可能某些线程仍然保留旧的 LSM 状态并写入这些不可变的 memtable？您的解决方案如何防止这种情况发生？</p>
 <p>不会；通过 state.write() 锁；</p>
+</li>
+</ol>
+<h2 id="Merge-Iterator"><a href="#Merge-Iterator" class="headerlink" title="Merge Iterator"></a>Merge Iterator</h2><h3 id="tasks-1"><a href="#tasks-1" class="headerlink" title="tasks"></a>tasks</h3><ol>
+<li>实现 memtable 迭代器，包含：<code>key</code>, <code>value</code>,  <code>next</code> 和 <code>is_valid</code> 函数；为 memtable 实现 scan 接口，返回值即 memtable 迭代器；</li>
+<li>实现 merge 迭代器，通过多个 memtable 的迭代器进行构建，较新的 memtable 中的数据将覆盖较旧的 memtable 中的相同键数据；</li>
+<li>继续向上封装 LsmIterator 和 FusedIterator；（LsmIterator 在调用 next 时，需要跳过 value 为空的迭代器）</li>
+<li>实现 LSM 的 scan 接口，当前仅需考虑 memtable 和 immemtable；</li>
+</ol>
+<h2 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h2><h3 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h3><p>Block 编码格式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">----------------------------------------------------------------------------------------------------</span><br><span class="line">|             Data Section             |              Offset Section             |      Extra      |</span><br><span class="line">----------------------------------------------------------------------------------------------------</span><br><span class="line">| Entry #1 | Entry #2 | ... | Entry #N | Offset #1 | Offset #2 | ... | Offset #N | num_of_elements |</span><br><span class="line">----------------------------------------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-----------------------------------------------------------------------</span><br><span class="line">|                           Entry #1                            | ... |</span><br><span class="line">-----------------------------------------------------------------------</span><br><span class="line">| key_len (2B) | key (keylen) | value_len (2B) | value (varlen) | ... |</span><br><span class="line">-----------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+
+<h3 id="tasks-2"><a href="#tasks-2" class="headerlink" title="tasks"></a>tasks</h3><p>实现 SST 块编码，块解码和块迭代器；</p>
+<ol>
+<li>实现 SST 中最小单元 Block 的构造器和编解码；</li>
+<li>实现 Block 迭代器，在创建时可以定位第一个 key 或者指定 key，指定 key 时将使用间接索引 offset 进行二分查找快速定位；</li>
+</ol>
+<h3 id="Questions-1"><a href="#Questions-1" class="headerlink" title="Questions"></a>Questions</h3><ol>
+<li><p>在块中寻找密钥的时间复杂度是多少?</p>
+<p>O(logn)；</p>
+</li>
+<li><p>当您在实现中查找不存在的键时，光标会停在哪里？</p>
+<p>num_of_elements 处；</p>
+</li>
+<li><p>Block 的 kv 对数量是多少？</p>
+<p>block.offsets.len()；</p>
+</li>
+<li><p>Block 可以包含重复 key 吗？</p>
+<p>可以，在二分查找指定重复 key 时，光标将达到该 key 首次出现的位置；</p>
+</li>
+<li><p>如果用户添加大于目标块大小的 key 会发生什么？</p>
+<p>如果该 key 是块的第一个键，则被允许，且该块仅包含这一个 kv 对；如果不是块的第一个键，则无法添加；</p>
+</li>
+<li><p>考虑 LSM 引擎构建在对象存储服务 (S3) 上的情况。您将如何优化&#x2F;更改块格式和参数以使其适合此类服务？</p>
+<p>增大目标块大小至 MB 级，以减少对象存储的访问次数；</p>
 </li>
 </ol>
 
@@ -393,7 +432,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">1.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">1.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">1.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">1.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -457,13 +496,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">86k</span>
+    <span title="Symbols count total">87k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:23</span>
+    <span title="Reading time total">2:25</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
