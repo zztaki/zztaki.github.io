@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/full_overview.svg">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week1-overview.svg">
 <meta property="article:published_time" content="2024-12-12T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-12-16T14:54:19.747Z">
+<meta property="article:modified_time" content="2024-12-17T12:27:13.813Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="存储">
 <meta property="article:tag" content="LSM">
@@ -233,7 +233,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-12-16 22:54:19" itemprop="dateModified" datetime="2024-12-16T22:54:19+08:00">2024-12-16</time>
+                <time title="Modified: 2024-12-17 20:27:13" itemprop="dateModified" datetime="2024-12-17T20:27:13+08:00">2024-12-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,14 +258,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>2.6k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>4 mins.</span>
+              <span>6 mins.</span>
             </span>
             <div class="post-description">Mini-LSM 项目</div>
 
@@ -350,6 +350,33 @@
 <p>增大目标块大小至 MB 级，以减少对象存储的访问次数；</p>
 </li>
 </ol>
+<h2 id="SST"><a href="#SST" class="headerlink" title="SST"></a>SST</h2><h3 id="Note-1"><a href="#Note-1" class="headerlink" title="Note"></a>Note</h3><p>SST 编码格式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-------------------------------------------------------------------------------------------------</span><br><span class="line">|            Block Section            |          Meta Section       |           Extra           |</span><br><span class="line">-------------------------------------------------------------------------------------------------</span><br><span class="line">| data block #1 | ... | data block #N | offset #1 | ... | offset #N | Meta Section offset (u32) |</span><br><span class="line">-------------------------------------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+
+<h3 id="tasks-3"><a href="#tasks-3" class="headerlink" title="tasks"></a>tasks</h3><ol>
+<li>实现 SST 构建器，SST 元数据编解码；</li>
+<li>实现 SST 迭代器，且可定位指定 key（在 SST 层面基于 Block 的 first key 进行二分查找，再在 Block 内部进行二分 seek）；</li>
+<li>块缓存作为 SST 的成员；</li>
+</ol>
+<h3 id="Questions-2"><a href="#Questions-2" class="headerlink" title="Questions"></a>Questions</h3><ol>
+<li><p>在 SST 中查找 key 的时间复杂度是多少？</p>
+<p>O(log(m) + log(n))；其中 m 是 SST 中的 block 数量，n 是 block 内部 key 的数量；</p>
+</li>
+<li><p>当您在实现中查找不存在的 key 时，光标会停在哪里？</p>
+<p>第一个大于该 key 的位置；</p>
+</li>
+<li><p>是否可以（或有必要）对 SST 文件进行就地更新？</p>
+<p>没必要，原地更新成本太大，所在 block 的读写放大，以及如果 value 长度改变了，后续的 Meta Section 信息需要大量修改；</p>
+</li>
+<li><p>SST 通常很大（即 256MB）。在这种情况下，复制&#x2F;扩展<code>Vec</code>的成本将是巨大的。您的实现是否提前为 SST 构建器分配了足够的空间？你是如何实施的？</p>
+<p>在构建 SST 时，根据 estimated_size() 预分配容量；</p>
+</li>
+<li><p>是否可以在 LSM 引擎中存储列式数据（即包含 100 个整数列的表）？当前的 SST 格式仍然是一个不错的选择吗？</p>
+</li>
+<li><p>考虑 LSM 引擎构建在对象存储服务（即 S3）上的情况。您将如何优化&#x2F;更改 SST 格式&#x2F;参数和块缓存以使其适合此类服务？</p>
+<p>块存储可以不再局限内存，亦可以包括本地 SSD；</p>
+</li>
+</ol>
 
     </div>
 
@@ -432,7 +459,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST"><span class="nav-number">2.4.</span> <span class="nav-text">SST</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-2"><span class="nav-number">2.4.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -496,13 +523,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">87k</span>
+    <span title="Symbols count total">88k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:25</span>
+    <span title="Reading time total">2:27</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
