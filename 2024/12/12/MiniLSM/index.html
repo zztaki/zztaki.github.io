@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/full_overview.svg">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week1-overview.svg">
 <meta property="article:published_time" content="2024-12-12T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-12-18T10:15:15.389Z">
+<meta property="article:modified_time" content="2024-12-18T10:23:15.397Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="存储">
 <meta property="article:tag" content="LSM">
@@ -233,7 +233,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-12-18 18:15:15" itemprop="dateModified" datetime="2024-12-18T18:15:15+08:00">2024-12-18</time>
+                <time title="Modified: 2024-12-18 18:23:15" itemprop="dateModified" datetime="2024-12-18T18:23:15+08:00">2024-12-18</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +258,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>5.3k</span>
+              <span>5.4k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -393,7 +393,7 @@
 </li>
 </ol>
 <h2 id="SST-Optimizations"><a href="#SST-Optimizations" class="headerlink" title="SST Optimizations"></a>SST Optimizations</h2><h3 id="Note-2"><a href="#Note-2" class="headerlink" title="Note"></a>Note</h3><p>有了布隆过滤器后，SST 编码格式</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-------------------------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line">|            Block Section            |                                   Meta Section                                  |           Extra           |       Bloom Filter       |           Extra            |</span><br><span class="line">-------------------------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line">| data block #1 | ... | data block #N | ... | (offset, first_key_len (u16), first_key, last_key_len (u16), last_key) #N | Meta Section offset (u32) | bits | num_of_hash_function |  Bloom Filter Offset (u32) |</span><br><span class="line">-------------------------------------------------------------------------------------------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line">|            Block Section            |                                   Meta Section                                  |           Extra           |        Bloom Filter        |           Extra            |</span><br><span class="line">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line">| data block #1 | ... | data block #N | ... | (offset, first_key_len (u16), first_key, last_key_len (u16), last_key) #N | Meta Section offset (u32) | bits | num_of_hash_function |  Bloom Filter Offset (u32) |</span><br><span class="line">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
 
 <h3 id="tasks-6"><a href="#tasks-6" class="headerlink" title="tasks"></a>tasks</h3><ol>
 <li>使用布隆过滤器进一步减轻 SST 的读放大；（每个 SST 有一个独有的布隆过滤器，创建 SST 的同时，根据 SST 中的所有 key 来确定布隆过滤器所需 hash 函数个数、总位数以及各个位置的 bit 值，作为只读过滤器）</li>
