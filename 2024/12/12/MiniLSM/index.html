@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week1-overview.svg">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week2-overview.svg">
 <meta property="article:published_time" content="2024-12-12T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-12-20T07:24:50.510Z">
+<meta property="article:modified_time" content="2024-12-20T14:49:03.804Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="存储">
 <meta property="article:tag" content="LSM">
@@ -234,7 +234,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-12-20 15:24:50" itemprop="dateModified" datetime="2024-12-20T15:24:50+08:00">2024-12-20</time>
+                <time title="Modified: 2024-12-20 22:49:03" itemprop="dateModified" datetime="2024-12-20T22:49:03+08:00">2024-12-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,14 +259,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>7.7k</span>
+              <span>8.5k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>13 mins.</span>
+              <span>14 mins.</span>
             </span>
             <div class="post-description">Mini-LSM 项目</div>
 
@@ -446,6 +446,34 @@
 </li>
 </ol>
 <h2 id="Simple-Leveled-Compaction"><a href="#Simple-Leveled-Compaction" class="headerlink" title="Simple Leveled Compaction"></a>Simple Leveled Compaction</h2><p>实现经典的分级压缩算法并使用压缩模拟器来查看其工作效果如何；</p>
+<h3 id="tasks-8"><a href="#tasks-8" class="headerlink" title="tasks"></a>tasks</h3><ol>
+<li>实现简单的分级压缩：当 L0 层的 SST 数量达到阈值，将 L0 和 L1 进行压缩并加入 L1 层；L(n+1) &#x2F; L(n) 小于某一阈值时，将 L(n) 和 L(n+1) 层进行合并并加入 L(n+1) 层；</li>
+<li>现在有了 L2… 等层，需要进一步完善 LSM 的 get 和 scan 接口；（注意：从 L1 开始往下，它们各自都是 sorted run，因此每一层可以使用 SstConcatIterator 创建串联迭代器）</li>
+</ol>
+<h3 id="Questions-6"><a href="#Questions-6" class="headerlink" title="Questions"></a>Questions</h3><ol>
+<li><p>分级压缩的估计写入放大是多少？</p>
+</li>
+<li><p>分级压缩的估计读取放大是多少？</p>
+</li>
+<li><p>仅当用户请求删除某个密钥并且该密钥已在最底层进行压缩时，该密钥才会从 LSM 树中清除，这是否正确？</p>
+<p>正确；如果在较高层压缩时面对 delete 操作直接将 key 清除，在后续底层的压缩过程中，可能出现旧值覆盖原本 delete 操作的情况；</p>
+</li>
+<li><p>定期对 LSM 树进行完全压缩是一个好的策略吗？为什么或为什么不呢？</p>
+<p>不好；全量压缩非常耗费 CPU 和 IO 资源，影响存储引擎的服务质量；</p>
+</li>
+<li><p>积极选择一些旧文件&#x2F;关卡进行压缩，即使它们不违反层级放大器也会是一个不错的选择，是吗？</p>
+<p>是的，可以进一步减少空间放大和读放大；</p>
+</li>
+<li><p>如果存储设备能够实现可持续的1GB&#x2F;s写入吞吐量，并且LSM树的写入放大为10倍，那么用户可以从LSM键值接口获得多少吞吐量？</p>
+<p>十分之一的吞吐；</p>
+</li>
+<li><p>如果L2中有SST文件，可以直接合并L1和L3吗？它仍然产生正确的结果吗？</p>
+<p>不可以；如果将合并后的结果加入 L1 层，则会导致 L3 的旧值可能覆盖 L2 的较新值，如果合并后的结果加入 L3 层，可能导致 L2 的旧值覆盖 L1 的较新值；</p>
+</li>
+<li><p>到目前为止，我们假设我们的 SST 文件使用单调递增的 id 作为文件名。可以用吗 <code>&lt;level&gt;_&lt;begin_key&gt;_&lt;end_key&gt;.sst</code> 作为 SST 文件名？这可能存在哪些潜在问题？</p>
+<p>对于 L0 层的 SST，可能会有同名情况，以及在从磁盘文件恢复 LsmState 时，无法判断哪个文件是最新的。</p>
+</li>
+</ol>
 <h2 id="Tiered-x2F-Universal-Compaction"><a href="#Tiered-x2F-Universal-Compaction" class="headerlink" title="Tiered&#x2F;Universal Compaction"></a>Tiered&#x2F;Universal Compaction</h2><p>实现 RocksDB 通用压缩算法并了解其优缺点；</p>
 <h2 id="Leveled-Compaction"><a href="#Leveled-Compaction" class="headerlink" title="Leveled Compaction"></a>Leveled Compaction</h2><p>实现 RocksDB 分级压缩算法。该压缩算法还支持部分压缩，以减少峰值空间使用；</p>
 <h2 id="Manifest"><a href="#Manifest" class="headerlink" title="Manifest"></a>Manifest</h2><p>把 LSM 状态存储在磁盘上并从该状态中恢复；</p>
@@ -533,7 +561,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST"><span class="nav-number">2.4.</span> <span class="nav-text">SST</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-2"><span class="nav-number">2.4.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Path"><span class="nav-number">2.5.</span> <span class="nav-text">Read Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Path"><span class="nav-number">2.6.</span> <span class="nav-text">Write Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-5"><span class="nav-number">2.6.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-3"><span class="nav-number">2.6.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST-Optimizations"><span class="nav-number">2.7.</span> <span class="nav-text">SST Optimizations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-2"><span class="nav-number">2.7.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-6"><span class="nav-number">2.7.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-4"><span class="nav-number">2.7.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week-2%EF%BC%9ACompaction-Persistence"><span class="nav-number">3.</span> <span class="nav-text">Week 2：Compaction + Persistence</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview-1"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Compaction-Implementation"><span class="nav-number">3.2.</span> <span class="nav-text">Compaction Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-7"><span class="nav-number">3.2.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-5"><span class="nav-number">3.2.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Simple-Leveled-Compaction"><span class="nav-number">3.3.</span> <span class="nav-text">Simple Leveled Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tiered-x2F-Universal-Compaction"><span class="nav-number">3.4.</span> <span class="nav-text">Tiered&#x2F;Universal Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Leveled-Compaction"><span class="nav-number">3.5.</span> <span class="nav-text">Leveled Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Manifest"><span class="nav-number">3.6.</span> <span class="nav-text">Manifest</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">3.7.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Batch-and-Checksums"><span class="nav-number">3.8.</span> <span class="nav-text">Write Batch and Checksums</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST"><span class="nav-number">2.4.</span> <span class="nav-text">SST</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-2"><span class="nav-number">2.4.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Path"><span class="nav-number">2.5.</span> <span class="nav-text">Read Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Path"><span class="nav-number">2.6.</span> <span class="nav-text">Write Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-5"><span class="nav-number">2.6.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-3"><span class="nav-number">2.6.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST-Optimizations"><span class="nav-number">2.7.</span> <span class="nav-text">SST Optimizations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-2"><span class="nav-number">2.7.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-6"><span class="nav-number">2.7.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-4"><span class="nav-number">2.7.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week-2%EF%BC%9ACompaction-Persistence"><span class="nav-number">3.</span> <span class="nav-text">Week 2：Compaction + Persistence</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview-1"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Compaction-Implementation"><span class="nav-number">3.2.</span> <span class="nav-text">Compaction Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-7"><span class="nav-number">3.2.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-5"><span class="nav-number">3.2.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Simple-Leveled-Compaction"><span class="nav-number">3.3.</span> <span class="nav-text">Simple Leveled Compaction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-8"><span class="nav-number">3.3.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-6"><span class="nav-number">3.3.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tiered-x2F-Universal-Compaction"><span class="nav-number">3.4.</span> <span class="nav-text">Tiered&#x2F;Universal Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Leveled-Compaction"><span class="nav-number">3.5.</span> <span class="nav-text">Leveled Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Manifest"><span class="nav-number">3.6.</span> <span class="nav-text">Manifest</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">3.7.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Batch-and-Checksums"><span class="nav-number">3.8.</span> <span class="nav-text">Write Batch and Checksums</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -597,13 +625,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">92k</span>
+    <span title="Symbols count total">93k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:34</span>
+    <span title="Reading time total">2:35</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
