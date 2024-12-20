@@ -31,8 +31,9 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/full_overview.svg">
 <meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week1-overview.svg">
+<meta property="og:image" content="http://example.com/2024/12/12/MiniLSM/week2-overview.svg">
 <meta property="article:published_time" content="2024-12-12T09:52:57.000Z">
-<meta property="article:modified_time" content="2024-12-18T14:40:11.533Z">
+<meta property="article:modified_time" content="2024-12-20T07:24:50.510Z">
 <meta property="article:author" content="zztaki">
 <meta property="article:tag" content="存储">
 <meta property="article:tag" content="LSM">
@@ -233,7 +234,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-12-18 22:40:11" itemprop="dateModified" datetime="2024-12-18T22:40:11+08:00">2024-12-18</time>
+                <time title="Modified: 2024-12-20 15:24:50" itemprop="dateModified" datetime="2024-12-20T15:24:50+08:00">2024-12-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,14 +259,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>6.1k</span>
+              <span>7.7k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>10 mins.</span>
+              <span>13 mins.</span>
             </span>
             <div class="post-description">Mini-LSM 项目</div>
 
@@ -415,6 +416,41 @@
 <p>缺点：频繁点查时需要从 block 的第一个 key 开始读起，以解码中间位置的真实 key 值，将导致点查时间成本过高；范围查询接近第一个键前缀编码，但也会有些微时间性能损失。</p>
 </li>
 </ol>
+<h1 id="Week-2：Compaction-Persistence"><a href="#Week-2：Compaction-Persistence" class="headerlink" title="Week 2：Compaction + Persistence"></a>Week 2：Compaction + Persistence</h1><h2 id="Overview-1"><a href="#Overview-1" class="headerlink" title="Overview"></a>Overview</h2><img src="/2024/12/12/MiniLSM/week2-overview.svg" class="" title="week2-overview">
+
+<h2 id="Compaction-Implementation"><a href="#Compaction-Implementation" class="headerlink" title="Compaction Implementation"></a>Compaction Implementation</h2><p>将 L0 SSTs 合并到一个 sorted run （每个 SST 都不包含重叠的 key 范围，且依次按照它们的首 key 有序）中；（从 L1 开始往下，每一层可以理解成是一个 sorted run）</p>
+<h3 id="tasks-7"><a href="#tasks-7" class="headerlink" title="tasks"></a>tasks</h3><ol>
+<li>实现 force_full_compaction，定期对 L0 和 L1 进行 full compaction，压缩后的 sorted run 加入 L1 层；（从 L0 和 L1 的合并迭代器中创建有序压缩后的 SST 磁盘文件-&gt;获取 LsmState 快照-&gt;从 LsmState 快照中删除压缩前的 L0 和 L1 SST 内存结构-&gt;向 LsmState 快照中添加压缩后的 SST 内存结构-&gt;使用 LsmState 快照更新 LsmState-&gt;删除压缩前的 L0 和 L1 的 SST 磁盘文件）</li>
+<li>由于从 L1 开始往下都是 sorted run，因此对于它们无需使用基于堆的 MergeIterator，仅需使用一个串联迭代器进行简化；</li>
+<li>有了 L1 层后，完善 LSM 的 scan 和 get 接口；</li>
+</ol>
+<h3 id="Questions-5"><a href="#Questions-5" class="headerlink" title="Questions"></a>Questions</h3><ol>
+<li><p>读&#x2F;写&#x2F;空间放大的定义是什么？</p>
+<p>读放大系数：对磁盘发起的实际读取数据量 &#x2F; 上层应用实际需要的数据量；</p>
+<p>写放大系数：对磁盘发起的总写入数据量 &#x2F; 上层应用发起的总写入数据量；</p>
+<p>空间放大系数：磁盘的总占用空间 &#x2F; 上层应用逻辑视图的总数据量；</p>
+</li>
+<li><p>有哪些方法可以准确计算读&#x2F;写&#x2F;空间放大，以及估计它们的方法是什么？</p>
+<p>读&#x2F;写放大往往可以较为准确地进行估计，参考上面的两种系数定义；</p>
+<p>空间放大不好估计，因为对于存储引擎来说，无法探测上层应用实际使用的数据量大小，一个简易的估计方式是：在稳定的工作负载模式下，用户的新增数据量和删除数据量应该接近，即用户实际使用的数据量从某时开始不再发生变化，因此，最后一层的 SST 包含用户数据在某个时刻的快照。因此，空间放大可以简易估计为 <strong>磁盘的总占用空间 &#x2F; 最后一层SST所占用的空间</strong>；</p>
+</li>
+<li><p>即使用户请求删除密钥也会占用一些存储空间，这是否正确？</p>
+<p>正确，由于 LSM 引擎不原地更新，因此 delete 操作必须记录下来；在后续进行 compaction 时，可以不再进行保存；</p>
+</li>
+<li><p>使用&#x2F;填充块缓存进行压缩是个好主意吗？或者压缩时完全绕过块缓存更好？</p>
+<p>不是一个好主意；完全绕过更好。</p>
+<p>压缩完成后，先前进行压缩的 SST 将被删除，因此对应的块缓存将不再被使用，压缩过程中填充块缓存将变得没有意义。当然，在这个过程中使用原有块缓存可以一定程度上加速压缩的速度，或许一个好的方式是压缩过程中使用完的块缓存直接从内存中主动删除，腾出宝贵的缓存空间。</p>
+</li>
+<li><p>系统中拥有  <code>struct ConcatIterator&lt;I: StorageIterator&gt;</code> 是否有意义？</p>
+<p>有意义；从 L1 往下都是 sorted run，因此，无需使用基于堆的 MergeIterator 对整层 SST 进行合并，从而加快从迭代器中读取和 seek key 的速度；</p>
+</li>
+</ol>
+<h2 id="Simple-Leveled-Compaction"><a href="#Simple-Leveled-Compaction" class="headerlink" title="Simple Leveled Compaction"></a>Simple Leveled Compaction</h2><p>实现经典的分级压缩算法并使用压缩模拟器来查看其工作效果如何；</p>
+<h2 id="Tiered-x2F-Universal-Compaction"><a href="#Tiered-x2F-Universal-Compaction" class="headerlink" title="Tiered&#x2F;Universal Compaction"></a>Tiered&#x2F;Universal Compaction</h2><p>实现 RocksDB 通用压缩算法并了解其优缺点；</p>
+<h2 id="Leveled-Compaction"><a href="#Leveled-Compaction" class="headerlink" title="Leveled Compaction"></a>Leveled Compaction</h2><p>实现 RocksDB 分级压缩算法。该压缩算法还支持部分压缩，以减少峰值空间使用；</p>
+<h2 id="Manifest"><a href="#Manifest" class="headerlink" title="Manifest"></a>Manifest</h2><p>把 LSM 状态存储在磁盘上并从该状态中恢复；</p>
+<h2 id="Write-Ahead-Log-WAL"><a href="#Write-Ahead-Log-WAL" class="headerlink" title="Write-Ahead Log (WAL)"></a>Write-Ahead Log (WAL)</h2><p>用户请求将被路由到 memtable 和 WAL，以便所有操作都将被持久化；</p>
+<h2 id="Write-Batch-and-Checksums"><a href="#Write-Batch-and-Checksums" class="headerlink" title="Write Batch and Checksums"></a>Write Batch and Checksums</h2><p>为所有存储格式实现批量写入 API（为第 3 周的 MVCC 做准备）和校验和；</p>
 
     </div>
 
@@ -497,7 +533,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST"><span class="nav-number">2.4.</span> <span class="nav-text">SST</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-2"><span class="nav-number">2.4.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Path"><span class="nav-number">2.5.</span> <span class="nav-text">Read Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Path"><span class="nav-number">2.6.</span> <span class="nav-text">Write Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-5"><span class="nav-number">2.6.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-3"><span class="nav-number">2.6.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST-Optimizations"><span class="nav-number">2.7.</span> <span class="nav-text">SST Optimizations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-2"><span class="nav-number">2.7.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-6"><span class="nav-number">2.7.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-4"><span class="nav-number">2.7.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week1%EF%BC%9AMini-LSM"><span class="nav-number">2.</span> <span class="nav-text">Week1：Mini-LSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memtable"><span class="nav-number">2.1.</span> <span class="nav-text">Memtable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks"><span class="nav-number">2.1.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions"><span class="nav-number">2.1.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Merge-Iterator"><span class="nav-number">2.2.</span> <span class="nav-text">Merge Iterator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block"><span class="nav-number">2.3.</span> <span class="nav-text">Block</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note"><span class="nav-number">2.3.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST"><span class="nav-number">2.4.</span> <span class="nav-text">SST</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-1"><span class="nav-number">2.4.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-2"><span class="nav-number">2.4.3.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Path"><span class="nav-number">2.5.</span> <span class="nav-text">Read Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">tasks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Path"><span class="nav-number">2.6.</span> <span class="nav-text">Write Path</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-5"><span class="nav-number">2.6.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-3"><span class="nav-number">2.6.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SST-Optimizations"><span class="nav-number">2.7.</span> <span class="nav-text">SST Optimizations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Note-2"><span class="nav-number">2.7.1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-6"><span class="nav-number">2.7.2.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-4"><span class="nav-number">2.7.3.</span> <span class="nav-text">Questions</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Week-2%EF%BC%9ACompaction-Persistence"><span class="nav-number">3.</span> <span class="nav-text">Week 2：Compaction + Persistence</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview-1"><span class="nav-number">3.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Compaction-Implementation"><span class="nav-number">3.2.</span> <span class="nav-text">Compaction Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tasks-7"><span class="nav-number">3.2.1.</span> <span class="nav-text">tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Questions-5"><span class="nav-number">3.2.2.</span> <span class="nav-text">Questions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Simple-Leveled-Compaction"><span class="nav-number">3.3.</span> <span class="nav-text">Simple Leveled Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tiered-x2F-Universal-Compaction"><span class="nav-number">3.4.</span> <span class="nav-text">Tiered&#x2F;Universal Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Leveled-Compaction"><span class="nav-number">3.5.</span> <span class="nav-text">Leveled Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Manifest"><span class="nav-number">3.6.</span> <span class="nav-text">Manifest</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">3.7.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Write-Batch-and-Checksums"><span class="nav-number">3.8.</span> <span class="nav-text">Write Batch and Checksums</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -561,13 +597,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">Symbols count total: </span>
-    <span title="Symbols count total">91k</span>
+    <span title="Symbols count total">92k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">Reading time total &asymp;</span>
-    <span title="Reading time total">2:31</span>
+    <span title="Reading time total">2:34</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
